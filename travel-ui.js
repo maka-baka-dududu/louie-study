@@ -27,12 +27,7 @@ function sendTravel(message){if(message.kind==='reload'){travelIsReady=false;tra
 function guardTravelLeave(){if(travelBusy){toast('正在保存旅行记录，请稍候。');return false}if(travelEditing){if(!confirm('旅行编辑尚未保存，离开会丢弃本次填写。继续？'))return false;travelEditing=false;sendTravel({kind:'discard-editors'})}return true}
 const openTrackBeforeTravel = openTrack;
 openTrack = function (id) {
-  if (!guardTravelLeave()) {
-    const select = $('#nav select[aria-label="切换项目"]');
-    if (select) select.value = navigationProject;
-    return;
-  }
-  openTrackBeforeTravel(id);
+  if (guardTravelLeave()) openTrackBeforeTravel(id);
 };
 const openPracticeBeforeTravel=openPractice;openPractice=function(id){if(guardTravelLeave())openPracticeBeforeTravel(id)};
 const openStudioBeforeTravel=openStudio;openStudio=function(id){if(guardTravelLeave())openStudioBeforeTravel(id)};
