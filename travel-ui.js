@@ -21,8 +21,7 @@ const projectNavItemsBeforeTravel = projectNavItems;
 projectNavItems = function () {
   return navigationProject === 'travel' ? projectTools.travel : projectNavItemsBeforeTravel();
 };
-const directionCardBeforeTravel=directionCard;
-directionCard=function(t,showActions=true){const html=directionCardBeforeTravel(t,showActions);return t.id==='travel'?html.replace(/<small>[^<]*<\/small>/,`<small>${db.travel.entries.length} 枚足迹 · ${db.travel.routes.length} 段行程</small>`):html};
+const travelLegacyPages = ['track', 'today', 'library', 'tracking', 'teacher'];
 function isTravelPage(p=page){return ['travelGlobe','travelJournal'].includes(p)}
 function sendTravel(message){if(message.kind==='reload'){travelIsReady=false;travelEditing=false;if(travelFrame){travelNonce=uid();travelFrame.src='travel-assets/frame.html?view='+(page==='travelJournal'?'journal':'travel')+'#'+travelNonce;}return}travelFrame?.contentWindow?.postMessage({channel:'louie-travel',nonce:travelNonce,...message},'*')}
 function guardTravelLeave(){if(travelBusy){toast('正在保存旅行记录，请稍候。');return false}if(travelEditing){if(!confirm('旅行编辑尚未保存，离开会丢弃本次填写。继续？'))return false;travelEditing=false;sendTravel({kind:'discard-editors'})}return true}
@@ -33,10 +32,6 @@ openTrack = function (id) {
     if (select) select.value = navigationProject;
     return;
   }
-  if (id === 'travel') {
-    if (preparePracticeLeave()) go('travelGlobe');
-    return;
-  }
   openTrackBeforeTravel(id);
 };
 const openPracticeBeforeTravel=openPractice;openPractice=function(id){if(guardTravelLeave())openPracticeBeforeTravel(id)};
@@ -44,7 +39,7 @@ const openStudioBeforeTravel=openStudio;openStudio=function(id){if(guardTravelLe
 const goBeforeTravel=go;
 go = function (target) {
   const before = page;
-  if (navigationProject === 'travel' && ['track', 'today', 'library', 'tracking', 'teacher'].includes(target)) {
+  if (navigationProject === 'travel' && travelLegacyPages.includes(target)) {
     target = 'travelGlobe';
   }
   if (isTravelPage(before) && target !== before && !guardTravelLeave()) return;
@@ -63,6 +58,7 @@ const navigationContextBeforeTravel=renderNavigationContext;renderNavigationCont
 const renderBeforeTravel=render;
 render = function () {
   normalizeTravel();
+  if (navigationProject === 'travel' && travelLegacyPages.includes(page)) page = 'travelGlobe';
   const target = page;
   if (!isTravelPage(target)) {
     document.body.classList.remove('travel-page');
@@ -77,7 +73,7 @@ render = function () {
     sendTravel({kind:'navigate', view:target === 'travelJournal' ? 'journal' : 'travel'});
     return;
   }
-  page = 'track';
+  page = 'directions';
   renderBeforeTravel();
   page = target;
   $('#view').innerHTML = `<div class="travel-heading">
@@ -147,4 +143,5 @@ try{const route=JSON.parse(window.sessionStorage?.getItem('louie-project-route-v
   page=isTravelPage(route.page)?route.page:'travelGlobe';
   rememberProjectRoute();
 }}catch(_){}
-render();window.LouieTravelReady=true;
+window.LouieTravelReady=true;
+render();
