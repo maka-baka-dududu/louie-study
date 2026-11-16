@@ -1,3 +1,84 @@
-body.travel-page{height:100vh;height:100dvh;overflow:hidden}.travel-page main{height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidden;padding-top:20px;padding-bottom:20px}.travel-page header{flex:none;padding-bottom:10px;min-height:35px}.travel-page #view{min-height:0;flex:1;display:flex;flex-direction:column;overflow:hidden}.travel-heading{margin:12px 0 16px;flex:none;gap:14px}.travel-heading h1{font-size:25px;margin:0}.travel-heading .actions{gap:7px;flex-wrap:wrap}.travel-heading button{font-size:11px;padding:7px 10px}.travel-frame-wrap{position:relative;flex:1;min-height:0;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#f6f5ef}.travel-frame-wrap iframe{display:block;border:0;width:100%;height:100%;min-height:0}.travel-frame-loading{position:absolute;z-index:2;left:50%;top:20px;transform:translateX(-50%);padding:12px 18px;background:white;border-radius:10px;font-size:12px;color:var(--muted);white-space:nowrap;box-shadow:0 5px 25px #21362e12}
-@media(max-width:850px){body.travel-page{display:flex;flex-direction:column}.travel-page aside{flex:none}.travel-page main{flex:1;height:auto;padding:10px 14px 14px;min-height:0}.travel-heading{margin:10px 0 12px;align-items:flex-start}.travel-heading h1{font-size:21px}.travel-heading .actions{gap:5px}.travel-heading button{font-size:10px;padding:6px 8px}.travel-page header{min-height:27px;padding-bottom:5px}}
-@media(max-width:600px){.travel-heading{flex-direction:column;gap:8px}.travel-heading .actions{width:100%}.travel-heading button{flex:1;white-space:nowrap}.travel-frame-wrap{border-radius:10px}.travel-page main{padding-left:8px;padding-right:8px}.travel-page aside{padding:10px 14px}.travel-frame-loading{font-size:11px;padding:10px}}
+body.travel-page {
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.travel-page main {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  padding: 16px 24px;
+  overflow: hidden;
+}
+
+.travel-page header:not(:has(.save-error)) { display: none; }
+.travel-page header:has(.save-error) { flex: none; padding-bottom: 8px; }
+.travel-page #view { min-height: 0; flex: 1; display: flex; flex-direction: column; }
+
+.travel-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex: none;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.travel-heading h1 { margin: 0; font-size: 20px; }
+.travel-heading .actions { gap: 7px; }
+.travel-heading button, .travel-tools summary { font-size: 11px; padding: 6px 10px; }
+.travel-tools { position: relative; margin: 0; }
+.travel-tools summary {
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--paper);
+}
+.travel-tools-menu {
+  display: grid;
+  gap: 3px;
+  position: absolute;
+  z-index: 5;
+  top: calc(100% + 5px);
+  right: 0;
+  min-width: 126px;
+  padding: 5px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--paper);
+  box-shadow: 0 4px 18px #15231b24;
+}
+.travel-tools-menu button { white-space: nowrap; text-align: left; border: 0; }
+
+.travel-frame-wrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+  background: #f6f5ef;
+}
+.travel-frame-wrap iframe { display: block; border: 0; width: 100%; height: 100%; }
+.travel-frame-loading {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  top: 20px;
+  transform: translateX(-50%);
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: white;
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+@media (max-width: 850px) {
+  body.travel-page { display: flex; flex-direction: column; }
+  .travel-page aside { flex: none; padding: 10px 14px; }
+  .travel-page main { flex: 1; height: auto; min-height: 0; padding: 8px; }
+  .travel-heading h1 { font-size: 17px; }
+  .travel-frame-wrap { border-radius: 10px; }
+}
