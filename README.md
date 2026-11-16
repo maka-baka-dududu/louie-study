@@ -9,3 +9,5 @@
 在 GitHub 仓库的 Settings → Pages 中选择 Deploy from a branch，发布 `main` 分支的根目录。
 
 首页与折叠侧栏使用「[奶蛙仰头捧腹大笑](https://naiwa.meme/sticker/s031/)」，素材来源标注为 WencueCryforme / NaiWa-Universe。此处保留原图与 [原项目 MIT 许可](naiwa-LICENSE.txt)。
+
+首页动画使用 liaosongjie / Codex Voice Input 的「[奶蛙捧腹大笑动图](https://naiwa.meme/sticker/s032/)」，附 [MIT 许可](naiwa-motion-LICENSE.txt)。原静图用于暂停及折叠侧栏。

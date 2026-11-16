@@ -48,7 +48,34 @@ function exportData(){const blob=new Blob([JSON.stringify(db,null,2)],{type:'app
 function validData(d){const str=x=>typeof x==='string',num=x=>typeof x==='number'&&Number.isFinite(x),record=x=>x&&typeof x==='object'&&!Array.isArray(x),date=x=>str(x)&&/^\d{4}-\d{2}-\d{2}$/.test(x);return record(d)&&d.version===1&&record(d.settings)&&str(d.settings.school)&&str(d.settings.major)&&(d.settings.date===''||date(d.settings.date))&&num(d.settings.budget)&&d.settings.budget>=20&&d.settings.budget<=720&&num(d.settings.focus)&&d.settings.focus>=1&&d.settings.focus<=180&&record(d.mastery)&&Object.values(d.mastery).every(x=>Number.isInteger(x)&&x>=0&&x<=3)&&['tasks','errors','sessions','mocks','attempts'].every(k=>Array.isArray(d[k])&&d[k].length<50000)&&d.tasks.every(t=>record(t)&&/^[a-zA-Z0-9-]{1,100}$/.test(t.id)&&str(t.title)&&str(t.subject)&&date(t.date)&&num(t.minutes)&&t.minutes>0&&t.minutes<=480&&typeof t.done==='boolean')&&d.errors.every(e=>record(e)&&/^[a-zA-Z0-9-]{1,100}$/.test(e.id)&&str(e.title)&&str(e.prompt)&&str(e.answer)&&str(e.subject)&&str(e.chapter)&&str(e.reason)&&date(e.due)&&Number.isInteger(e.level)&&e.level>=0&&e.level<=5)&&d.sessions.every(s=>record(s)&&date(s.date)&&str(s.subject)&&num(s.minutes)&&s.minutes>0&&s.minutes<=720)&&d.mocks.every(m=>record(m)&&/^[a-zA-Z0-9-]{1,100}$/.test(m.id)&&str(m.title)&&str(m.subject)&&date(m.date)&&str(m.review)&&Number.isFinite(+m.score)&&+m.score>=0&&+m.total>0&&+m.total>=+m.score&&+m.total<=500&&+m.minutes>0&&+m.minutes<=600)&&d.attempts.every(a=>record(a)&&date(a.date)&&typeof a.correct==='boolean'&&Number.isInteger(a.qid)&&a.qid>=0&&a.qid<27)}
 async function importData(file){if(!file)return;if(file.size>10000000)return toast('文件超过10MB，未导入。');try{const d=JSON.parse(await file.text());if(!validData(d))throw Error('invalid');if(!confirm('恢复将替换当前全部学习记录。请确认已导出当前备份，继续恢复？'))return;db=d;save();render();toast('恢复完成。')}catch(e){toast('备份格式不完整或版本不匹配，未修改现有数据。')}}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-page]');if(b)go(b.dataset.page)});
-document.addEventListener('submit',e=>{if(e.target.id==='settingsForm'){e.preventDefault();const d=Object.fromEntries(new FormData(e.target));d.budget=+d.budget;d.focus=+d.focus;db.settings=d;save();render();toast('设置已保存。')}});
+document.addEventListener('submit', async event => {
+  const form = event.target;
+  if (!['settingsForm', 'examSettingsForm'].includes(form.id)) return;
+  event.preventDefault();
+  const fields = new FormData(form);
+  const updated = { ...db.settings };
+  if (form.id === 'examSettingsForm') {
+    updated.school = String(fields.get('school') || '').trim();
+    updated.major = String(fields.get('major') || '').trim();
+    updated.date = String(fields.get('date') || '');
+    updated.budget = Number(fields.get('budget'));
+    if (!updated.school || !updated.major || !Number.isInteger(updated.budget) || updated.budget < 20 || updated.budget > 720) {
+      toast('请填写学校、考试组合和有效的计划预算。');
+      return;
+    }
+  } else {
+    updated.focus = Number(fields.get('focus'));
+    if (!Number.isInteger(updated.focus) || updated.focus < 1 || updated.focus > 180) {
+      toast('请输入 1 至 180 分钟的专注时长。');
+      return;
+    }
+  }
+  db.settings = updated;
+  if (await save()) {
+    render();
+    toast('设置已保存。');
+  }
+});
 $('#modal').addEventListener('close',()=>{if(timer&&!document.querySelector('#resumeFocus')){const b=document.createElement('button');b.id='resumeFocus';b.textContent='继续专注';b.style='position:fixed;right:24px;bottom:24px';b.onclick=drawTimer;document.body.appendChild(b)}else if(!timer)document.querySelector('#resumeFocus')?.remove()});
 // Personal library and learning log. File bodies live in IndexedDB, not localStorage.
 db.materials??=[];db.progress??=[];
@@ -122,7 +149,7 @@ mocksView=function(){return fullMocksView().replace('<h1>把一次模考，变�
 infoCategory='公告';
 const fullInfoView=resourcesView;
 resourcesView=function(){return fullInfoView().replace('<span class="eyebrow">ADMISSIONS / VERIFIED SOURCES</span>','').replace('<p class="muted">只保留会影响报名、考试和择校的重要信息。</p>','').replace('<br><small>定期查询由本机Codex执行，需电脑开机、联网并保持应用运行；网页自身不会在关闭后抓取信息。刷新仅载入已核验内容，不代表已重新联网核验。</small>','').replace(/<div class="note">当前资料范围：[\s\S]*?<\/div>/,`<p class="muted">资料范围：南理工计算机学院相关专硕 / 全国统考</p>`).replace('<section class="card"><h2>最近核验记录</h2>','<section class="card"><details><summary>核验记录</summary>').replace('<small>不能访问原文或不能确认统计口径的信息标为待核实，不用搜索摘要填造录取分数。</small></section>','</details></section>')};
-settingsView=function(){return `<div class="pagehead"><h1>设置</h1></div>${themePicker()}<div class="two"><section class="card"><h2>学习目标</h2><form id="settingsForm"><label>目标学校<input name="school" value="${esc(db.settings.school)}" required maxlength="100"></label><label>专业与考试组合<input name="major" value="${esc(db.settings.major)}" required maxlength="100"></label><label>考试日期<input type="date" name="date" value="${db.settings.date}"></label><div class="formgrid"><label>每日可用分钟<input type="number" min="20" max="720" name="budget" value="${db.settings.budget}" required></label><label>每段专注分钟<input type="number" min="1" max="180" name="focus" value="${db.settings.focus}" required></label></div><button class="primary">保存</button></form></section><section class="card"><h2>数据管理</h2>${localDisk?`<details><summary>文件位置</summary><label>学习记录<span class="local-path">${esc(localDisk.dataPath)}</span></label><label>资料附件<span class="local-path">${esc(localDisk.filesPath)}</span></label></details>`:'<p>学习记录和附件保存在当前浏览器。换设备前可导出完整备份。</p>'}<details><summary>导入与备份</summary><div class="actions" style="margin-top:18px"><button onclick="exportData()">导出完整备份</button><button onclick="document.querySelector('#importFile').click()">导入旧记录 / 备份</button><input id="importFile" type="file" accept="application/json,.json" hidden onchange="importData(this.files[0]);this.value=''"></div><p class="muted">导入会替换当前学习记录。</p></details></section></div>`};
+settingsView=function(){return `<div class="pagehead"><h1>设置</h1></div>${themePicker()}<div class="two"><section class="card"><h2>专注计时</h2><form id="settingsForm"><label>默认专注时长（分钟）<input type="number" min="1" max="180" name="focus" value="${db.settings.focus}" required></label><button class="primary">保存</button></form></section><section class="card"><h2>数据管理</h2>${localDisk?`<details><summary>文件位置</summary><label>学习记录<span class="local-path">${esc(localDisk.dataPath)}</span></label><label>资料附件<span class="local-path">${esc(localDisk.filesPath)}</span></label></details>`:'<p>学习记录和附件保存在当前浏览器。换设备前可导出完整备份。</p>'}<details><summary>导入与备份</summary><div class="actions" style="margin-top:18px"><button onclick="exportData()">导出完整备份</button><button onclick="document.querySelector('#importFile').click()">导入旧记录 / 备份</button><input id="importFile" type="file" accept="application/json,.json" hidden onchange="importData(this.files[0]);this.value=''"></div><p class="muted">导入会替换当前学习记录。</p></details></section></div>`};
 const previousDiskDelete=deleteMaterial;
 deleteMaterial=async function(id){if(!localDisk)return previousDiskDelete(id);if(!confirm('删除这份资料？'))return;const original=db.materials,m=original.find(x=>x.id===id);db.materials=original.filter(x=>x.id!==id);try{await persistCandidate(db)}catch(e){db.materials=original;toast('资料未删除：'+e.message);render();return}closeModal();render();if(m.fileId)fileOp('delete',m.fileId).catch(()=>toast('资料已移出列表，原附件仍保留在本地。'))};
 const themes=[

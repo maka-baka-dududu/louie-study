@@ -22,7 +22,7 @@ function normalizePersonal(){db.personal??={profile:{name:'Louie',intro:'',about
   }
 }
 normalizePersonal();
-Object.assign(labels,{home:'首页',directions:'我的项目',life:'我的项目',about:'关于我',track:'学习方向',divinationGuide:'入门与练习'});
+Object.assign(labels,{home:'首页',directions:'我的项目',life:'我的项目',about:'关于我',track:'学习方向',divinationGuide:'入门与练习',examSettings:'报考设置'});
 let personalTrackId=db.personal.activeTrack||'exam',libraryTrack='all';
 const trackFor=id=>db.personal.tracks.find(t=>t.id===id)||db.personal.tracks[0];
 const recordTrack=r=>r.trackId||(r.materialId&&db.materials.find(m=>m.id===r.materialId)?.trackId)||'exam';
@@ -30,16 +30,16 @@ const trackName=id=>trackFor(id)?.name||'考研';
 const trackOptions=(selected,all=false)=>`${all?'<option value="all">全部方向</option>':''}${db.personal.tracks.map(t=>`<option value="${t.id}" ${t.id===selected?'selected':''}>${esc(t.name)}${t.status==='completed'?' · 已完成':t.paused?' · 已暂停':''}</option>`).join('')}`;
 window.LouiePersonal={matches:m=>libraryTrack==='all'||recordTrack(m)===libraryTrack,subjects:()=>libraryTrack==='all'?[...new Set(db.personal.tracks.flatMap(t=>t.subjects))]:(trackFor(libraryTrack)?.subjects||materialSubjects)};
 const renderBeforePersonal=render;
-render=function(){normalizePersonal();if(!db.personal.tracks.some(t=>t.id===personalTrackId))personalTrackId=db.personal.activeTrack||'exam';const personal=['home','directions','life','about','track','divinationGuide'].includes(page),target=page;if(personal){page='today';renderBeforePersonal();page=target;$('#crumb').textContent=target==='track'?trackName(personalTrackId):labels[target];$('#view').innerHTML=({home:personalHome,directions:directionsView,life:()=>directionsView('life'),about:aboutView,track:trackView,divinationGuide:divinationView})[target]()}else renderBeforePersonal();$('#profile').textContent=db.personal.profile.name||'Louie';renderPersonalNav();if(page==='library'){const toolbar=$('.library-toolbar');if(toolbar&&!navigationProject){const select=document.createElement('select');select.setAttribute('aria-label','资料学习方向');select.innerHTML=trackOptions(libraryTrack,true);select.onchange=()=>{libraryTrack=select.value;librarySubject='全部';render()};toolbar.prepend(select)}}renderNavigationContext()};
+render=function(){normalizePersonal();if(!db.personal.tracks.some(t=>t.id===personalTrackId))personalTrackId=db.personal.activeTrack||'exam';const personal=['home','directions','life','about','track','divinationGuide','examSettings'].includes(page),target=page;if(personal){page='today';renderBeforePersonal();page=target;$('#crumb').textContent=target==='track'?trackName(personalTrackId):labels[target];$('#view').innerHTML=({home:personalHome,directions:directionsView,life:()=>directionsView('life'),about:aboutView,track:trackView,divinationGuide:divinationView,examSettings:examSettingsView})[target]()}else renderBeforePersonal();$('#profile').textContent=db.personal.profile.name||'Louie';renderPersonalNav();if(page==='library'){const toolbar=$('.library-toolbar');if(toolbar&&!navigationProject){const select=document.createElement('select');select.setAttribute('aria-label','资料学习方向');select.innerHTML=trackOptions(libraryTrack,true);select.onchange=()=>{libraryTrack=select.value;librarySubject='全部';render()};toolbar.prepend(select)}}renderNavigationContext()};
 let navigationProject=null;
 const stableNavItems=['home','directions','about','settings'];
-const examToolPages=['knowledge','math','errors','mocks','resources'];
+const examToolPages=['knowledge','math','errors','mocks','resources','examSettings'];
 const projectTools={exam:examToolPages,coding:['algorithms'],guitar:['guitarPractice'],english:['englishPractice'],calligraphy:['calligraphyStudio'],fitness:['fitnessStudio'],divination:['divinationGuide']};
 function projectNavItems(){return navigationProject?['track','today',...(projectTools[navigationProject]||[]).filter(k=>labels[k]),'library','tracking']:stableNavItems}
 function setProjectContext(id){window.LouieTeacherProject?.select(id);navigationProject=id;personalTrackId=id;db.personal.activeTrack=id;libraryTrack=id;librarySubject='全部';librarySearch='';save()}
 function clearProjectContext(){navigationProject=null;resetGlobalLibrary()}
 function activeNavigationPage(){if(navigationProject)return page==='track'?'track':page;return page==='track'?'directions':page}
-function renderPersonalNav(){const nav=$('#nav'),scroll=nav.scrollTop||0,glyph={...navGlyph,home:'⌂',directions:'⊞',life:'↗',about:'○',track:'◫',guitarPractice:'♫',englishPractice:'◉',calligraphyStudio:'永',fitnessStudio:'↗',divinationGuide:'☷'};const project=trackFor(navigationProject);const switcher=navigationProject?`<button class="nav-return" data-page="directions"><span class="nav-glyph">‹</span><span class="nav-label">全部项目</span></button><label class="project-switcher"><span class="nav-label">当前项目</span><select aria-label="切换项目" onchange="openTrack(this.value)">${trackOptions(navigationProject)}</select><span class="project-mark" aria-hidden="true">${esc(project.icon)}</span></label>`:'';nav.innerHTML=switcher+projectNavItems().map(k=>navButton(k,glyph)).join('')+(navigationProject?'<button class="nav-return site-return" data-page="home"><span class="nav-glyph">⌂</span><span class="nav-label">全站首页</span></button>':'');nav.scrollTop=scroll;applySidebar()}
+function renderPersonalNav(){const nav=$('#nav'),scroll=nav.scrollTop||0,glyph={...navGlyph,home:'⌂',directions:'⊞',life:'↗',about:'○',track:'◫',guitarPractice:'♫',englishPractice:'◉',calligraphyStudio:'永',fitnessStudio:'↗',divinationGuide:'☷',examSettings:'⚙'};const project=trackFor(navigationProject);const switcher=navigationProject?`<button class="nav-return" data-page="directions"><span class="nav-glyph">‹</span><span class="nav-label">全部项目</span></button><label class="project-switcher"><span class="nav-label">当前项目</span><select aria-label="切换项目" onchange="openTrack(this.value)">${trackOptions(navigationProject)}</select><span class="project-mark" aria-hidden="true">${esc(project.icon)}</span></label>`:'';nav.innerHTML=switcher+projectNavItems().map(k=>navButton(k,glyph)).join('')+(navigationProject?'<button class="nav-return site-return" data-page="home"><span class="nav-glyph">⌂</span><span class="nav-label">全站首页</span></button>':'');nav.scrollTop=scroll;applySidebar()}
 function renderNavigationContext(){const crumb=$('#crumb');if(!crumb)return;const sep='<span class="crumb-separator" aria-hidden="true">/</span>';if(navigationProject){const t=trackFor(navigationProject);crumb.innerHTML='<button data-page="directions">我的项目</button>'+sep+(page==='track'?`<span>${esc(t.name)}</span>`:`<button onclick="openTrack('${t.id}')">${esc(t.name)}</button>`+sep+`<span>${esc(projectNavLabel(page))}</span>`)}else crumb.textContent=labels[page]||'我的项目'}
 function resetGlobalLibrary(){libraryTrack='all';librarySubject='全部';libraryStatus='全部';librarySearch=''}
 function projectNavLabel(k){if(!navigationProject)return labels[k];return ({track:'项目概览',today:'今日安排',library:'项目资料',tracking:'时间与记录'})[k]||labels[k]}
@@ -48,7 +48,15 @@ window.LouieProjectScope={project:()=>navigationProject,matches:r=>!navigationPr
 function openTrack(id){setProjectContext(id);go('track')}
 function trackLibrary(id){libraryTrack=id;librarySubject='全部';go('library')}
 function projectStatus(t){return t.status||(t.paused?'paused':'active')}
-function personalHome(){const p=db.personal.profile;return `<div class="home-layout"><section class="home-introduction"><div class="home-kicker"><span class="home-status-dot" aria-hidden="true"></span>一个持续生长的个人空间</div><h1>你好，我是<br><span class="home-name">${esc(p.name)}<span class="home-period">.</span></span></h1><p class="home-intro">${esc(p.intro||'学一点新东西，走一段新的路。')}</p><p class="home-description">在这里，专注学习，也给兴趣与生活留些位置。</p></section><div class="home-mascot" aria-hidden="true"><img class="milk-frog" src="naiwa-laugh.jpg" alt="" width="96" height="96"></div><div class="home-gateways"><button class="home-gateway home-project-link" onclick="go('directions')"><span class="home-gateway-icon" aria-hidden="true">⊞</span><span class="home-gateway-copy"><strong>我的项目</strong><span>学习、兴趣与生活计划，从这里继续。</span></span><span class="home-gateway-arrow" aria-hidden="true">↗</span></button><button class="home-gateway" onclick="go('about')"><span class="home-gateway-icon" aria-hidden="true">○</span><span class="home-gateway-copy"><strong>关于我</strong><span>个人介绍、名片与简历。</span></span><span class="home-gateway-arrow" aria-hidden="true">↗</span></button></div></div>`}
+let mascotMoving = !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
+function toggleHomeMascot(button) {
+  mascotMoving = !mascotMoving;
+  button.setAttribute('aria-label', mascotMoving ? '暂停奶蛙动画' : '播放奶蛙动画');
+  button.querySelector('img').src = mascotMoving ? 'naiwa-motion.gif' : 'naiwa-laugh.jpg';
+}
+
+function personalHome(){const p=db.personal.profile;return `<div class="home-layout"><section class="home-introduction"><div class="home-kicker"><span class="home-status-dot" aria-hidden="true"></span>一个持续生长的个人空间</div><h1>你好，我是<br><span class="home-name">${esc(p.name)}<span class="home-period">.</span></span></h1><p class="home-intro">${esc(p.intro||'学一点新东西，走一段新的路。')}</p><p class="home-description">在这里，专注学习，也给兴趣与生活留些位置。</p></section><button class="home-mascot" type="button" aria-label="${mascotMoving ? '暂停奶蛙动画' : '播放奶蛙动画'}" onclick="toggleHomeMascot(this)"><img class="milk-frog" src="${mascotMoving ? 'naiwa-motion.gif' : 'naiwa-laugh.jpg'}" alt="" width="96" height="96"></button><div class="home-gateways"><button class="home-gateway home-project-link" onclick="go('directions')"><span class="home-gateway-icon" aria-hidden="true">⊞</span><span class="home-gateway-copy"><strong>我的项目</strong><span>学习、兴趣与生活计划，从这里继续。</span></span><span class="home-gateway-arrow" aria-hidden="true">↗</span></button><button class="home-gateway" onclick="go('about')"><span class="home-gateway-icon" aria-hidden="true">○</span><span class="home-gateway-copy"><strong>关于我</strong><span>个人介绍、名片与简历。</span></span><span class="home-gateway-arrow" aria-hidden="true">↗</span></button></div></div>`}
 function directionCard(t,showActions=true){const steps=t.milestones||[],done=steps.filter(s=>s.done).length,minutes=db.sessions.filter(s=>recordTrack(s)===t.id).reduce((n,s)=>n+s.minutes,0),status=projectStatus(t);return `<article class="project-card"><button class="direction-card" onclick="openTrack('${t.id}')"><span class="direction-icon">${esc(t.icon)}</span><div><h2>${esc(t.name)}</h2><p>${esc(t.goal||t.subjects.map(subjectLabel).join(' · '))}</p><small>${steps.length?`${done}/${steps.length} 个阶段 · `:''}${minutes?`${(minutes/60).toFixed(1)} 小时`:'尚未记录'}</small></div><span class="direction-arrow">↗</span></button>${showActions?`<div class="project-card-actions"><small>${({active:'进行中',paused:'已暂停',completed:'已完成'})[status]}</small><button onclick="trackForm('${t.id}')">修改状态</button>${status!=='active'?`<button onclick="setProjectStatus('${t.id}','active')">恢复项目</button>`:''}</div>`:''}</article>`}
 async function setProjectStatus(id,status){const t=trackFor(id);if(!t||!['active','paused','completed'].includes(status))return;t.status=status;t.paused=status!=='active';if(await save())render()}
 function directionsView(){const tracks=db.personal.tracks;return `<div class="pagehead"><div><h1>我的项目</h1></div><button class="primary" onclick="trackForm()">＋ 新建项目</button></div><div class="direction-grid">${tracks.filter(t=>projectStatus(t)==='active').map(t=>directionCard(t)).join('')}</div>${['paused','completed'].map(status=>tracks.some(t=>projectStatus(t)===status)?`<section class="project-status-section"><h2>${status==='paused'?'已暂停':'已完成'}</h2><div class="direction-grid">${tracks.filter(t=>projectStatus(t)===status).map(t=>directionCard(t)).join('')}</div></section>`:'').join('')}`}
@@ -224,5 +232,22 @@ function divinationView() {
         <button class="primary" onclick="addDivinationExercise()">安排这项练习</button>
         <button data-page="library">打开项目资料</button>
       </div>
+    </section>`;
+}
+
+
+function examSettingsView() {
+  const { school, major, date, budget } = db.settings;
+  return `<div class="pagehead"><h1>报考设置</h1></div>
+    <section class="card" style="max-width:880px">
+      <form id="examSettingsForm">
+        <div class="formgrid">
+          <label>目标学校<input name="school" value="${esc(school)}" required maxlength="100"></label>
+          <label>专业与考试组合<input name="major" value="${esc(major)}" required maxlength="100"></label>
+          <label>考试日期<input type="date" name="date" value="${esc(date)}"></label>
+          <label>考研每日计划预算（分钟）<input type="number" min="20" max="720" name="budget" value="${budget}" required></label>
+        </div>
+        <button class="primary">保存报考设置</button>
+      </form>
     </section>`;
 }

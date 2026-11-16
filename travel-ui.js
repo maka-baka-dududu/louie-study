@@ -1,6 +1,20 @@
 'use strict';
 const Travel=window.LouieTravelModel;
-function normalizeTravel(){db.travel??=Travel.blank();if(!db.personal.tracks.some(t=>t.id==='travel')&&db.personal.tracks.length<30)db.personal.tracks.push({id:'travel',name:'旅行星球',icon:'◎',kind:'life',subjects:['旅行日记','地球足迹','行程轨迹'],goal:'',milestones:[],paused:false})}
+function normalizeTravel() {
+  db.travel ??= Travel.blank();
+  const tracks = db.personal.tracks;
+  const position = tracks.findIndex(track => track.id === 'travel');
+  if (position > 0) {
+    const [travelProject] = tracks.splice(position, 1);
+    tracks.unshift(travelProject);
+  } else if (position === -1 && tracks.length < 30) {
+    tracks.unshift({
+      id: 'travel', name: '旅行星球', icon: '◎', kind: 'life',
+      subjects: ['旅行日记', '地球足迹', '行程轨迹'],
+      goal: '', milestones: [], paused: false
+    });
+  }
+}
 normalizeTravel();Object.assign(labels,{travelGlobe:'旅行星球',travelJournal:'旅行日记'});Object.assign(navGlyph,{travelGlobe:'◎',travelJournal:'▧'});projectTools.travel=['travelGlobe','travelJournal'];
 let travelFrame=null,travelNonce=null,travelEditing=false,travelIsReady=false,travelBusy=0,travelQueue=Promise.resolve();const travelPhotoCache=new Map();
 const travelTrackActionBefore=window.LouiePractice.trackAction;

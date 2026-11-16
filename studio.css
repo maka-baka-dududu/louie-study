@@ -13,6 +13,7 @@
 .home-mascot {
   justify-self: center;
   width: 116px;
+  padding: 0;
   aspect-ratio: 1;
   display: grid;
   place-items: center;
@@ -22,6 +23,7 @@
   background: #fbf8ef;
   box-shadow: 0 9px 24px #75562910, inset 0 1px 0 #fff;
 }
+.home-mascot:hover { background: #fbf8ef; border-color: var(--green); }
 .milk-frog {
   display: block;
   width: 83%;
