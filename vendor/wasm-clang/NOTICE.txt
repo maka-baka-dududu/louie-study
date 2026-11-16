@@ -1,0 +1,7 @@
+Clang/LLD in WebAssembly by binji / WebAssembly Community Group participants. https://github.com/binji/wasm-clang
+Apache-2.0 (see LICENSE); LLVM compiler and C++ headers/libraries retain their upstream notices.
+shared.js contains Louie judge adapter modifications.
+picojson 1.3.0 by Cybozu Labs and Kazuho Oku: https://github.com/kazuho/picojson; BSD license embedded in picojson.h. Throw sites adapted to abort for this no-exceptions WASM build.
+louie-json.hpp is the site-specific small JSON adapter.
+Compiler adapter adds C++17, disables thread-safe statics, and links LLVM compiler builtins.
+All components execute locally inside the isolated browser worker.

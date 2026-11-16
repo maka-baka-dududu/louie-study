@@ -1,0 +1,3 @@
+Pyodide 0.27.7. Downloaded from the official documented jsDelivr distribution.
+https://pyodide.org/en/0.27.7/usage/downloading-and-deploying.html
+See LICENSE for Pyodide licensing; Python standard library notices are included within its distribution.

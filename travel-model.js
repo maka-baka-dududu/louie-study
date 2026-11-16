@@ -1,0 +1,21 @@
+'use strict';
+// The embedded globe never receives application credentials. This shared model
+// validates the narrow bridge and both legacy and local-file backups.
+const LouieTravelModel=(()=>{
+ const id=v=>typeof v==='string'&&/^[A-Za-z0-9_-]{1,100}$/.test(v),text=(v,n)=>typeof v==='string'&&v.length<=n,arr=(v,n)=>Array.isArray(v)&&v.length<=n;
+ const date=v=>{if(!text(v,10)||!/^\d{4}-\d{2}-\d{2}$/.test(v))return false;const d=new Date(v+'T12:00:00Z');return Number.isFinite(+d)&&d.toISOString().slice(0,10)===v};
+ const image=v=>text(v,12*1024*1024)&&/^data:image\/(jpeg|png|webp);base64,[a-z0-9+/]+=*$/i.test(v);
+ const pos=v=>v&&Number.isFinite(v.lat)&&Math.abs(v.lat)<=90&&Number.isFinite(v.lng)&&Math.abs(v.lng)<=180;
+ const photos=(v,stored)=>arr(v,12)&&v.every(stored?id:image);
+ function entry(v,stored=false){return !!(v&&id(v.id)&&text(v.place,100)&&v.place.trim()&&pos(v)&&date(v.date)&&['visited','wish'].includes(v.status)&&text(v.title,140)&&text(v.story,20000)&&photos(stored?v.photoIds:v.photos,stored)&&(!v.endDate||date(v.endDate)&&v.endDate>=v.date)&&(v.markerStyle===undefined||['auto','pin','flag','heart','star'].includes(v.markerStyle)))}
+ function route(v){return !!(v&&id(v.id)&&['plane','ship','train','car','bus','walk','bike'].includes(v.mode)&&pos(v.from)&&pos(v.to)&&text(v.from.place,100)&&v.from.place.trim()&&text(v.to.place,100)&&v.to.place.trim()&&text(v.start,16)&&text(v.end,16)&&/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(v.start)&&/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(v.end)&&date(v.start.slice(0,10))&&date(v.end.slice(0,10))&&Number.isFinite(Date.parse(v.start))&&Date.parse(v.end)>Date.parse(v.start)&&text(v.label,140)&&text(v.note,5000)&&arr(v.via,200)&&v.via.every(pos)&&arr(v.track,3000)&&v.track.every(p=>pos(p)&&(p.ele===undefined||Number.isFinite(p.ele))&&(p.time===undefined||text(p.time,100)&&Number.isFinite(Date.parse(p.time)))))}
+ function note(v,stored=false){return !!(v&&id(v.id)&&text(v.title,140)&&v.title.trim()&&text(v.content,50000)&&date(v.date)&&['日常','灵感','学习','其他'].includes(v.category)&&arr(v.tags,12)&&v.tags.every(t=>text(t,200))&&photos(stored?v.photoIds:v.photos,stored))}
+ function profile(v,stored=false){return !!(v&&text(v.name,40)&&v.name.trim()&&text(v.bio,5000)&&text(v.headline,100)&&text(v.location,80)&&arr(v.tags,12)&&v.tags.every(t=>text(t,200))&&text(v.email,200)&&!/[\r\n]/.test(v.email)&&text(v.link,500)&&(!v.link||/^https?:\/\//i.test(v.link))&&(stored?!v.avatarId||id(v.avatarId):!v.avatar||image(v.avatar)))}
+ const unique=xs=>new Set(xs.map(x=>x.id)).size===xs.length;
+ function canonical(v){try{return !!(v&&v.version===1&&arr(v.entries,3000)&&unique(v.entries)&&v.entries.every(e=>entry(e,true))&&arr(v.routes,4000)&&unique(v.routes)&&v.routes.every(route)&&arr(v.legacyNotes,5000)&&unique(v.legacyNotes)&&v.legacyNotes.every(n=>note(n,true))&&(!v.legacyProfile||profile(v.legacyProfile,true))&&v.preferences&&['space','day','dusk'].includes(v.preferences.globeScene)&&['smart','frequency','recency','duration'].includes(v.preferences.markerMetric)&&v.trash&&arr(v.trash.entries,3000)&&unique(v.trash.entries)&&v.trash.entries.every(e=>entry(e,true))&&arr(v.trash.routes,4000)&&unique(v.trash.routes)&&v.trash.routes.every(route))}catch(_){return false}}
+ function backup(v){try{return !!(v&&['我的小站','去过','旅行星球'].includes(v.app)&&arr(v.entries,3000)&&unique(v.entries)&&v.entries.every(e=>entry(e))&&(v.routes===undefined||arr(v.routes,4000)&&unique(v.routes)&&v.routes.every(route))&&(v.notes===undefined||arr(v.notes,5000)&&unique(v.notes)&&v.notes.every(n=>note(n)))&&(!v.profile||profile(v.profile))&&(!v.louieTrash||arr(v.louieTrash.entries,3000)&&unique(v.louieTrash.entries)&&v.louieTrash.entries.every(e=>entry(e))&&arr(v.louieTrash.routes,4000)&&unique(v.louieTrash.routes)&&v.louieTrash.routes.every(route)))}catch(_){return false}}
+ function photoIds(v){return [...new Set([...v.entries,...v.trash.entries,...v.legacyNotes].flatMap(e=>e.photoIds||[]).concat(v.legacyProfile?.avatarId?[v.legacyProfile.avatarId]:[]))]}
+ const blank=()=>({version:1,entries:[],routes:[],legacyNotes:[],legacyProfile:null,preferences:{globeScene:'space',markerMetric:'smart'},trash:{entries:[],routes:[]}});
+ return {id,text,date,image,entry,route,note,profile,canonical,backup,photoIds,blank};
+})();
+window.LouieTravelModel=LouieTravelModel;

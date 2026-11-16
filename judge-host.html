@@ -1,0 +1,7 @@
+<!doctype html><meta charset="utf-8"><script>
+const asset = path => new URL(path, location.href).href;
+const policy = document.createElement('meta');
+policy.httpEquiv = 'Content-Security-Policy';
+policy.content = `default-src 'none'; script-src 'unsafe-eval' 'wasm-unsafe-eval' blob: ${asset('judge-host.js')} ${asset('vendor/pyodide/')} ${asset('vendor/wasm-clang/')}; worker-src blob:; connect-src ${asset('judge-worker.js')} ${asset('vendor/pyodide/')} ${asset('vendor/wasm-clang/')}; base-uri 'none'; form-action 'none'`;
+document.head.appendChild(policy);
+</script><script src="judge-host.js"></script>
