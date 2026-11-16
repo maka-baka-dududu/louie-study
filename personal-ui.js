@@ -10,9 +10,19 @@ const trackTemplates=[
  {id:'fitness',name:'健身',icon:'↗',kind:'life',subjects:['力量训练','有氧','拉伸','活动恢复']},
  {id:'japanese',name:'日语',icon:'あ',kind:'study',subjects:['假名','词汇','语法','听力','会话'],paused:true}
 ];
-function normalizePersonal(){db.personal??={profile:{name:'Louie',intro:'',about:'',links:[]},tracks:trackTemplates.map(t=>({...t,subjects:[...t.subjects],goal:'',milestones:[]})),activeTrack:'exam'};db.personal.profile.links??=[];db.personal.activeTrack??='exam';}
+const divinationProject = {
+  id:'divination', name:'玄学', icon:'☯', kind:'study',
+  subjects:['六爻','小六壬','梅花易数','八卦'],
+  goal:'读原典，练习识卦和排卦，记录不同流派的规则。'
+};
+function normalizePersonal(){db.personal??={profile:{name:'Louie',intro:'',about:'',links:[]},tracks:trackTemplates.map(t=>({...t,subjects:[...t.subjects],goal:'',milestones:[]})),activeTrack:'exam'};db.personal.profile.links??=[];db.personal.activeTrack??='exam';
+  const tracks=db.personal.tracks;
+  if(tracks.length<30&&!tracks.some(track=>track.id===divinationProject.id)){
+    tracks.push({...divinationProject,subjects:[...divinationProject.subjects],milestones:[]});
+  }
+}
 normalizePersonal();
-Object.assign(labels,{home:'首页',directions:'我的项目',life:'我的项目',about:'关于我',track:'学习方向'});
+Object.assign(labels,{home:'首页',directions:'我的项目',life:'我的项目',about:'关于我',track:'学习方向',divinationGuide:'入门与练习'});
 let personalTrackId=db.personal.activeTrack||'exam',libraryTrack='all';
 const trackFor=id=>db.personal.tracks.find(t=>t.id===id)||db.personal.tracks[0];
 const recordTrack=r=>r.trackId||(r.materialId&&db.materials.find(m=>m.id===r.materialId)?.trackId)||'exam';
@@ -20,16 +30,16 @@ const trackName=id=>trackFor(id)?.name||'考研';
 const trackOptions=(selected,all=false)=>`${all?'<option value="all">全部方向</option>':''}${db.personal.tracks.map(t=>`<option value="${t.id}" ${t.id===selected?'selected':''}>${esc(t.name)}${t.status==='completed'?' · 已完成':t.paused?' · 已暂停':''}</option>`).join('')}`;
 window.LouiePersonal={matches:m=>libraryTrack==='all'||recordTrack(m)===libraryTrack,subjects:()=>libraryTrack==='all'?[...new Set(db.personal.tracks.flatMap(t=>t.subjects))]:(trackFor(libraryTrack)?.subjects||materialSubjects)};
 const renderBeforePersonal=render;
-render=function(){normalizePersonal();if(!db.personal.tracks.some(t=>t.id===personalTrackId))personalTrackId=db.personal.activeTrack||'exam';const personal=['home','directions','life','about','track'].includes(page),target=page;if(personal){page='today';renderBeforePersonal();page=target;$('#crumb').textContent=target==='track'?trackName(personalTrackId):labels[target];$('#view').innerHTML=({home:personalHome,directions:directionsView,life:()=>directionsView('life'),about:aboutView,track:trackView})[target]()}else renderBeforePersonal();$('#profile').textContent=db.personal.profile.name||'Louie';renderPersonalNav();if(page==='library'){const toolbar=$('.library-toolbar');if(toolbar&&!navigationProject){const select=document.createElement('select');select.setAttribute('aria-label','资料学习方向');select.innerHTML=trackOptions(libraryTrack,true);select.onchange=()=>{libraryTrack=select.value;librarySubject='全部';render()};toolbar.prepend(select)}}renderNavigationContext()};
+render=function(){normalizePersonal();if(!db.personal.tracks.some(t=>t.id===personalTrackId))personalTrackId=db.personal.activeTrack||'exam';const personal=['home','directions','life','about','track','divinationGuide'].includes(page),target=page;if(personal){page='today';renderBeforePersonal();page=target;$('#crumb').textContent=target==='track'?trackName(personalTrackId):labels[target];$('#view').innerHTML=({home:personalHome,directions:directionsView,life:()=>directionsView('life'),about:aboutView,track:trackView,divinationGuide:divinationView})[target]()}else renderBeforePersonal();$('#profile').textContent=db.personal.profile.name||'Louie';renderPersonalNav();if(page==='library'){const toolbar=$('.library-toolbar');if(toolbar&&!navigationProject){const select=document.createElement('select');select.setAttribute('aria-label','资料学习方向');select.innerHTML=trackOptions(libraryTrack,true);select.onchange=()=>{libraryTrack=select.value;librarySubject='全部';render()};toolbar.prepend(select)}}renderNavigationContext()};
 let navigationProject=null;
 const stableNavItems=['home','directions','about','settings'];
 const examToolPages=['knowledge','math','errors','mocks','resources'];
-const projectTools={exam:examToolPages,coding:['algorithms'],guitar:['guitarPractice'],english:['englishPractice'],calligraphy:['calligraphyStudio'],fitness:['fitnessStudio']};
+const projectTools={exam:examToolPages,coding:['algorithms'],guitar:['guitarPractice'],english:['englishPractice'],calligraphy:['calligraphyStudio'],fitness:['fitnessStudio'],divination:['divinationGuide']};
 function projectNavItems(){return navigationProject?['track','today',...(projectTools[navigationProject]||[]).filter(k=>labels[k]),'library','tracking']:stableNavItems}
 function setProjectContext(id){window.LouieTeacherProject?.select(id);navigationProject=id;personalTrackId=id;db.personal.activeTrack=id;libraryTrack=id;librarySubject='全部';librarySearch='';save()}
 function clearProjectContext(){navigationProject=null;resetGlobalLibrary()}
 function activeNavigationPage(){if(navigationProject)return page==='track'?'track':page;return page==='track'?'directions':page}
-function renderPersonalNav(){const nav=$('#nav'),scroll=nav.scrollTop||0,glyph={...navGlyph,home:'⌂',directions:'⊞',life:'↗',about:'○',track:'◫',guitarPractice:'♫',englishPractice:'◉',calligraphyStudio:'永',fitnessStudio:'↗'};const project=trackFor(navigationProject);const switcher=navigationProject?`<button class="nav-return" data-page="directions"><span class="nav-glyph">‹</span><span class="nav-label">全部项目</span></button><label class="project-switcher"><span class="nav-label">当前项目</span><select aria-label="切换项目" onchange="openTrack(this.value)">${trackOptions(navigationProject)}</select><span class="project-mark" aria-hidden="true">${esc(project.icon)}</span></label>`:'';nav.innerHTML=switcher+projectNavItems().map(k=>navButton(k,glyph)).join('')+(navigationProject?'<button class="nav-return site-return" data-page="home"><span class="nav-glyph">⌂</span><span class="nav-label">全站首页</span></button>':'');nav.scrollTop=scroll;applySidebar()}
+function renderPersonalNav(){const nav=$('#nav'),scroll=nav.scrollTop||0,glyph={...navGlyph,home:'⌂',directions:'⊞',life:'↗',about:'○',track:'◫',guitarPractice:'♫',englishPractice:'◉',calligraphyStudio:'永',fitnessStudio:'↗',divinationGuide:'☷'};const project=trackFor(navigationProject);const switcher=navigationProject?`<button class="nav-return" data-page="directions"><span class="nav-glyph">‹</span><span class="nav-label">全部项目</span></button><label class="project-switcher"><span class="nav-label">当前项目</span><select aria-label="切换项目" onchange="openTrack(this.value)">${trackOptions(navigationProject)}</select><span class="project-mark" aria-hidden="true">${esc(project.icon)}</span></label>`:'';nav.innerHTML=switcher+projectNavItems().map(k=>navButton(k,glyph)).join('')+(navigationProject?'<button class="nav-return site-return" data-page="home"><span class="nav-glyph">⌂</span><span class="nav-label">全站首页</span></button>':'');nav.scrollTop=scroll;applySidebar()}
 function renderNavigationContext(){const crumb=$('#crumb');if(!crumb)return;const sep='<span class="crumb-separator" aria-hidden="true">/</span>';if(navigationProject){const t=trackFor(navigationProject);crumb.innerHTML='<button data-page="directions">我的项目</button>'+sep+(page==='track'?`<span>${esc(t.name)}</span>`:`<button onclick="openTrack('${t.id}')">${esc(t.name)}</button>`+sep+`<span>${esc(projectNavLabel(page))}</span>`)}else crumb.textContent=labels[page]||'我的项目'}
 function resetGlobalLibrary(){libraryTrack='all';librarySubject='全部';libraryStatus='全部';librarySearch=''}
 function projectNavLabel(k){if(!navigationProject)return labels[k];return ({track:'项目概览',today:'今日安排',library:'项目资料',tracking:'时间与记录'})[k]||labels[k]}
@@ -38,17 +48,11 @@ window.LouieProjectScope={project:()=>navigationProject,matches:r=>!navigationPr
 function openTrack(id){setProjectContext(id);go('track')}
 function trackLibrary(id){libraryTrack=id;librarySubject='全部';go('library')}
 function projectStatus(t){return t.status||(t.paused?'paused':'active')}
-function personalHome(){const p=db.personal.profile;return `<div class="home-layout"><section class="home-introduction"><div class="home-kicker"><span class="home-status-dot" aria-hidden="true"></span>一个持续生长的个人空间</div><h1>你好，我是<br><span class="home-name">${esc(p.name)}<span class="home-period">.</span></span></h1><p class="home-intro">${esc(p.intro||'学一点新东西，走一段新的路。')}</p><p class="home-description">在这里，专注学习，也给兴趣与生活留些位置。</p></section><div class="home-mascot" aria-hidden="true"><span class="milk-frog" aria-hidden="true">
-  <i class="milk-frog-body"></i><i class="milk-frog-belly"></i>
-  <i class="milk-frog-foot left"></i><i class="milk-frog-foot right"></i>
-  <i class="milk-frog-eye left"></i><i class="milk-frog-eye right"></i>
-  <i class="milk-frog-mouth"></i>
-  <i class="milk-frog-hand left"></i><i class="milk-frog-hand right"></i>
-</span></div><div class="home-gateways"><button class="home-gateway home-project-link" onclick="go('directions')"><span class="home-gateway-icon" aria-hidden="true">⊞</span><span class="home-gateway-copy"><strong>我的项目</strong><span>学习、兴趣与生活计划，从这里继续。</span></span><span class="home-gateway-arrow" aria-hidden="true">↗</span></button><button class="home-gateway" onclick="go('about')"><span class="home-gateway-icon" aria-hidden="true">○</span><span class="home-gateway-copy"><strong>关于我</strong><span>个人介绍、名片与简历。</span></span><span class="home-gateway-arrow" aria-hidden="true">↗</span></button></div></div>`}
+function personalHome(){const p=db.personal.profile;return `<div class="home-layout"><section class="home-introduction"><div class="home-kicker"><span class="home-status-dot" aria-hidden="true"></span>一个持续生长的个人空间</div><h1>你好，我是<br><span class="home-name">${esc(p.name)}<span class="home-period">.</span></span></h1><p class="home-intro">${esc(p.intro||'学一点新东西，走一段新的路。')}</p><p class="home-description">在这里，专注学习，也给兴趣与生活留些位置。</p></section><div class="home-mascot" aria-hidden="true"><img class="milk-frog" src="naiwa-laugh.jpg" alt="" width="96" height="96"></div><div class="home-gateways"><button class="home-gateway home-project-link" onclick="go('directions')"><span class="home-gateway-icon" aria-hidden="true">⊞</span><span class="home-gateway-copy"><strong>我的项目</strong><span>学习、兴趣与生活计划，从这里继续。</span></span><span class="home-gateway-arrow" aria-hidden="true">↗</span></button><button class="home-gateway" onclick="go('about')"><span class="home-gateway-icon" aria-hidden="true">○</span><span class="home-gateway-copy"><strong>关于我</strong><span>个人介绍、名片与简历。</span></span><span class="home-gateway-arrow" aria-hidden="true">↗</span></button></div></div>`}
 function directionCard(t,showActions=true){const steps=t.milestones||[],done=steps.filter(s=>s.done).length,minutes=db.sessions.filter(s=>recordTrack(s)===t.id).reduce((n,s)=>n+s.minutes,0),status=projectStatus(t);return `<article class="project-card"><button class="direction-card" onclick="openTrack('${t.id}')"><span class="direction-icon">${esc(t.icon)}</span><div><h2>${esc(t.name)}</h2><p>${esc(t.goal||t.subjects.map(subjectLabel).join(' · '))}</p><small>${steps.length?`${done}/${steps.length} 个阶段 · `:''}${minutes?`${(minutes/60).toFixed(1)} 小时`:'尚未记录'}</small></div><span class="direction-arrow">↗</span></button>${showActions?`<div class="project-card-actions"><small>${({active:'进行中',paused:'已暂停',completed:'已完成'})[status]}</small><button onclick="trackForm('${t.id}')">修改状态</button>${status!=='active'?`<button onclick="setProjectStatus('${t.id}','active')">恢复项目</button>`:''}</div>`:''}</article>`}
 async function setProjectStatus(id,status){const t=trackFor(id);if(!t||!['active','paused','completed'].includes(status))return;t.status=status;t.paused=status!=='active';if(await save())render()}
 function directionsView(){const tracks=db.personal.tracks;return `<div class="pagehead"><div><h1>我的项目</h1></div><button class="primary" onclick="trackForm()">＋ 新建项目</button></div><div class="direction-grid">${tracks.filter(t=>projectStatus(t)==='active').map(t=>directionCard(t)).join('')}</div>${['paused','completed'].map(status=>tracks.some(t=>projectStatus(t)===status)?`<section class="project-status-section"><h2>${status==='paused'?'已暂停':'已完成'}</h2><div class="direction-grid">${tracks.filter(t=>projectStatus(t)===status).map(t=>directionCard(t)).join('')}</div></section>`:'').join('')}`}
-function trackView(){const t=trackFor(personalTrackId);if(!t)return directionsView();const records=db.sessions.map((s,i)=>({s,i})).filter(x=>recordTrack(x.s)===t.id).slice(-8).reverse(),tasks=db.tasks.filter(x=>recordTrack(x)===t.id&&x.date===today()),steps=t.milestones||[];return `<div class="pagehead"><div><span class="eyebrow">${t.kind==='life'?'LIFE':'LEARNING'}</span><h1>${esc(t.name)}</h1>${t.goal?`<p class="muted">${esc(t.goal)}</p>`:''}</div><div class="actions"><button onclick="trackForm('${t.id}')">编辑方向</button><button class="primary" onclick="taskForm('${t.id}')">＋ 安排任务</button></div></div><div class="track-actions">${window.LouiePractice?.trackAction(t.id)||''}<button onclick="trackLibrary('${t.id}')">▤ 资料 <small>${db.materials.filter(m=>recordTrack(m)===t.id).length}</small></button><button onclick="sessionForm(undefined,'${t.id}')">◷ 记录练习</button><button onclick="materialFormForTrack('${t.id}')">＋ 添加资料</button>${t.id==='coding'?'<button onclick="go(\'algorithms\')">⌘ 算法题</button>':''}${t.id==='exam'?examToolPages.map(k=>`<button data-page="${k}">${labels[k]}</button>`).join(''):''}</div><div class="two"><section class="card"><div class="actions" style="justify-content:space-between"><h2>阶段目标</h2><button onclick="milestoneForm('${t.id}')">＋ 添加</button></div>${steps.length?steps.map(s=>`<div class="row"><label class="check"><input type="checkbox" ${s.done?'checked':''} onchange="toggleMilestone('${t.id}','${s.id}')"><span class="${s.done?'done':''}">${esc(s.title)}</span></label><button aria-label="删除阶段目标" onclick="removeMilestone('${t.id}','${s.id}')">×</button></div>`).join(''):'<p class="empty">设一个具体、可以完成的小目标。</p>'}</section><section class="card"><h2>今天的安排</h2>${tasks.length?tasks.map(x=>`<div class="row"><span class="${x.done?'done':''}">${esc(x.title)}</span><small>${x.minutes} 分钟</small></div>`).join(''):'<p class="empty">今天还没有这个方向的任务。</p>'}</section></div><section class="card"><div class="actions" style="justify-content:space-between"><h2>最近练习</h2><button onclick="sessionForm(undefined,'${t.id}')">＋ 记录</button></div>${records.length?records.map(({s,i})=>`<div class="row"><div><b>${esc(subjectLabel(s.subject))}</b><small> · ${esc(s.date)} · ${s.minutes} 分钟</small><p class="session-note">${esc(s.note||'')}</p></div><button onclick="sessionForm(${i})">编辑</button></div>`).join(''):'<p class="empty">完成练习后，记下这次做了什么和下次从哪里继续。</p>'}</section>`}
+function trackView(){const t=trackFor(personalTrackId);if(!t)return directionsView();const records=db.sessions.map((s,i)=>({s,i})).filter(x=>recordTrack(x.s)===t.id).slice(-8).reverse(),tasks=db.tasks.filter(x=>recordTrack(x)===t.id&&x.date===today()),steps=t.milestones||[];return `<div class="pagehead"><div><span class="eyebrow">${t.kind==='life'?'LIFE':'LEARNING'}</span><h1>${esc(t.name)}</h1>${t.goal?`<p class="muted">${esc(t.goal)}</p>`:''}</div><div class="actions"><button onclick="trackForm('${t.id}')">编辑方向</button><button class="primary" onclick="taskForm('${t.id}')">＋ 安排任务</button></div></div><div class="track-actions">${t.id==='divination'?'<button class="primary" data-page="divinationGuide">入门与练习</button>':(window.LouiePractice?.trackAction(t.id)||'')}<button onclick="trackLibrary('${t.id}')">▤ 资料 <small>${db.materials.filter(m=>recordTrack(m)===t.id).length}</small></button><button onclick="sessionForm(undefined,'${t.id}')">◷ 记录练习</button><button onclick="materialFormForTrack('${t.id}')">＋ 添加资料</button>${t.id==='coding'?'<button onclick="go(\'algorithms\')">⌘ 算法题</button>':''}${t.id==='exam'?examToolPages.map(k=>`<button data-page="${k}">${labels[k]}</button>`).join(''):''}</div><div class="two"><section class="card"><div class="actions" style="justify-content:space-between"><h2>阶段目标</h2><button onclick="milestoneForm('${t.id}')">＋ 添加</button></div>${steps.length?steps.map(s=>`<div class="row"><label class="check"><input type="checkbox" ${s.done?'checked':''} onchange="toggleMilestone('${t.id}','${s.id}')"><span class="${s.done?'done':''}">${esc(s.title)}</span></label><button aria-label="删除阶段目标" onclick="removeMilestone('${t.id}','${s.id}')">×</button></div>`).join(''):'<p class="empty">设一个具体、可以完成的小目标。</p>'}</section><section class="card"><h2>今天的安排</h2>${tasks.length?tasks.map(x=>`<div class="row"><span class="${x.done?'done':''}">${esc(x.title)}</span><small>${x.minutes} 分钟</small></div>`).join(''):'<p class="empty">今天还没有这个方向的任务。</p>'}</section></div><section class="card"><div class="actions" style="justify-content:space-between"><h2>最近练习</h2><button onclick="sessionForm(undefined,'${t.id}')">＋ 记录</button></div>${records.length?records.map(({s,i})=>`<div class="row"><div><b>${esc(subjectLabel(s.subject))}</b><small> · ${esc(s.date)} · ${s.minutes} 分钟</small><p class="session-note">${esc(s.note||'')}</p></div><button onclick="sessionForm(${i})">编辑</button></div>`).join(''):'<p class="empty">完成练习后，记下这次做了什么和下次从哪里继续。</p>'}</section>`}
 function aboutView(){const p=db.personal.profile;return `<section class="personal-hero about-hero"><span class="eyebrow">ABOUT ME</span><h1>${esc(p.name)}<span>.</span></h1><p>${esc(p.intro||'在这里写一句你的介绍。')}</p><button onclick="profileForm()">编辑介绍</button></section><section class="card about-copy">${p.about?`<p style="white-space:pre-wrap">${esc(p.about)}</p>`:'<p class="muted">兴趣、经历、想做的事，写你想留下的内容。</p>'}${p.links.map(l=>`<p><a href="${esc(l.url)}" target="_blank" rel="noopener noreferrer">${esc(l.title)} ↗</a></p>`).join('')}</section>`}
 function profileForm(){const p=db.personal.profile;show(`<h2>关于我</h2><form id="personalProfileForm"><label>名字<input name="name" required maxlength="40" value="${esc(p.name)}"></label><label>一句话介绍<input name="intro" maxlength="180" value="${esc(p.intro)}"></label><label>自我介绍<textarea name="about" maxlength="6000" style="min-height:160px">${esc(p.about)}</textarea></label><label>个人链接名称<input name="linkTitle" maxlength="60" value="${esc(p.links[0]?.title||'')}"></label><label>个人链接网址<input name="linkURL" type="url" value="${esc(p.links[0]?.url||'')}" placeholder="https://…"></label><button class="primary">保存</button></form>`);$('#personalProfileForm').onsubmit=e=>{e.preventDefault();const f=new FormData(e.target),url=String(f.get('linkURL')).trim();if(url&&!/^https?:\/\//i.test(url))return toast('链接请使用 http 或 https。');db.personal.profile={...p,name:String(f.get('name')).trim(),intro:String(f.get('intro')).trim(),about:String(f.get('about')).trim(),links:url?[{title:String(f.get('linkTitle')).trim()||'个人链接',url}]:[]};save();closeModal();render()}}
 function trackForm(id,kind='study'){const t=id?trackFor(id):{name:'',goal:'',kind,subjects:[],paused:false};show(`<h2>${id?'编辑':'新建'}项目</h2><form id="trackForm"><label>项目名称<input name="name" maxlength="30" required value="${esc(t.name)}"></label><label>当前目标<input name="goal" maxlength="240" value="${esc(t.goal)}" placeholder="例如：完整弹下第一首指弹曲"></label><label>分类（用逗号分开）<input name="subjects" maxlength="600" value="${esc(t.subjects.map(subjectLabel).join('，'))}" ${id==='exam'?'readonly':''} placeholder="基本功，曲目练习，乐理"></label><label>项目状态<select name="status">${opts(['进行中','已暂停','已完成'],({active:'进行中',paused:'已暂停',completed:'已完成'})[projectStatus(t)])}</select></label><button class="primary">保存项目</button></form>`);$('#trackForm').onsubmit=e=>{e.preventDefault();const f=new FormData(e.target),names=String(f.get('subjects')).split(/[,，、]/).map(s=>s.trim()).filter(Boolean);if(names.some(n=>n.length>100))return toast('每个分类最多100个字。');if(names.length>20)return toast('分类最多20个。');const data={name:String(f.get('name')).trim(),goal:String(f.get('goal')).trim(),kind:t.kind||kind,status:({'进行中':'active','已暂停':'paused','已完成':'completed'})[f.get('status')||'进行中'],paused:f.get('status')==='已暂停'||f.get('status')==='已完成'};if(!data.name)return;if(id){Object.assign(t,data);if(id!=='exam')t.subjects=names.length?[...new Set(names)]:[data.name]}else{if(db.personal.tracks.length>=30)return toast('方向最多30个。');db.personal.tracks.push({...data,id:uid(),icon:'✦',subjects:names.length?[...new Set(names)]:[data.name],milestones:[]})}save();closeModal();render()}}
@@ -144,3 +148,81 @@ plan=async function(){
   if(await save()){render();toast('已按时间预算安排，可编辑任务调整内容。')}
 };
 render();window.LouieScheduleReady=true;
+
+// The guide uses the existing project tasks and library for practice and notes.
+const divinationTopics = [
+  {
+    name: '六爻',
+    introduction: '先认识六个爻位：从下往上依次记初、二、三、四、五、上。下三爻组成下卦，上三爻组成上卦。接着练习区分本卦和变卦，再学纳甲、世应和六亲。',
+    example: '从下往上记「阳、阴、阴、阳、阳、阳」，下卦为震，上卦为乾。先画出来，再上下对照。',
+    exercise: '从下往上画六个爻，标出初爻、上爻以及上下卦',
+    source: ['《周易·说卦》','https://ctext.org/book-of-changes/shuo-gua/zh']
+  },
+  {
+    name: '小六壬',
+    introduction: '先把大安、留连、速喜、赤口、小吉、空亡排成一圈。学习起课时，先注明参考的是哪一套规则，再写月、日、时各从哪里起数。',
+    example: '只练六宫顺序：从大安起，按「起点算第一」数到第三位，是速喜。这一步只用于熟悉顺序。',
+    exercise: '默写六宫顺序，练习从不同位置起数并标注计数规则'
+  },
+  {
+    name: '梅花易数',
+    introduction: '先熟悉《梅花易数》中的卦数顺序。学会分别取上卦、下卦和动爻，再读书中的「观梅占」例子。',
+    example: '观梅占原例中，年、月、日数合为 34，除以 8 余 2 取兑为上卦。加时数后为 43，除以 8 余 3 取离为下卦，除以 6 余 1 为初爻动。',
+    exercise: '手算观梅占原例，写出上下卦、三个余数和动爻',
+    source: ['《梅花易数》卷一','https://ctext.org/wiki.pl?chapter=957339&if=gb&remap=gb']
+  },
+  {
+    name: '八卦',
+    introduction: '先把八个卦画和天、泽、火、雷、风、水、山、地对上。这里按《梅花易数》卷一的卦数排列。学方位时再区分先天与后天。',
+    example: '震和艮都是一阳两阴。震的阳爻在最下面，艮的阳爻在最上面。',
+    exercise: '画出八卦，默写每卦对应的自然物象',
+    source: ['《周易·说卦》','https://ctext.org/book-of-changes/shuo-gua/zh']
+  }
+];
+const divinationTrigrams = [
+  ['☰','乾','天'], ['☱','兑','泽'], ['☲','离','火'], ['☳','震','雷'],
+  ['☴','巽','风'], ['☵','坎','水'], ['☶','艮','山'], ['☷','坤','地']
+];
+let divinationTopicIndex = 0;
+
+function selectDivinationTopic(index) {
+  if (!divinationTopics[index]) return;
+  divinationTopicIndex = index;
+  render();
+  $('#divinationTopic' + index)?.focus();
+}
+
+function addDivinationExercise() {
+  if (navigationProject !== divinationProject.id) return;
+  const topic = divinationTopics[divinationTopicIndex];
+  taskForm(divinationProject.id);
+  const form = $('#personalTaskForm');
+  if (!form?.elements) return;
+  form.elements.title.value = topic.exercise;
+  const select = form.elements.subject;
+  if ([...select.options].some(option => option.value === topic.name)) select.value = topic.name;
+}
+
+function divinationView() {
+  const topic = divinationTopics[divinationTopicIndex];
+  const trigrams = divinationTopicIndex === 3
+    ? `<div class="divination-trigrams">${divinationTrigrams.map(([symbol,name,image],index)=>
+      `<div class="divination-trigram"><b>${symbol}</b><span>${name} · ${image}</span><small>${index+1}</small></div>`).join('')}</div>`
+    : '';
+  return `<div class="pagehead"><h1>入门与练习</h1></div>
+    <div class="actions divination-topics" aria-label="入门主题">
+      ${divinationTopics.map(({name},index)=>`<button id="divinationTopic${index}" aria-pressed="${index===divinationTopicIndex}" onclick="selectDivinationTopic(${index})">${name}</button>`).join('')}
+    </div>
+    <section class="card divination-guide">
+      <h2>${topic.name}</h2>
+      <p>${topic.introduction}</p>
+      ${trigrams}
+      <div class="divination-example"><strong>例子</strong><br>${topic.example}</div>
+      <p><strong>练习</strong> · ${topic.exercise}</p>
+      ${topic.source?`<a href="${topic.source[1]}" target="_blank" rel="noopener noreferrer">读原文 ${topic.source[0]} ↗</a>`:''}
+      <div class="actions">
+        <button class="primary" onclick="addDivinationExercise()">安排这项练习</button>
+        <button data-page="library">打开项目资料</button>
+      </div>
+    </section>`;
+}
