@@ -16,13 +16,18 @@ function normalizeTravel() {
   }
 }
 normalizeTravel();Object.assign(labels,{travelGlobe:'旅行星球',travelJournal:'旅行日记'});Object.assign(navGlyph,{travelGlobe:'◎',travelJournal:'▧'});projectTools.travel=['travelGlobe','travelJournal'];
+if (window.LouieTravelPlanReady) {
+  labels.travelPlan = '旅行计划';
+  navGlyph.travelPlan = '☷';
+  projectTools.travel.push('travelPlan');
+}
 let travelFrame=null,travelNonce=null,travelEditing=false,travelIsReady=false,travelBusy=0,travelQueue=Promise.resolve();const travelPhotoCache=new Map();
 const projectNavItemsBeforeTravel = projectNavItems;
 projectNavItems = function () {
   return navigationProject === 'travel' ? projectTools.travel : projectNavItemsBeforeTravel();
 };
 const travelLegacyPages = ['track', 'today', 'library', 'tracking', 'teacher'];
-function isTravelPage(p=page){return ['travelGlobe','travelJournal'].includes(p)}
+function isTravelPage(p=page){return projectTools.travel.includes(p)}
 function sendTravel(message){if(message.kind==='reload'){travelIsReady=false;travelEditing=false;if(travelFrame){travelNonce=uid();travelFrame.src='travel-assets/frame.html?view='+(page==='travelJournal'?'journal':'travel')+'#'+travelNonce;}return}travelFrame?.contentWindow?.postMessage({channel:'louie-travel',nonce:travelNonce,...message},'*')}
 function guardTravelLeave(){if(travelBusy){toast('正在保存旅行记录，请稍候。');return false}if(travelEditing){if(!confirm('旅行编辑尚未保存，离开会丢弃本次填写。继续？'))return false;travelEditing=false;sendTravel({kind:'discard-editors'})}return true}
 const openTrackBeforeTravel = openTrack;
@@ -58,6 +63,23 @@ render = function () {
   if (!isTravelPage(target)) {
     document.body.classList.remove('travel-page');
     renderBeforeTravel();
+    return;
+  }
+  if (target === 'travelPlan') {
+    document.body.classList.remove('travel-page');
+    if (travelFrame) {
+      travelFrame.remove();
+      travelFrame = null;
+      travelNonce = null;
+      travelIsReady = false;
+      travelPhotoCache.clear();
+    }
+    page = 'directions';
+    renderBeforeTravel();
+    page = target;
+    renderTravelPlan();
+    renderPersonalNav();
+    renderNavigationContext();
     return;
   }
   document.body.classList.add('travel-page');

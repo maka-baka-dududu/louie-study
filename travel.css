@@ -82,3 +82,52 @@ body.travel-page {
   .travel-heading h1 { font-size: 17px; }
   .travel-frame-wrap { border-radius: 10px; }
 }
+
+.trip-plan { max-width: 1060px; margin-inline: auto; }
+.trip-plan > h1 { margin-bottom: 4px; }
+.trip-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(235px, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+.trip-stage, .trip-card {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--paper);
+  padding: 14px;
+  margin: 0 0 10px;
+}
+.trip-stage summary { cursor: pointer; font-weight: 700; }
+.trip-stage summary small { margin-inline-start: 6px; font-weight: 400; color: var(--muted); }
+.trip-stage ol { list-style: none; margin: 12px 0 0; padding: 0; }
+.trip-stage li {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 8px;
+  padding-block: 10px;
+  border-top: 1px solid var(--line);
+}
+.trip-day { font-variant-numeric: tabular-nums; font-weight: 700; }
+.trip-stage h3, .trip-stage p { margin: 0 0 3px; }
+.trip-stage h3, .trip-card h2 { font-size: 15px; }
+.trip-stage li small { color: var(--muted); }
+.trip-notes {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  overflow: visible;
+}
+.trip-card h2 { margin: 0 0 10px; }
+.trip-card dl { margin: 0; }
+.trip-card dl div { display: flex; justify-content: space-between; gap: 8px; padding-block: 4px; }
+.trip-card dd { margin: 0; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.trip-card ul { padding-inline-start: 1.2em; }
+.trip-card li + li { margin-top: 6px; }
+.trip-links { display: flex; flex-wrap: wrap; gap: 8px 12px; }
+@media (max-width: 720px) {
+  .trip-layout { grid-template-columns: minmax(0, 1fr); }
+}
