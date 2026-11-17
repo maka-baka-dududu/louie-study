@@ -54,8 +54,9 @@ const kanaGroups = {
     ['じ','ja ju jo'], ['び','bya byu byo'], ['ぴ','pya pyu pyo']
   ]
 };
-const kanaLabels = {basic:'清音', voiced:'浊音与半浊音', contracted:'拗音', quiz:'认读练习'};
+const kanaLabels = {basic:'清音', voiced:'浊音与半浊音', contracted:'拗音', quiz:'认读练习', dictation:'默写'};
 let kanaGroup = 'basic', kanaScript = 'both', kanaShowRomaji = true, kanaQuiz = null, kanaQuizReveal = false;
+let kanaDictation = null, kanaDictationScope = 'basic', kanaDictationKata = false, kanaDictationFeedback = '';
 
 function kanaRows(group) {
   return kanaGroups[group].map(([text, sounds]) => sounds.split(' ').map((sound, index) => {
@@ -82,12 +83,14 @@ function chooseKana(group) {
   if (!Object.hasOwn(kanaLabels, group)) return;
   kanaGroup = group;
   if (group === 'quiz' && !kanaQuiz) return nextKanaQuiz();
+  if (group === 'dictation' && !kanaDictation) return nextKanaDictation();
   keepLanguageFocus('.kana-group [aria-pressed="true"]');
 }
 
 function selectKanaScript(script) {
   if (!['both','hira','kata'].includes(script)) return;
   kanaScript = script;
+  kanaDictationFeedback = '';
   keepLanguageFocus('.kana-script [aria-pressed="true"]');
 }
 
@@ -108,6 +111,60 @@ function revealKanaQuiz() {
   keepLanguageFocus('#kanaQuizNext');
 }
 
+function nextKanaDictation() {
+  const choices = kanaRows(kanaDictationScope).flat().filter(item => item && item[0] !== kanaDictation?.[0]);
+  if (kanaDictation) kanaDictationKata = !kanaDictationKata;
+  kanaDictation = choices[Math.floor(Math.random() * choices.length)];
+  kanaDictationFeedback = '';
+  keepLanguageFocus('#kanaWritten');
+}
+
+function selectKanaDictationScope(scope) {
+  if (!Object.hasOwn(kanaGroups, scope)) return;
+  kanaDictationScope = scope;
+  kanaDictation = null;
+  nextKanaDictation();
+}
+
+function kanaDictationAnswer() {
+  const symbol = kanaDictation[0];
+  return kanaScript === 'kata' || (kanaScript === 'both' && kanaDictationKata) ? katakanaFor(symbol) : symbol;
+}
+
+function checkKanaDictation(event) {
+  event.preventDefault();
+  if (kanaDictationFeedback) return;
+  const written = event.currentTarget.elements.written.value.normalize('NFKC').trim();
+  if (!written) return;
+  kanaDictationFeedback = written === kanaDictationAnswer() ? 'correct' : 'wrong';
+  keepLanguageFocus('#kanaDictationNext');
+}
+
+function kanaDictationView() {
+  const [symbol, sound] = kanaDictation;
+  const answer = kanaDictationAnswer();
+  const scriptName = answer === symbol ? '平假名' : '片假名';
+  const rowHint = ['じ','ず'].includes(symbol) ? 'Z 行' : ['ぢ','づ'].includes(symbol) ? 'D 行' : '';
+  return `<section class="card language-flash">
+    <div class="actions language-tabs" aria-label="默写范围">
+      ${Object.keys(kanaGroups).map(scope => languageButton(kanaLabels[scope],`selectKanaDictationScope('${scope}')`,scope === kanaDictationScope)).join('')}
+    </div>
+    <h2>默写${scriptName}</h2>
+    ${kanaShowRomaji ? `<div class="kana-quiz-symbol" lang="ja-Latn">${sound}</div>` : ''}
+    ${rowHint ? `<p class="muted">${rowHint}</p>` : !kanaShowRomaji && symbol === 'を' ? '<p class="muted">本题是读作 o 的助词。</p>' : ''}
+    <button type="button" onclick="speakLanguage('${symbol}','ja-JP')">听发音</button>
+    ${kanaDictationFeedback ? `<p class="language-answer" role="status">${kanaDictationFeedback === 'correct' ? '写对了' : '正确写法是'} <strong lang="ja">${answer}</strong></p>
+      <div class="actions">
+        ${kanaDictationFeedback === 'wrong' ? `<button type="button" onclick="kanaDictationFeedback='';keepLanguageFocus('#kanaWritten')">再写一次</button>` : ''}
+        <button type="button" class="primary" id="kanaDictationNext" onclick="nextKanaDictation()">下一题</button>
+      </div>` : `<form class="language-recall-form" onsubmit="checkKanaDictation(event)">
+      <label for="kanaWritten">用日语输入法写出${scriptName}</label>
+      <input id="kanaWritten" name="written" lang="ja" required maxlength="8" autocomplete="off" spellcheck="false" enterkeyhint="done">
+      <button type="submit" class="primary">检查</button>
+    </form>`}
+  </section>`;
+}
+
 function kanaChartView() {
   const controls = `<div class="language-toolbar">
     <div class="actions language-tabs kana-script" aria-label="假名类型">
@@ -121,6 +178,7 @@ function kanaChartView() {
     ${Object.entries(kanaLabels).map(([key,name]) => languageButton(name,`chooseKana('${key}')`,key === kanaGroup)).join('')}
   </div>`;
   const title = '<div class="pagehead"><h1>五十音图</h1></div>';
+  if (kanaGroup === 'dictation') return title + controls + kanaDictationView();
   if (kanaGroup === 'quiz' && kanaQuiz) {
     const [symbol, sound] = kanaQuiz;
     return title + controls + `<section class="card language-flash">
@@ -148,8 +206,10 @@ function kanaChartView() {
 
 const wordBooks = {cet6:'六级', kaoyan:'考研', ielts:'雅思'};
 const wordReviewIntervals = [1,3,7,14,30];
+const wordMasteryLevel = 3;
 let wordData = null, wordDataStatus = '', wordBook = 'cet6', wordMode = 'review';
-let wordQueue = [], wordSeen = 0, wordRevealed = false, wordTerm = '', wordLimit = 30;
+let wordQueue = [], wordSeen = 0, wordTesting = false, wordFeedback = null;
+let wordTerm = '', wordLimit = 30, wordFilter = 'all';
 
 async function loadWordBooks() {
   if (wordData || wordDataStatus === 'loading') return;
@@ -168,24 +228,32 @@ async function loadWordBooks() {
   if (page === 'englishWords') render();
 }
 
-function reviewableWords(book) {
+function wordReview(book, word) {
   const reviews = languageRecords().reviews[book];
+  return Object.hasOwn(reviews,word) ? reviews[word] : null;
+}
+
+function wordRecallLevel(review) {
+  return review?.lastCorrect ? review.level : 0;
+}
+
+function reviewableWords(book) {
   const due = [], fresh = [], date = today();
   for (const entry of wordData[book]) {
-    const word = entry[0];
-    const review = Object.hasOwn(reviews, word) ? reviews[word] : null;
+    const review = wordReview(book, entry[0]);
     if (!review) fresh.push(entry);
-    else if (review.due <= date) due.push(entry);
+    else if (!wordRecallLevel(review) || review.due <= date) due.push(entry);
   }
   return {due, fresh};
 }
 
 function chooseWordBook(book) {
-  if (!Object.hasOwn(wordBooks,book)) return;
+  if (!Object.hasOwn(wordBooks,book) || book === wordBook) return;
   wordBook = book;
   wordQueue = [];
   wordSeen = 0;
-  wordRevealed = false;
+  wordTesting = false;
+  wordFeedback = null;
   wordTerm = '';
   wordLimit = 30;
   keepLanguageFocus('.word-books [aria-pressed="true"]');
@@ -200,23 +268,51 @@ function startWordReview() {
   const {due, fresh} = reviewableWords(wordBook);
   wordQueue = due.concat(fresh).slice(0,20);
   wordSeen = 0;
-  wordRevealed = false;
-  keepLanguageFocus('#wordReveal');
+  nextWordPrompt();
 }
 
-function revealWord() {
-  wordRevealed = true;
-  keepLanguageFocus('#wordAgain');
+function nextWordPrompt() {
+  const entry = wordQueue[0];
+  wordTesting = Boolean(entry && wordReview(wordBook,entry[0]));
+  wordFeedback = null;
+  keepLanguageFocus(entry ? (wordTesting ? '#wordSpelling' : '#wordSpellStart') : '#wordStart');
+}
+
+function startWordSpelling() {
+  wordTesting = true;
+  keepLanguageFocus('#wordSpelling');
+}
+
+function advanceWord() {
+  if (!wordFeedback) return;
+  wordQueue.shift();
+  wordSeen++;
+  nextWordPrompt();
+}
+
+function scheduleWordRecall(previous, correct) {
+  const date = today();
+  if (!correct) return {level:0, due:date, lastCorrect:null};
+  const level = wordRecallLevel(previous);
+  if (level && (previous.lastCorrect >= date || previous.due > date)) return previous;
+  const nextLevel = Math.min(wordReviewIntervals.length,level + 1);
+  return {level:nextLevel, due:plusDay(wordReviewIntervals[nextLevel-1]), lastCorrect:date};
+}
+
+function checkWordSpelling(event) {
+  event.preventDefault();
+  const spelling = event.currentTarget.elements.spelling.value.normalize('NFKC').trim().toLowerCase()
+    .replace(/[‘’]/g,"'").replace(/\s+/g,' ');
+  if (spelling) void gradeWord(spelling === wordQueue[0]?.[0]);
 }
 
 let languageWriting = false;
-async function gradeWord(remembered) {
+async function gradeWord(correct) {
   const entry = wordQueue[0];
-  if (!entry || !wordRevealed || languageWriting) return;
-  const book = wordBook, reviews = languageRecords().reviews[book], word = entry[0];
-  const previous = Object.hasOwn(reviews,word) ? reviews[word] : null;
-  const level = remembered ? Math.min(wordReviewIntervals.length,(previous?.level || 0) + 1) : 0;
-  const review = {level, due:plusDay(remembered ? wordReviewIntervals[level-1] : 0)};
+  if (!entry || !wordTesting || wordFeedback || languageWriting) return;
+  const book = wordBook, queue = wordQueue, reviews = languageRecords().reviews[book], word = entry[0];
+  const previous = wordReview(book,word);
+  const review = scheduleWordRecall(previous, correct);
   reviews[word] = review;
   languageWriting = true;
   let saved;
@@ -226,19 +322,38 @@ async function gradeWord(remembered) {
     else delete reviews[word];
     return;
   }
-  if (book !== wordBook || wordQueue[0] !== entry) return;
-  wordQueue.shift();
-  wordSeen++;
-  wordRevealed = false;
-  if (page === 'englishWords') keepLanguageFocus(wordQueue.length ? '#wordReveal' : '#wordStart');
+  if (queue !== wordQueue) return;
+  wordFeedback = {correct, review};
+  if (page === 'englishWords' && wordMode === 'review') keepLanguageFocus('#wordNext');
+}
+
+function wordStatus(word) {
+  const review = wordReview(wordBook,word);
+  if (wordRecallLevel(review) >= wordMasteryLevel) return 'mastered';
+  return review ? 'learning' : 'new';
+}
+
+function selectWordFilter(filter) {
+  wordFilter = filter;
+  wordLimit = 30;
+  keepLanguageFocus('.word-filters [aria-pressed="true"]');
 }
 
 function wordList() {
   const query = wordTerm.trim().toLowerCase();
-  const visible = wordData[wordBook].filter(([word, , meaning]) => !query || word.includes(query) || meaning.includes(query));
-  return visible.slice(0,wordLimit).map(([word, phonetic, meaning]) => `<div class="language-list-row">
-    <strong>${esc(word)}</strong> ${phonetic?`<small>/${esc(phonetic)}/</small>`:''}<p>${esc(meaning)}</p>
-  </div>`).join('') + (visible.length > wordLimit ? '<button id="moreWords" onclick="moreWords()">显示更多</button>' : '') +
+  const visible = wordData[wordBook].filter(([word, , meaning]) =>
+    (wordFilter === 'all' || (wordStatus(word) === 'mastered') === (wordFilter === 'mastered')) &&
+    (!query || word.includes(query) || meaning.includes(query)));
+  const statusLabels = {mastered:'已背会', learning:'学习中', new:'未学'};
+  return visible.slice(0,wordLimit).map(([word, phonetic, meaning]) => {
+    const review = wordReview(wordBook,word), status = wordStatus(word);
+    const nextDue = wordRecallLevel(review) ? ` · ${review.due <= today() ? '待复习' : review.due + ' 复习'}` : '';
+    return `<div class="language-list-row">
+      <div class="word-list-heading"><span><strong lang="en">${esc(word)}</strong> ${phonetic?`<small>/${esc(phonetic)}/</small>`:''}</span>
+        <small class="word-status" data-status="${status}">${statusLabels[status]}${nextDue}</small></div>
+      <p>${esc(meaning)}</p>
+    </div>`;
+  }).join('') + (visible.length > wordLimit ? '<button id="moreWords" onclick="moreWords()">显示更多</button>' : '') +
     (visible.length ? '' : '<p class="muted">没有符合条件的单词。</p>');
 }
 
@@ -263,11 +378,18 @@ function englishWordView() {
       languageButton(name,`chooseWordBook('${key}')`,key === wordBook)).join('')}</div>
     <div class="actions language-tabs word-modes" aria-label="背单词模式">
       ${languageButton('背诵',"chooseWordMode('review')",wordMode === 'review')}
-      ${languageButton('查词',"chooseWordMode('list')",wordMode === 'list')}
+      ${languageButton('词表',"chooseWordMode('list')",wordMode === 'list')}
     </div>
   </div>`;
   if (wordMode === 'list') {
+    const total = wordData[wordBook].length;
+    const mastered = wordData[wordBook].filter(([word]) => wordStatus(word) === 'mastered').length;
     return head + tabs + `<section class="card language-card">
+      <div class="actions language-tabs word-filters" aria-label="掌握状态">
+        ${languageButton('全部 ' + total,"selectWordFilter('all')",wordFilter === 'all')}
+        ${languageButton('已背会 ' + mastered,"selectWordFilter('mastered')",wordFilter === 'mastered')}
+        ${languageButton('未背会 ' + (total-mastered),"selectWordFilter('unmastered')",wordFilter === 'unmastered')}
+      </div>
       <label>搜索单词或中文释义<input type="search" maxlength="100" value="${esc(wordTerm)}" oninput="searchWordBook(this.value)"></label>
       <div id="wordList">${wordList()}</div>
     </section>`;
@@ -279,18 +401,36 @@ function englishWordView() {
       <h2>${wordBooks[wordBook]}词汇</h2>
       ${wordSeen ? `<p>这组已练习 ${wordSeen} 个词。</p>` : ''}
       <p class="muted">全书 ${wordData[wordBook].length} 词 · 到期 ${due.length} · 新词 ${fresh.length}</p>
+      <p class="muted">连续 3 次按日程独立拼对，计为已背会。拼错后重新累计。</p>
       <button class="primary" id="wordStart" onclick="startWordReview()" ${due.length + fresh.length ? '' : 'disabled'}>${wordSeen?'继续下一组':'开始学习'}</button>
       <p class="language-source"><a href="https://github.com/skywind3000/ECDICT" target="_blank" rel="noopener noreferrer">ECDICT 词库 ↗</a></p>
     </section>`;
   }
   const [word, phonetic, meaning] = entry;
+  let exercise;
+  if (wordFeedback) {
+    const level = wordRecallLevel(wordFeedback.review);
+    const result = !wordFeedback.correct ? '再练一次' : level >= wordMasteryLevel ? '拼对了 · 已背会' : `拼对了 · ${level} / ${wordMasteryLevel} 次`;
+    exercise = `<p role="status">${result}</p>
+      <div class="word-term" lang="en">${esc(word)}</div>
+      ${phonetic ? `<p class="muted">/${esc(phonetic)}/</p>` : ''}
+      ${wordFeedback.correct ? `<p class="muted">下次复习 ${wordFeedback.review.due}</p>` : ''}
+      <button id="wordNext" class="primary" onclick="advanceWord()">下一个</button>`;
+  } else if (wordTesting) {
+    exercise = `<form class="language-recall-form" onsubmit="checkWordSpelling(event)">
+      <label for="wordSpelling">根据释义默写单词 · ${word.length} 个字符</label>
+      <input id="wordSpelling" name="spelling" lang="en" required maxlength="70" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="done">
+      <div class="actions"><button type="button" onclick="gradeWord(false)">想不起来</button><button class="primary" type="submit">检查拼写</button></div>
+    </form>`;
+  } else {
+    exercise = `<div class="word-term" lang="en">${esc(word)}</div>
+      ${phonetic ? `<p class="muted">/${esc(phonetic)}/</p>` : ''}
+      <button id="wordSpellStart" class="primary" onclick="startWordSpelling()">开始默写</button>`;
+  }
   return head + tabs + `<section class="card language-flash">
     <small class="muted">这组第 ${wordSeen+1} / ${wordSeen+wordQueue.length} 个</small>
-    <div class="word-term">${esc(word)}</div>
-    ${phonetic ? `<p class="muted">/${esc(phonetic)}/</p>` : ''}
-    ${wordRevealed ? `<p class="language-answer">${esc(meaning)}</p><div class="actions">
-      <button id="wordAgain" onclick="gradeWord(false)">还要练</button><button class="primary" onclick="gradeWord(true)">记住了</button>
-    </div>` : '<button id="wordReveal" class="primary" onclick="revealWord()">显示释义</button>'}
+    <p class="language-answer">${esc(meaning)}</p>
+    ${exercise}
   </section>`;
 }
 
@@ -422,7 +562,9 @@ validData = function (data) {
     if (!reviews || typeof reviews !== 'object' || Array.isArray(reviews)) return false;
     const entries = Object.entries(reviews);
     return entries.length <= 15000 && entries.every(([word, item]) => /^[a-z][a-z' -]{0,69}$/.test(word) && item &&
-      Number.isInteger(item.level) && item.level >= 0 && item.level <= wordReviewIntervals.length && scheduleDate(item.due));
+      Number.isInteger(item.level) && item.level >= 0 && item.level <= wordReviewIntervals.length && scheduleDate(item.due) &&
+      (item.lastCorrect === undefined || (item.lastCorrect === null ? item.level === 0 :
+        item.level > 0 && scheduleDate(item.lastCorrect) && item.lastCorrect < item.due)));
   }) && state.sentences.every(item => item && /^[a-zA-Z0-9-]{1,100}$/.test(item.id) &&
     scheduleDate(item.date) && text(item.text,1000) && item.text.trim().length > 0 && text(item.translation,600) &&
     text(item.note,1000) && Number.isFinite(item.created)) &&
@@ -435,7 +577,8 @@ importData = async function (file) {
   await importBeforeLanguages(file);
   if (db !== previous) {
     wordQueue = [];
-    wordRevealed = false;
+    wordTesting = false;
+    wordFeedback = null;
     wordSeen = 0;
     sentenceDateFilter = 'all';
     sentenceQuery = '';
