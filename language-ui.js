@@ -207,6 +207,8 @@ function kanaChartView() {
 const wordBooks = {cet6:'六级', kaoyan:'考研', ielts:'雅思'};
 const wordReviewIntervals = [1,3,7,14,30];
 const wordMasteryLevel = 3;
+const defaultWordGoal = 20;
+const maxWordGoal = 200;
 let wordData = null, wordDataStatus = '', wordBook = 'cet6', wordMode = 'review';
 let wordQueue = [], wordSeen = 0, wordTesting = false, wordFeedback = null;
 let wordTerm = '', wordLimit = 30, wordFilter = 'all';
@@ -237,14 +239,33 @@ function wordRecallLevel(review) {
   return review?.lastCorrect ? review.level : 0;
 }
 
+function wordIsCut(book, word) {
+  return Object.hasOwn(languageRecords().wordPlans?.[book]?.cut || {}, word);
+}
+
+function wordPracticedOn(review) {
+  return review?.practicedOn ?? (review?.lastCorrect === null ? review.due : review?.lastCorrect);
+}
+
+function dailyWordTask(book) {
+  const goal = languageRecords().wordPlans?.[book]?.goal ?? defaultWordGoal;
+  const date = today();
+  const done = Object.values(languageRecords().reviews[book]).filter(review => wordPracticedOn(review) === date).length;
+  return {goal, done};
+}
+
 function reviewableWords(book) {
-  const due = [], fresh = [], date = today();
+  const due = [], fresh = [], retry = [], date = today();
   for (const entry of wordData[book]) {
-    const review = wordReview(book, entry[0]);
+    const [word] = entry;
+    if (wordIsCut(book,word)) continue;
+    const review = wordReview(book, word);
     if (!review) fresh.push(entry);
-    else if (!wordRecallLevel(review) || review.due <= date) due.push(entry);
+    else if (!wordRecallLevel(review) || review.due <= date) {
+      (wordPracticedOn(review) === date ? retry : due).push(entry);
+    }
   }
-  return {due, fresh};
+  return {due, fresh, retry};
 }
 
 function chooseWordBook(book) {
@@ -265,17 +286,28 @@ function chooseWordMode(mode) {
 }
 
 function startWordReview() {
-  const {due, fresh} = reviewableWords(wordBook);
-  wordQueue = due.concat(fresh).slice(0,20);
+  const {due, fresh, retry} = reviewableWords(wordBook);
+  const {goal, done} = dailyWordTask(wordBook);
+  const remaining = Math.max(0,goal-done);
+  const pending = due.concat(fresh);
+  wordQueue = remaining && pending.length
+    ? pending.slice(0,Math.min(remaining,20))
+    : due.concat(retry,fresh).slice(0,20);
   wordSeen = 0;
   nextWordPrompt();
 }
 
-function nextWordPrompt() {
+function stopWordReview() {
+  if (languageWriting) return;
+  wordQueue = [];
+  nextWordPrompt();
+}
+
+function nextWordPrompt(focus = true) {
   const entry = wordQueue[0];
   wordTesting = Boolean(entry && wordReview(wordBook,entry[0]));
   wordFeedback = null;
-  keepLanguageFocus(entry ? (wordTesting ? '#wordSpelling' : '#wordSpellStart') : '#wordStart');
+  if (focus) keepLanguageFocus(entry ? (wordTesting ? '#wordSpelling' : '#wordSpellStart') : '#wordStart');
 }
 
 function startWordSpelling() {
@@ -307,27 +339,76 @@ function checkWordSpelling(event) {
 }
 
 let languageWriting = false;
+async function saveWordRecord(record, key, value) {
+  if (languageWriting) return false;
+  const hadKey = Object.hasOwn(record,key);
+  const previous = hadKey ? record[key] : undefined;
+  if (value === undefined) delete record[key];
+  else record[key] = value;
+  languageWriting = true;
+  let saved;
+  try { saved = await save(); }
+  finally {
+    languageWriting = false;
+    if (!saved) {
+      if (hadKey) record[key] = previous;
+      else delete record[key];
+    }
+  }
+  return Boolean(saved);
+}
+
+function wordPlan(book) {
+  const plans = languageRecords().wordPlans ??= {};
+  return plans[book] ??= {};
+}
+
+async function saveDailyWordGoal(event) {
+  event.preventDefault();
+  const input = event.currentTarget.elements.goal;
+  const goal = input.valueAsNumber, book = wordBook;
+  if (!Number.isInteger(goal) || goal < 1 || goal > maxWordGoal || languageWriting) return;
+  if (await saveWordRecord(wordPlan(book),'goal',goal) && page === 'englishWords' && wordBook === book) {
+    keepLanguageFocus('#wordStart');
+  }
+}
+
+async function toggleWordCut(word) {
+  if (languageWriting || !wordData[wordBook].some(([entry]) => entry === word)) return;
+  const book = wordBook, cut = wordIsCut(book,word);
+  const exclusions = wordPlan(book).cut ??= {};
+  if (!await saveWordRecord(exclusions,word,cut ? undefined : true)) return;
+  if (book !== wordBook) return;
+  if (!cut && wordQueue[0]?.[0] === word) {
+    wordQueue.shift();
+    if (wordFeedback) wordSeen++;
+    const inReview = page === 'englishWords' && wordMode === 'review';
+    nextWordPrompt(inReview);
+    if (inReview) return;
+  } else {
+    if (!cut) wordQueue = wordQueue.filter(([entry]) => entry !== word);
+  }
+  if (page === 'englishWords') {
+    render();
+    const button = [...document.querySelectorAll('#wordList [data-word]')].find(item => item.dataset.word === word);
+    (button || $('.word-filters [aria-pressed="true"]'))?.focus({preventScroll:true});
+  }
+}
+
 async function gradeWord(correct) {
   const entry = wordQueue[0];
   if (!entry || !wordTesting || wordFeedback || languageWriting) return;
   const book = wordBook, queue = wordQueue, reviews = languageRecords().reviews[book], word = entry[0];
-  const previous = wordReview(book,word);
-  const review = scheduleWordRecall(previous, correct);
-  reviews[word] = review;
-  languageWriting = true;
-  let saved;
-  try { saved = await save(); } finally { languageWriting = false; }
-  if (!saved) {
-    if (previous) reviews[word] = previous;
-    else delete reviews[word];
-    return;
-  }
+  if (wordIsCut(book,word)) return;
+  const review = {...scheduleWordRecall(wordReview(book,word), correct), practicedOn:today()};
+  if (!await saveWordRecord(reviews,word,review)) return;
   if (queue !== wordQueue) return;
   wordFeedback = {correct, review};
   if (page === 'englishWords' && wordMode === 'review') keepLanguageFocus('#wordNext');
 }
 
 function wordStatus(word) {
+  if (wordIsCut(wordBook,word)) return 'cut';
   const review = wordReview(wordBook,word);
   if (wordRecallLevel(review) >= wordMasteryLevel) return 'mastered';
   return review ? 'learning' : 'new';
@@ -341,17 +422,20 @@ function selectWordFilter(filter) {
 
 function wordList() {
   const query = wordTerm.trim().toLowerCase();
-  const visible = wordData[wordBook].filter(([word, , meaning]) =>
-    (wordFilter === 'all' || (wordStatus(word) === 'mastered') === (wordFilter === 'mastered')) &&
-    (!query || word.includes(query) || meaning.includes(query)));
-  const statusLabels = {mastered:'已背会', learning:'学习中', new:'未学'};
+  const visible = wordData[wordBook].filter(([word, , meaning]) => {
+    const status = wordStatus(word);
+    return (wordFilter === 'all' || status === wordFilter || (wordFilter === 'unmastered' && (status === 'new' || status === 'learning'))) &&
+      (!query || word.includes(query) || meaning.includes(query));
+  });
+  const statusLabels = {mastered:'已背会', learning:'学习中', new:'未学', cut:'已斩掉'};
   return visible.slice(0,wordLimit).map(([word, phonetic, meaning]) => {
     const review = wordReview(wordBook,word), status = wordStatus(word);
-    const nextDue = wordRecallLevel(review) ? ` · ${review.due <= today() ? '待复习' : review.due + ' 复习'}` : '';
+    const nextDue = status !== 'cut' && wordRecallLevel(review) ? ` · ${review.due <= today() ? '待复习' : review.due + ' 复习'}` : '';
     return `<div class="language-list-row">
       <div class="word-list-heading"><span><strong lang="en">${esc(word)}</strong> ${phonetic?`<small>/${esc(phonetic)}/</small>`:''}</span>
         <small class="word-status" data-status="${status}">${statusLabels[status]}${nextDue}</small></div>
-      <p>${esc(meaning)}</p>
+      <div class="word-list-heading"><p>${esc(meaning)}</p>
+        <button type="button" data-word="${esc(word)}" onclick="toggleWordCut(this.dataset.word)" aria-label="${status === 'cut' ? '恢复' : '斩掉'} ${esc(word)}">${status === 'cut' ? '恢复复习' : '斩掉'}</button></div>
     </div>`;
   }).join('') + (visible.length > wordLimit ? '<button id="moreWords" onclick="moreWords()">显示更多</button>' : '') +
     (visible.length ? '' : '<p class="muted">没有符合条件的单词。</p>');
@@ -383,26 +467,40 @@ function englishWordView() {
   </div>`;
   if (wordMode === 'list') {
     const total = wordData[wordBook].length;
-    const mastered = wordData[wordBook].filter(([word]) => wordStatus(word) === 'mastered').length;
+    let mastered = 0, cut = 0;
+    for (const [word] of wordData[wordBook]) {
+      const status = wordStatus(word);
+      if (status === 'mastered') mastered++;
+      if (status === 'cut') cut++;
+    }
     return head + tabs + `<section class="card language-card">
       <div class="actions language-tabs word-filters" aria-label="掌握状态">
         ${languageButton('全部 ' + total,"selectWordFilter('all')",wordFilter === 'all')}
         ${languageButton('已背会 ' + mastered,"selectWordFilter('mastered')",wordFilter === 'mastered')}
-        ${languageButton('未背会 ' + (total-mastered),"selectWordFilter('unmastered')",wordFilter === 'unmastered')}
+        ${languageButton('未背会 ' + (total-mastered-cut),"selectWordFilter('unmastered')",wordFilter === 'unmastered')}
+        ${languageButton('已斩掉 ' + cut,"selectWordFilter('cut')",wordFilter === 'cut')}
       </div>
       <label>搜索单词或中文释义<input type="search" maxlength="100" value="${esc(wordTerm)}" oninput="searchWordBook(this.value)"></label>
       <div id="wordList">${wordList()}</div>
     </section>`;
   }
+  const {goal,done} = dailyWordTask(wordBook);
+  const taskProgress = `今日 ${done} / ${goal} 词`;
   const entry = wordQueue[0];
   if (!entry) {
-    const {due, fresh} = reviewableWords(wordBook);
+    const {due, fresh, retry} = reviewableWords(wordBook);
+    const hasPending = due.length + fresh.length > 0;
+    const startLabel = hasPending ? (done >= goal ? '继续加练' : done ? '继续今日任务' : '开始今日任务') : '巩固错词';
     return head + tabs + `<section class="card language-flash">
-      <h2>${wordBooks[wordBook]}词汇</h2>
-      ${wordSeen ? `<p>这组已练习 ${wordSeen} 个词。</p>` : ''}
-      <p class="muted">全书 ${wordData[wordBook].length} 词 · 到期 ${due.length} · 新词 ${fresh.length}</p>
-      <p class="muted">连续 3 次按日程独立拼对，计为已背会。拼错后重新累计。</p>
-      <button class="primary" id="wordStart" onclick="startWordReview()" ${due.length + fresh.length ? '' : 'disabled'}>${wordSeen?'继续下一组':'开始学习'}</button>
+      <h2>${taskProgress}${done >= goal ? ' · 已完成' : ''}</h2>
+      <progress class="word-progress" aria-label="今日任务进度" value="${Math.min(done,goal)}" max="${goal}"></progress>
+      <p class="muted">到期复习 ${due.length} · 待学新词 ${fresh.length}${retry.length ? ' · 今日错词 ' + retry.length : ''}</p>
+      ${hasPending || retry.length ? `<button class="primary" id="wordStart" onclick="startWordReview()">${startLabel}</button>` : '<p class="muted">今天没有待练单词。</p>'}
+      <form class="word-goal-form" onsubmit="saveDailyWordGoal(event)">
+        <label for="wordGoal">每日目标（新词＋复习）</label>
+        <input id="wordGoal" type="number" name="goal" min="1" max="${maxWordGoal}" value="${goal}" required inputmode="numeric">
+        <button type="submit">保存目标</button>
+      </form>
       <p class="language-source"><a href="https://github.com/skywind3000/ECDICT" target="_blank" rel="noopener noreferrer">ECDICT 词库 ↗</a></p>
     </section>`;
   }
@@ -428,9 +526,13 @@ function englishWordView() {
       <button id="wordSpellStart" class="primary" onclick="startWordSpelling()">开始默写</button>`;
   }
   return head + tabs + `<section class="card language-flash">
-    <small class="muted">这组第 ${wordSeen+1} / ${wordSeen+wordQueue.length} 个</small>
+    <small class="muted">${taskProgress} · 本组 ${wordSeen+1} / ${wordSeen+wordQueue.length}</small>
     <p class="language-answer">${esc(meaning)}</p>
     ${exercise}
+    <div class="actions word-session-actions">
+      <button type="button" data-word="${esc(word)}" onclick="toggleWordCut(this.dataset.word)">斩掉此词</button>
+      <button type="button" onclick="stopWordReview()">结束本组</button>
+    </div>
   </section>`;
 }
 
@@ -557,12 +659,20 @@ validData = function (data) {
   if (state === undefined) return true;
   if (!state || state.version !== 1 || !state.reviews || !Array.isArray(state.sentences) || state.sentences.length > 10000) return false;
   const text = (value,max) => typeof value === 'string' && value.length <= max;
+  const record = value => value && typeof value === 'object' && !Array.isArray(value);
+  const validWord = word => /^[a-z][a-z' -]{0,69}$/.test(word);
+  if (state.wordPlans !== undefined && (!record(state.wordPlans) || !Object.entries(state.wordPlans).every(([book,plan]) =>
+    Object.hasOwn(wordBooks,book) && record(plan) &&
+    (plan.goal === undefined || (Number.isInteger(plan.goal) && plan.goal >= 1 && plan.goal <= maxWordGoal)) &&
+    (plan.cut === undefined || (record(plan.cut) && Object.keys(plan.cut).length <= 15000 &&
+      Object.entries(plan.cut).every(([word,cut]) => validWord(word) && cut === true)))))) return false;
   return Object.keys(wordBooks).every(book => {
     const reviews = state.reviews[book];
     if (!reviews || typeof reviews !== 'object' || Array.isArray(reviews)) return false;
     const entries = Object.entries(reviews);
-    return entries.length <= 15000 && entries.every(([word, item]) => /^[a-z][a-z' -]{0,69}$/.test(word) && item &&
+    return entries.length <= 15000 && entries.every(([word, item]) => validWord(word) && item &&
       Number.isInteger(item.level) && item.level >= 0 && item.level <= wordReviewIntervals.length && scheduleDate(item.due) &&
+      (item.practicedOn === undefined || scheduleDate(item.practicedOn)) &&
       (item.lastCorrect === undefined || (item.lastCorrect === null ? item.level === 0 :
         item.level > 0 && scheduleDate(item.lastCorrect) && item.lastCorrect < item.due)));
   }) && state.sentences.every(item => item && /^[a-zA-Z0-9-]{1,100}$/.test(item.id) &&

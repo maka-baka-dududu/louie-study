@@ -125,8 +125,15 @@
 .language-recall-form input { margin: 0; text-align: center; }
 .language-source { font-size: 12px; margin: 16px 0 0; }
 .word-filters { margin-bottom: 12px; }
+.word-progress { width: min(100%, 18rem); accent-color: var(--accent-hover); }
+.word-goal-form { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; margin: 18px auto 0; }
+.word-goal-form label, .word-goal-form button, .word-goal-form input { margin: 0; }
+.word-goal-form input { width: 5em; }
+.word-session-actions { margin-top: 12px; }
+.word-session-actions button, .word-list-heading button { font-size: .85rem; padding: 5px 9px; }
 .language-list-row { padding: 9px 0; border-bottom: 1px solid var(--line); }
 .language-list-row p { margin: 4px 0 0; }
+.word-list-heading p { flex: 1 1 14rem; }
 .word-list-heading { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 3px 12px; }
 .word-status[data-status="mastered"] { color: var(--accent-hover); font-weight: 600; }
 #wordList button { margin-top: 14px; }
