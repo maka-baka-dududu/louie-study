@@ -55,7 +55,7 @@ const kanaGroups = {
   ]
 };
 const kanaLabels = {basic:'清音', voiced:'浊音与半浊音', contracted:'拗音', quiz:'认读练习'};
-let kanaGroup = 'basic', kanaScript = 'hira', kanaShowRomaji = true, kanaQuiz = null, kanaQuizReveal = false;
+let kanaGroup = 'basic', kanaScript = 'both', kanaShowRomaji = true, kanaQuiz = null, kanaQuizReveal = false;
 
 function kanaRows(group) {
   return kanaGroups[group].map(([text, sounds]) => sounds.split(' ').map((sound, index) => {
@@ -64,9 +64,13 @@ function kanaRows(group) {
   }));
 }
 
-function displayKana(text) {
-  if (kanaScript === 'hira') return text;
+function katakanaFor(text) {
   return Array.from(text, char => String.fromCodePoint(char.codePointAt(0) + 0x60)).join('');
+}
+
+function displayKana(text) {
+  if (kanaScript === 'both') return text + ' · ' + katakanaFor(text);
+  return kanaScript === 'kata' ? katakanaFor(text) : text;
 }
 
 function keepLanguageFocus(selector) {
@@ -82,7 +86,8 @@ function chooseKana(group) {
 }
 
 function selectKanaScript(script) {
-  kanaScript = script === 'kata' ? 'kata' : 'hira';
+  if (!['both','hira','kata'].includes(script)) return;
+  kanaScript = script;
   keepLanguageFocus('.kana-script [aria-pressed="true"]');
 }
 
@@ -106,6 +111,7 @@ function revealKanaQuiz() {
 function kanaChartView() {
   const controls = `<div class="language-toolbar">
     <div class="actions language-tabs kana-script" aria-label="假名类型">
+      ${languageButton('平片对照',"selectKanaScript('both')",kanaScript === 'both')}
       ${languageButton('平假名',"selectKanaScript('hira')",kanaScript === 'hira')}
       ${languageButton('片假名',"selectKanaScript('kata')",kanaScript === 'kata')}
     </div>
@@ -119,7 +125,7 @@ function kanaChartView() {
     const [symbol, sound] = kanaQuiz;
     return title + controls + `<section class="card language-flash">
       <p class="muted">先读出假名，再核对罗马音。</p>
-      <div class="kana-quiz-symbol">${displayKana(symbol)}</div>
+      <div class="kana-quiz-symbol" lang="ja">${displayKana(symbol)}</div>
       ${kanaQuizReveal ? `<p class="language-answer">${sound} <button onclick="speakLanguage('${symbol}','ja-JP')">听发音</button></p>`
         : '<button id="kanaQuizAnswer" class="primary" onclick="revealKanaQuiz()">显示读音</button>'}
       <button id="kanaQuizNext" onclick="nextKanaQuiz()">换一个</button>
@@ -127,13 +133,13 @@ function kanaChartView() {
   }
   const rows = kanaRows(kanaGroup);
   return title + controls + `<section class="card kana-panel">
-    <p class="muted">点击假名听发音。${kanaGroup === 'basic' ? '「を」写作 wo，作助词时通常读 o。' : ''}</p>
+    <p class="muted">${kanaScript === 'both' ? '每格左边是平假名，右边是片假名。' : ''}点击假名听发音。${kanaGroup === 'basic' ? '「を」写作 wo，作助词时通常读 o。' : ''}</p>
     <div class="kana-chart ${kanaGroup === 'contracted' ? 'kana-chart-three' : ''}">
       ${rows.flatMap(row => row.length === 1 ? [...row,null,null,null,null] : row).map(item => {
         if (!item) return '<span class="kana-empty" aria-hidden="true"></span>';
         const [symbol, sound] = item;
         return `<button class="kana-cell" type="button" onclick="speakLanguage('${symbol}','ja-JP')" aria-label="${displayKana(symbol)}${kanaShowRomaji?' '+sound:''}，播放发音">
-          <b>${displayKana(symbol)}</b>${kanaShowRomaji?`<small>${sound}</small>`:''}</button>`;
+          <b lang="ja" class="${kanaScript === 'both' ? 'kana-pair' : ''}">${displayKana(symbol)}</b>${kanaShowRomaji?`<small>${sound}</small>`:''}</button>`;
       }).join('')}
     </div>
     <p class="language-source"><a href="https://classroomresources.sydney.jpf.go.jp/resources/hiragana-katakana-game/" target="_blank" rel="noopener noreferrer">日本国际交流基金假名练习 ↗</a></p>

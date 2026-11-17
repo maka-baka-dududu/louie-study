@@ -111,6 +111,7 @@
   text-align: center;
 }
 .kana-cell b { font-size: 22px; line-height: 1.15; }
+.kana-cell .kana-pair { white-space: nowrap; }
 .kana-cell small { font-size: 11px; }
 .kana-quiz-symbol { font-size: clamp(46px,8vw,76px); margin: 12px 0; line-height: 1.2; }
 .word-term { font-size: clamp(32px,6vw,55px); line-height: 1.25; font-weight: 600; overflow-wrap: anywhere; }
@@ -132,6 +133,7 @@
   .kana-panel { padding: 14px; }
   .kana-chart { gap: 5px; }
   .kana-cell b { font-size: 19px; }
+  .kana-cell .kana-pair { font-size: 15px; }
   .kana-cell { min-height: 49px; }
   .language-toolbar { gap: 7px; }
   .language-tabs { gap: 5px; }
