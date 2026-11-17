@@ -204,7 +204,12 @@ function renderTravelPlan() {
       <div class="trip-layout">
         <section class="trip-map-card" aria-label="旅行星球路线">
           <div class="trip-map-wrap"><p id="travelFrameLoading" class="travel-frame-loading">正在加载路线地图…</p></div>
-          <div class="trip-map-caption"><span>可拖动地球，点击城市或日程定位。线条为行程示意。</span><button type="button" id="tripOverview">全段视角</button></div>
+          <div class="trip-map-caption"><span>拖动地球，或点城市和日程定位。路线为示意。</span>
+            <div class="trip-map-actions">
+              <button type="button" id="tripZoomOut" aria-label="缩小地图">−</button>
+              <button type="button" id="tripZoomIn" aria-label="放大地图">＋</button>
+              <button type="button" id="tripOverview">全段视角</button>
+            </div></div>
           <div id="tripDetail" class="trip-detail" aria-live="polite"></div>
         </section>
         <section class="trip-list-panel" aria-label="每日行程">
@@ -226,6 +231,11 @@ function renderTravelPlan() {
     </article>`;
   $('#tripSettings').onclick = openTripSettings;
   $('#tripAdd').onclick = () => openTripDay();
+  for (const [id, direction] of [['tripZoomOut', -1], ['tripZoomIn', 1]]) {
+    $('#' + id).onclick = () => {
+      if (travelIsReady) sendTravel({kind:'plan-zoom', direction});
+    };
+  }
   $('#tripOverview').onclick = () => { tripSelected = ''; refreshTripPlanner({focus: true}); };
   $('#tripGroup').onchange = e => {
     tripGroup = e.target.value === 'all' ? 'all' : Number(e.target.value);

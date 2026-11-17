@@ -71,3 +71,12 @@ SOFTWARE.
   "grid_step_degrees": 0.75,
   "purpose": "Macro relief visualization; resampled and vertically exaggerated, not a precise elevation measurement."
 }
+
+## Detailed map layers
+
+Natural Earth 1:50m land, coastline, borders, lakes and river centerlines, version 5.1.2.
+Public domain, https://www.naturalearthdata.com/about/terms-of-use/
+Source files: https://github.com/nvkelso/natural-earth-vector/tree/v5.1.2/geojson
+Land polygons are rasterized for the globe coverage mask. Line coordinates are rounded to three decimals and split into short overlapping rendering segments. This is a regional overview, without streets or buildings.
+
+The compact map label index is derived from the GeoNames cities500 records above. It contains the largest cities and a geographic sample for less populated regions. The full dataset is loaded separately when searching.
