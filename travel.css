@@ -131,3 +131,34 @@ body.travel-page {
 .trip-map-actions { display: flex; flex: none; gap: 5px; }
 .trip-map-actions button { min-height: 32px; padding: 4px 8px; }
 .trip-map-actions button[aria-label] { min-width: 32px; font-size: 16px; }
+
+.trip-overview { margin-bottom: 18px; }
+.trip-overview-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; margin-bottom: 7px;
+}
+.trip-overview-head h2 { margin: 0; font-size: 16px; }
+.trip-overview-head button { padding: 5px 10px; font-size: 12px; }
+.trip-stages { display: grid; grid-template-columns: repeat(6,minmax(0,1fr)); gap: 7px; }
+.trip-plan .trip-stage-button {
+  display: flex; flex-direction: column; align-items: start; justify-content: start;
+  gap: 4px; min-width: 0; text-align: left; padding: 9px 10px;
+  background: var(--paper); border: 1px solid var(--line); border-radius: 9px;
+  line-height: 1.4; overflow-wrap: anywhere;
+}
+.trip-plan .trip-stage-button[aria-pressed=true] { border-color: #6d9f97; background: color-mix(in srgb,#78b8ae 17%,var(--paper)); }
+.trip-stage-days {
+  width: 100%; display: flex; flex-wrap: wrap; gap: 1px 5px; justify-content: space-between;
+  font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums;
+}
+.trip-stage-days span { white-space: nowrap; }
+.trip-stage-button strong { font-size: 13px; }
+.trip-stage-button small, .trip-stage-stops { font-size: 11px; color: var(--muted); }
+.trip-stage-stops { line-height: 1.5; }
+.trip-filters p { margin: 0; font-size: 13px; }
+@media (max-width: 1120px) {
+  .trip-stages { grid-template-columns: repeat(3,minmax(0,1fr)); }
+}
+@media (max-width: 520px) {
+  .trip-stages { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}

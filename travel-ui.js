@@ -133,7 +133,7 @@ function mountTravelFrame(container, view) {
   frame.referrerPolicy = 'no-referrer';
   travelIsReady = false;
   travelNonce = uid();
-  frame.src = 'travel-assets/frame.html?view=' + view + '&v=globe-arcs-down#' + travelNonce;
+  frame.src = 'travel-assets/frame.html?view=' + view + '&v=trip-overview#' + travelNonce;
   travelFrame = frame;
   container.append(frame);
 }

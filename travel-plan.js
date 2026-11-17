@@ -98,18 +98,18 @@ const tripModes = {
 };
 const tripBudgetLabels = ['大交通与行李', '住宿', '吃饭与市内交通', '签证、保险、门票与当地团', '旅途备用金'];
 const tripCoordinates = {
-  广州: [23.13, 113.26], 迪拜: [25.20, 55.27], 阿布扎比: [24.45, 54.38],
-  马斯喀特: [23.59, 58.41], 瓦迪沙卜: [22.84, 59.25], 多哈: [25.29, 51.53],
-  利雅得: [24.71, 46.68], 德拉伊耶: [24.73, 46.58], 安曼: [31.95, 35.93],
-  死海: [31.72, 35.58], 佩特拉: [30.33, 35.44], 瓦迪拉姆: [29.57, 35.42],
-  开罗: [30.04, 31.24], 吉萨: [29.98, 31.13], 卢克索: [25.69, 32.64], 亚历山大: [31.20, 29.92],
-  第比利斯: [41.72, 44.79], 卡兹别克: [42.66, 44.64], 西格纳吉: [41.62, 45.92],
-  伊斯坦布尔: [41.01, 28.98], 维也纳: [48.21, 16.37], 萨尔茨堡: [47.80, 13.05],
-  哈尔施塔特: [47.56, 13.65], 布拉迪斯拉发: [48.15, 17.11], 布达佩斯: [47.50, 19.04],
-  克拉科夫: [50.06, 19.94], 华沙: [52.23, 21.01], 布拉格: [50.08, 14.44],
-  阿姆斯特丹: [52.37, 4.90], 海牙: [52.08, 4.31], 鹿特丹: [51.92, 4.48],
-  布鲁塞尔: [50.85, 4.35], 布鲁日: [51.21, 3.22], 卢森堡: [49.61, 6.13],
-  巴黎: [48.86, 2.35], 马德里: [40.42, -3.70], 巴塞罗那: [41.39, 2.17]
+  广州: [23.13, 113.26, '中国'], 迪拜: [25.20, 55.27, '阿联酋'], 阿布扎比: [24.45, 54.38, '阿联酋'],
+  马斯喀特: [23.59, 58.41, '阿曼'], 瓦迪沙卜: [22.84, 59.25, '阿曼'], 多哈: [25.29, 51.53, '卡塔尔'],
+  利雅得: [24.71, 46.68, '沙特阿拉伯'], 德拉伊耶: [24.73, 46.58, '沙特阿拉伯'], 安曼: [31.95, 35.93, '约旦'],
+  死海: [31.72, 35.58, '约旦'], 佩特拉: [30.33, 35.44, '约旦'], 瓦迪拉姆: [29.57, 35.42, '约旦'],
+  开罗: [30.04, 31.24, '埃及'], 吉萨: [29.98, 31.13, '埃及'], 卢克索: [25.69, 32.64, '埃及'], 亚历山大: [31.20, 29.92, '埃及'],
+  第比利斯: [41.72, 44.79, '格鲁吉亚'], 卡兹别克: [42.66, 44.64, '格鲁吉亚'], 西格纳吉: [41.62, 45.92, '格鲁吉亚'],
+  伊斯坦布尔: [41.01, 28.98, '土耳其'], 维也纳: [48.21, 16.37, '奥地利'], 萨尔茨堡: [47.80, 13.05, '奥地利'],
+  哈尔施塔特: [47.56, 13.65, '奥地利'], 布拉迪斯拉发: [48.15, 17.11, '斯洛伐克'], 布达佩斯: [47.50, 19.04, '匈牙利'],
+  克拉科夫: [50.06, 19.94, '波兰'], 华沙: [52.23, 21.01, '波兰'], 布拉格: [50.08, 14.44, '捷克'],
+  阿姆斯特丹: [52.37, 4.90, '荷兰'], 海牙: [52.08, 4.31, '荷兰'], 鹿特丹: [51.92, 4.48, '荷兰'],
+  布鲁塞尔: [50.85, 4.35, '比利时'], 布鲁日: [51.21, 3.22, '比利时'], 卢森堡: [49.61, 6.13, '卢森堡'],
+  巴黎: [48.86, 2.35, '法国'], 马德里: [40.42, -3.70, '西班牙'], 巴塞罗那: [41.39, 2.17, '西班牙']
 };
 const tripTemplateRoutes = [
   '广州/迪拜','迪拜','迪拜/阿布扎比','阿布扎比/马斯喀特','马斯喀特','马斯喀特/瓦迪沙卜/马斯喀特',
@@ -166,7 +166,7 @@ function validTravelPlan(plan) {
 }
 
 const tripDefault = defaultTravelPlan();
-let tripGroup = 'all', tripMode = 'all', tripSelected = 'day-1', tripSaving = false;
+let tripGroup = 'all', tripMode = 'all', tripSelected = '', tripSaving = false;
 const getTravelPlan = () => db.travelPlan ?? tripDefault;
 const tripMoney = n => '¥' + n.toLocaleString('zh-CN');
 
@@ -181,12 +181,63 @@ function filteredTripDays(plan = getTravelPlan()) {
     (tripGroup === 'all' || day.group === tripGroup) && (tripMode === 'all' || day.mode === tripMode));
 }
 
+function tripStageSummary(plan) {
+  const stages = plan.stages.map((name,group) => ({name, group, days:[]}));
+  plan.days.forEach((day,index) => stages[day.group].days.push({...day, index}));
+  return stages.filter(stage => stage.days.length).map(stage => {
+    const stops = [...new Set(stage.days.flatMap(day =>
+      (day.points.length > 1 ? day.points.slice(1) : day.points).map(point => point.name)))];
+    const highlights = stops.length <= 4 ? stops :
+      [stops[0], stops[Math.round((stops.length-1)/3)], stops[Math.round((stops.length-1)*2/3)], stops.at(-1)];
+    return {...stage, start:stage.days[0].index, end:stage.days.at(-1).index, stops, highlights};
+  });
+}
+
+function tripCountryCount(plan) {
+  const countries = new Set();
+  for (const {name,lat,lng} of plan.days.flatMap(day=>day.points)) {
+    const point = tripCoordinates[name];
+    if (!point || point[0] !== lat || point[1] !== lng) return null;
+    if (point[2] !== '中国') countries.add(point[2]);
+  }
+  return countries.size;
+}
+
+function showTripScope(group) {
+  tripGroup = group;
+  tripMode = 'all';
+  tripSelected = '';
+  refreshTripPlanner({focus:true});
+  $('#tripList').scrollTop = 0;
+}
+
+function updateTripOverview(plan, stages) {
+  $('#tripAll').setAttribute('aria-pressed', String(tripGroup === 'all' && tripMode === 'all' && !tripSelected));
+  $('#tripStages').innerHTML = stages.length ? stages.map(({name,group,days,start,end,stops,highlights}) => {
+    const dayRange = start === end ? 'D' + (start+1) : 'D' + (start+1) + '–D' + (end+1);
+    return `<button type="button" class="trip-stage-button" data-group="${group}" aria-pressed="${tripGroup === group}">
+      <span class="trip-stage-days">${dayRange} <span>${days.length} 天</span></span>
+      <strong>${esc(name)}</strong>
+      <small>${tripDate(plan.start,start)}${start === end ? '' : '–' + tripDate(plan.start,end)}</small>
+      ${stops.length ? `<span class="trip-stage-stops" title="${esc(stops.join(' → '))}">
+        ${esc(highlights.join(' · '))}${stops.length > highlights.length ? ' 等 ' + stops.length + ' 站' : ''}
+      </span>` : ''}
+    </button>`;
+  }).join('') : '<p class="muted">添加第一天后，路线分段会显示在这里。</p>';
+}
+
 function sendTripMap(focus = false) {
   if (page !== 'travelPlan' || !travelIsReady) return;
   const days = filteredTripDays().filter(day => day.points.length).map(day => ({
     id: day.id, mode: day.mode, points: day.points, ...tripModes[day.mode]
   }));
-  sendTravel({kind: 'plan-route', days, selected: tripSelected, focus});
+  const plan = getTravelPlan();
+  const stages = tripStageSummary(plan);
+  const overviewStops = tripGroup === 'all'
+    ? [plan.days.find(day=>day.points.length)?.points[0]?.name,
+        ...stages.map(stage=>stage.highlights[0]), stages.at(-1)?.highlights.at(-1)]
+    : stages.find(stage=>stage.group === tripGroup)?.highlights || [];
+  sendTravel({kind:'plan-route', days, selected:tripSelected, overviewStops:overviewStops.filter(Boolean), focus});
 }
 
 function renderTravelPlan() {
@@ -197,8 +248,13 @@ function renderTravelPlan() {
         <div class="trip-actions"><button type="button" id="tripSettings">计划与预算</button>
           <button type="button" class="primary" id="tripAdd">＋ 新增一天</button></div>
       </header>
+      <section class="trip-overview" aria-labelledby="tripOverviewTitle">
+        <div class="trip-overview-head"><h2 id="tripOverviewTitle">全程总览</h2>
+          <button type="button" id="tripAll">查看全程地图</button></div>
+        <div id="tripStages" class="trip-stages"></div>
+      </section>
       <div class="trip-filters">
-        <label>行程分段 <select id="tripGroup"></select></label>
+        <p id="tripScope" class="muted"></p>
         <div id="tripModes" class="trip-modes" role="group" aria-label="按活动类型筛选"></div>
       </div>
       <div class="trip-layout">
@@ -237,10 +293,12 @@ function renderTravelPlan() {
     };
   }
   $('#tripOverview').onclick = () => { tripSelected = ''; refreshTripPlanner({focus: true}); };
-  $('#tripGroup').onchange = e => {
-    tripGroup = e.target.value === 'all' ? 'all' : Number(e.target.value);
-    tripSelected = '';
-    refreshTripPlanner({focus: true});
+  $('#tripAll').onclick = () => showTripScope('all');
+  $('#tripStages').onclick = e => {
+    const button = e.target.closest('[data-group]');
+    if (!button) return;
+    showTripScope(Number(button.dataset.group));
+    $('#tripStages').querySelector('[aria-pressed=true]')?.focus({preventScroll:true});
   };
   $('#tripModes').onclick = e => {
     const button = e.target.closest('[data-mode]');
@@ -263,13 +321,15 @@ function refreshTripPlanner({focus = false} = {}) {
   const days = filteredTripDays(plan);
   const active = days.find(d => d.id === tripSelected);
   const budget = plan.budget.reduce((sum, value) => sum + value, 0);
+  const stages = tripStageSummary(plan);
+  const dateRange = plan.start.slice(0,4) + ' 年 ' + tripDate(plan.start,0) +
+    (plan.days.length > 1 ? '–' + tripDate(plan.start,plan.days.length-1) : '');
   $('#tripTitle').textContent = plan.title;
-  $('#tripSubtitle').textContent = '拟于 ' + plan.start.slice(0, 4) + ' 年 ' + tripDate(plan.start, 0) + '出发 · ' +
-    plan.days.length + ' 天 · 预算 ' + tripMoney(budget);
-  const group = $('#tripGroup');
-  group.innerHTML = '<option value="all">全程</option>' +
-    plan.stages.map((name, i) => `<option value="${i}">${esc(name)}</option>`).join('');
-  group.value = tripGroup;
+  const countryCount = tripCountryCount(plan);
+  $('#tripSubtitle').textContent = ['暂定 ' + dateRange, plan.days.length + ' 天', stages.length + ' 段',
+    ...(countryCount ? [countryCount + ' 个国家（境外）'] : []), '预算 ' + tripMoney(budget)].join(' · ');
+  $('#tripScope').textContent = tripGroup === 'all' ? '全程路线' : plan.stages[tripGroup];
+  updateTripOverview(plan,stages);
   $('#tripModes').innerHTML = [['all', {label: '全部'}], ...Object.entries(tripModes)].map(([key, mode]) =>
     `<button type="button" data-mode="${key}" aria-pressed="${tripMode === key}">${mode.color ?
       `<i style="--trip-color:${mode.color}" aria-hidden="true"></i>` : ''}${mode.label}</button>`).join('');

@@ -542,7 +542,7 @@ function drawTripMarkers(){markers=[];const visible=tripGroups().map(g=>({...g,p
 const plainShowDetail=showDetail;showDetail=function(e){plainShowDetail(e);const g=tripGroups(entries,null).find(g=>g.items.some(a=>a.id===e.id));if(!g)return;const info=document.createElement('div');info.className='trip-summary';info.innerHTML=(e.status==='wish'?'心愿地点':g.visits+' 次到访 · 最近 '+esc(g.e.date)+(g.known?' · 已填写停留 '+g.days+' 天':''))+(g.items.length>1?'<div class="trip-visits">'+g.items.map(v=>'<button data-trip-visit="'+esc(v.id)+'">'+esc(v.date)+'</button>').join('')+'</div>':'');$('#detailBody').appendChild(info);$$('[data-trip-visit]').forEach(b=>b.onclick=()=>showDetail(entries.find(v=>v.id===b.dataset.tripVisit)))};
 $('#markerMetric').onchange=e=>{markerMetric=e.target.value;draw();writeStore('meta',markerMetric,'markerMetric').catch(()=>{})};$('#markerMetric').value=markerMetric;readStore('meta','markerMetric').then(v=>{if(['smart','frequency','recency','duration'].includes(v)){markerMetric=v;$('#markerMetric').value=v;draw()}}).catch(()=>{});
 if (louiePlanMode) {
-  let plannedDays = [], selectedPlanDay = '';
+  let plannedDays = [], selectedPlanDay = '', overviewStops = new Set();
   plannedLabelAreas = () => {
     const active = plannedDays.find(day => day.id === selectedPlanDay);
     return (active?.points || []).map(stop => {
@@ -569,7 +569,7 @@ if (louiePlanMode) {
     routeMarkers = [];
     const active = plannedDays.find(day => day.id === selectedPlanDay);
     const ordered = active ? [...plannedDays.filter(day => day !== active), active] : plannedDays;
-    const labeled = new Set();
+    const labeled = new Set(), overviewLabels = [];
     for (const day of ordered) {
       const selected = day === active;
       ctx.save();
@@ -605,13 +605,19 @@ if (louiePlanMode) {
         ctx.beginPath();
         ctx.arc(p.x,p.y, selected ? 5.5 : 3, 0, Math.PI*2);
         ctx.fill();
-        if (selected) {
-          ctx.font = '600 12px sans-serif';
-          ctx.strokeStyle = '#071426';
-          ctx.lineWidth = 3;
-          ctx.strokeText(stop.name,p.x + 9,p.y - 8);
-          ctx.fillStyle = '#fff';
-          ctx.fillText(stop.name,p.x + 9,p.y - 8);
+        if (selected || (!active && overviewStops.has(stop.name))) {
+          ctx.font = '600 ' + (selected ? 12 : 11) + 'px sans-serif';
+          const width = ctx.measureText(stop.name).width;
+          const x = Math.min(W-width-5,p.x+9), y = p.y-8;
+          const overlaps = overviewLabels.some(label => x<label.x+label.w+6 && x+width+6>label.x && Math.abs(y-label.y)<15);
+          if (selected || (!overlaps && x>=4 && y>=12 && y<=H-6)) {
+            overviewLabels.push({x,y,w:width});
+            ctx.strokeStyle = '#071426';
+            ctx.lineWidth = 3;
+            ctx.strokeText(stop.name,x,y);
+            ctx.fillStyle = '#fff';
+            ctx.fillText(stop.name,x,y);
+          }
         }
         ctx.restore();
       }
@@ -628,6 +634,7 @@ if (louiePlanMode) {
       legs: day.points.slice(1).map((stop,i)=>routePoints(day.points[i],stop,day.mode==='flight' ? .21 : .12))
     }));
     selectedPlanDay = message.selected;
+    overviewStops = new Set(message.overviewStops || []);
     if (message.focus) {
       const selected = plannedDays.find(day => day.id === selectedPlanDay);
       const points = selected
