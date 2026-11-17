@@ -43,7 +43,18 @@ body.page-travel[data-globe-scene="space"] header .profile{background:#ffffff04;
 body.page-travel[data-globe-scene="space"] header .profile .live-dot{background:#9fbdb6}body.page-travel[data-globe-scene="dusk"] header .profile .live-dot{background:#d2b29b}
 @media(prefers-reduced-motion:reduce){body.page-travel header,body.page-travel header *{transition:none!important}}
 header.site-header{display:grid;grid-template-columns:1fr auto 1fr}.site-header .brand{width:fit-content}.site-header nav{grid-column:2}.travel-home-caption{font-size:14px;color:#7d8b7b;line-height:1.9}.hero-copy h1{font-size:clamp(38px,5vw,64px);letter-spacing:2px}.home-hero{min-height:340px}.hero-copy .hero-actions{display:none}@media(max-width:600px){header.site-header{display:flex;justify-content:space-between}.site-header .brand{flex-shrink:0}}
-.marker-settings{padding:15px 16px;border-bottom:1px solid #e7ebde}.marker-settings label{display:block;font-size:11px;margin-bottom:9px;color:#526b50}.marker-settings select{width:100%;padding:9px;border:1px solid #dce4d1;border-radius:7px;background:#f5f8ef;color:#49603f;font-size:11px}.marker-settings p{font-size:9px;color:#8a9581;line-height:1.8;margin:8px 0 0}.trip-summary{margin:14px 0;padding:12px 14px;border:1px solid #dfe7d6;border-radius:9px;background:#f0f5e7;font-size:12px;color:#506847;line-height:1.9}.trip-visits{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.trip-visits button{border:1px solid #d7e1cb;border-radius:6px;padding:6px 9px;background:#fafcf5;color:#55704a;font-size:11px}</style><style>.site-header,.site-footer,#homePage,#notesPage,#aboutPage,#journalPage>.intro{display:none!important}body.page-travel #travelPage{inset:0!important}body.page-travel #travelPage .globe-panel{height:100%!important}body.page-journal{overflow:auto}#journalPage{padding:22px!important}body{background:#f6f5ef}#travelPage .map-loading{z-index:5}</style></head><body>
+.marker-settings{padding:15px 16px;border-bottom:1px solid #e7ebde}.marker-settings label{display:block;font-size:11px;margin-bottom:9px;color:#526b50}.marker-settings select{width:100%;padding:9px;border:1px solid #dce4d1;border-radius:7px;background:#f5f8ef;color:#49603f;font-size:11px}.marker-settings p{font-size:9px;color:#8a9581;line-height:1.8;margin:8px 0 0}.trip-summary{margin:14px 0;padding:12px 14px;border:1px solid #dfe7d6;border-radius:9px;background:#f0f5e7;font-size:12px;color:#506847;line-height:1.9}.trip-visits{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.trip-visits button{border:1px solid #d7e1cb;border-radius:6px;padding:6px 9px;background:#fafcf5;color:#55704a;font-size:11px}.plan-globe #searchDrawer,.plan-globe #timeDrawer,.plan-globe #settingsDrawer,
+.plan-globe .map-dock-tools,.plan-globe .create-control,.plan-globe .globe-foot,.plan-globe .panel-top { display:none!important }
+.plan-globe .globe-controls, .plan-globe #globeNote, .plan-globe #travelActions { display:none!important }
+.plan-marker-layer { position:absolute; inset:0; z-index:3; pointer-events:none; }
+.plan-marker-layer button {
+  position:absolute; transform:translate(-50%,-50%); width:22px; height:22px;
+  padding:0; border:0; border-radius:50%; background:transparent; pointer-events:auto;
+}
+.plan-marker-layer button:hover, .plan-marker-layer button:focus-visible {
+  outline:2px solid #fff; outline-offset:1px;
+}
+</style><style>.site-header,.site-footer,#homePage,#notesPage,#aboutPage,#journalPage>.intro{display:none!important}body.page-travel #travelPage{inset:0!important}body.page-travel #travelPage .globe-panel{height:100%!important}body.page-journal{overflow:auto}#journalPage{padding:22px!important}body{background:#f6f5ef}#travelPage .map-loading{z-index:5}</style></head><body>
 <header class="site-header"><button class="brand home-link text-btn" aria-label="回到主页"><span class="brand-icon">✳</span><span><span id="siteName">旅行星球</span></span></button><nav aria-label="主导航"><button class="nav-btn active" data-nav="home">主页</button><button class="nav-btn" data-nav="travel">地球</button><button class="nav-btn" data-nav="journal">旅行日记</button></nav></header><section class="personal-page home-page" id="homePage">
  <div class="home-hero"><div class="hero-copy"><h1>旅行星球</h1><p class="travel-home-caption">收藏足迹，记录旅程。</p><div class="hero-actions"><button class="text-btn" id="editProfileHome" hidden>编辑我的名片</button></div></div><div class="hero-art" aria-hidden="true"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="mini-earth"><div class="mini-grid"></div><span class="earth-mark m-one"></span><span class="earth-mark m-two"></span><span class="earth-mark m-three"></span></div></div></div>
  <div class="home-section-head"><div><span class="eyebrow">TRAVEL</span><h2>我的旅行</h2></div><span class="subtle">走过的路，留下的故事。</span></div>
@@ -69,8 +80,11 @@ header.site-header{display:grid;grid-template-columns:1fr auto 1fr}.site-header 
 const louieNonce=location.hash.slice(1),louieOrigin=new URL(location.href).origin,louieRequests=new Map();let louieRequestId=0;
 function louieSend(payload){parent.postMessage({channel:'louie-travel',nonce:louieNonce,...payload},louieOrigin)}
 function louieRPC(op,data={}){return new Promise((resolve,reject)=>{const id=String(++louieRequestId),timer=setTimeout(()=>{louieRequests.delete(id);reject(Error('本地旅行服务连接超时，请保留页面后重试'))},120000);louieRequests.set(id,{resolve,reject,timer});louieSend({kind:'request',id,op,data})})}
-window.addEventListener('message',event=>{if(event.source!==parent||event.origin!==louieOrigin||event.data?.channel!=='louie-travel'||event.data.nonce!==louieNonce)return;const m=event.data;if(m.kind==='response'){const p=louieRequests.get(m.id);if(!p)return;clearTimeout(p.timer);louieRequests.delete(m.id);m.error?p.reject(Error(m.error)):p.resolve(m.result)}else if(m.kind==='navigate'){louieRequestedView=m.view;louieNavigate(m.view)}else if(m.kind==='discard-editors'){for(const id of ['editor','routeEditor','noteEditor','profileEditor'])closeModal(id);}else if(m.kind==='new-entry')document.querySelector('#createFootprint').click();else if(m.kind==='reload')location.reload()});
+window.addEventListener('message',event=>{if(event.source!==parent||event.origin!==louieOrigin||event.data?.channel!=='louie-travel'||event.data.nonce!==louieNonce)return;const m=event.data;if(m.kind==='response'){const p=louieRequests.get(m.id);if(!p)return;clearTimeout(p.timer);louieRequests.delete(m.id);m.error?p.reject(Error(m.error)):p.resolve(m.result)}else if(m.kind==='plan-route'&&louiePlanMode){receivePlannedRoutes(m)}else if(m.kind==='navigate'){louieRequestedView=m.view;louieNavigate(m.view)}else if(m.kind==='discard-editors'){for(const id of ['editor','routeEditor','noteEditor','profileEditor'])closeModal(id);}else if(m.kind==='new-entry')document.querySelector('#createFootprint').click();else if(m.kind==='reload')location.reload()});
 let louieNavigate=()=>{},louieRequestedView=new URL(location.href).searchParams.get('view');
+const louiePlanMode = louieRequestedView === 'plan';
+let receivePlannedRoutes = () => {};
+document.body.classList.toggle('plan-globe', louiePlanMode);
 const LOUIE_MAP_DATA=await Promise.all(['admin','places'].map(name=>fetch(new URL('./data/0442cb7361cd8012/'+name+'.json',location.href)).then(r=>{if(!r.ok)throw Error('离线地图资料未读取');return r.json()}))).then(([admin,places])=>({admin,places}));
 
 var chineseFoldMap={"風":"风","蘭":"兰","凱":"凯","盤":"盘","圍":"围","鷄":"鸡","鰂":"鲗","窩":"窝","綏":"绥","漢":"汉","運":"运","輋":"𪨶","魯":"鲁","臨":"临","雙":"双","鴨":"鸭","魚":"鱼","紹":"绍","漣":"涟","鶴":"鹤","聖":"圣","臺":"台","饒":"饶","頭":"头","東":"东","寶":"宝","鼇":"鳌","徑":"径","順":"顺","慶":"庆","爾":"尔","縣":"县","長":"长","銀":"银","廈":"厦","瑪":"玛","連":"连","雞":"鸡","薩":"萨","崗":"岗","環":"环","溫":"温","莊":"庄","無":"无","鐘":"钟","關":"关","開":"开","錫":"锡","鹽":"盐","鮀":"𬶍","寧":"宁","濟":"济","碼":"码","灣":"湾","節":"节","懷":"怀","崙":"仑","鶯":"莺","銅":"铜","澤":"泽","義":"义","萬":"万","黃":"黄","陽":"阳","蘇":"苏","譚":"谭","亞":"亚","関":"关","馬":"马","島":"岛","網":"网","遼":"辽","烏":"乌","欽":"钦","調":"调","後":"后","湧":"涌","迴":"回","棗":"枣","恆":"恒","藍":"蓝","壽":"寿","鰲":"鳌","鄒":"邹","霧":"雾","鑼":"锣","揚":"扬","涼":"凉","橋":"桥","氹":"凼","員":"员","樂":"乐","崑":"昆","綿":"绵","樹":"树","禮":"礼","貴":"贵","師":"师","維":"维","鐵":"铁","紅":"红","華":"华","埨":"𫭢","岡":"冈","冊":"册","勻":"匀","來":"来","鷹":"鹰","瓊":"琼","壢":"坜","裡":"里","隨":"随","頂":"顶","頓":"顿","舊":"旧","堅":"坚","觀":"观","區":"区","於":"于","鬥":"斗","煙":"烟","鎮":"镇","洩":"泄","齊":"齐","賓":"宾","硤":"硖","賀":"贺","衛":"卫","鄭":"郑","蓮":"莲","廣":"广","瀝":"沥","龍":"龙","內":"内","園":"园","鳳":"凤","灑":"洒","垵":"埯","掃":"扫","隴":"陇","晉":"晋","濱":"滨","篢":"𬕂","畢":"毕","門":"门","貝":"贝","錦":"锦","營":"营","雲":"云","張":"张","別":"别","荊":"荆","貢":"贡","婁":"娄","砲":"炮","豐":"丰","贛":"赣","萊":"莱","鄉":"乡","麗":"丽","離":"离","遠":"远","啟":"启","蕪":"芜","濰":"潍","滄":"沧","達":"达","嶺":"岭","興":"兴","瀘":"泸","鄲":"郸","瀋":"沈","乾":"干","撫":"抚","峽":"峡"};function foldChinese(s){return s.replace(/[\u3400-\u9fff]/g,c=>chineseFoldMap[c]||c)}
@@ -115,7 +129,7 @@ function setLand(ps){polygons=ps;landPoints=[];for(let lat=-57;lat<83;lat+=1.7){
 function project(lng,lat){return mapProject(lng,lat)}
 function inverse(x,y){return mapInverse(x,y)}
 function pathLine(points,color,width){return mapLine(points,color,width)}
-function draw(){if(!W||!H)return;ctx.clearRect(0,0,W,H);R=Math.min(W*.39,H*.365)*zoom;drawBaseMap();drawSceneLight();drawMapGrid();drawAdminMap();drawGeographicNames();drawGlobalMapPlaces();$('#mapScaleLabel').textContent=({country:'国家',province:'省级',city:'市级',district:'区县'}[mapLabelLevel()])+' · '+zoom.toFixed(1)+'×';drawRoutes();drawTripMarkers()}
+function draw(){if(!W||!H)return;ctx.clearRect(0,0,W,H);R=Math.min(W*.39,H*.365)*zoom;drawBaseMap();drawSceneLight();drawMapGrid();drawAdminMap();if(!louiePlanMode){drawGeographicNames();drawGlobalMapPlaces();}$('#mapScaleLabel').textContent=({country:'国家',province:'省级',city:'市级',district:'区县'}[mapLabelLevel()])+' · '+zoom.toFixed(1)+'×';drawRoutes();drawTripMarkers()}
 function resize(){const box=canvas.getBoundingClientRect();W=box.width;H=box.height;const d=Math.min(devicePixelRatio||1,2);canvas.width=W*d;canvas.height=H*d;ctx.setTransform(d,0,0,d,0,0);draw()}new ResizeObserver(resize).observe(canvas);function focusPlace(e){lon=+e.lng;tilt=Math.max(-65,Math.min(65,+e.lat));draw()}function stopPin(){pinning=false;$('#pinTip').style.display='none';canvas.style.cursor='grab'}function startPin(){navigate('travel');view(false);$('#travelGlobeView').classList.add('active');$('#travelListView').classList.remove('active');pinning=true;$('#pinTip').style.display='block';canvas.style.cursor='crosshair';canvas.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'center'})}$('#pinMode').onclick=()=>{draft=null;startPin()};$('#cancelPin').onclick=stopPin;$('#pickOnGlobe').onclick=()=>{draft={...editorValues(),editing,photos:[...pendingPhotos]};closeModal('editor');startPin()};function addAt(c){stopPin();if(draft){for(const k of ['place','lat','lng','date','status','title','story','endDate','markerStyle'])$('#'+k).value=draft[k];editing=draft.editing;pendingPhotos=draft.photos;showEditor(editing?{id:editing}:null,c,true);draft=null}else{showEditor(null,c);const nearby=cities.map(city=>({city,d:Math.hypot((city[3]-c.lng)*Math.cos(c.lat*rad),city[2]-c.lat)})).sort((a,b)=>a.d-b.d)[0];if(nearby?.d<.8)$('#place').value=nearby.city[0].split(' ')[0];else{const f=countryAt(c.lng,c.lat);if(f)$('#place').value=countryName(f)}}}
 canvas.onpointerdown=e=>{canvas.setPointerCapture(e.pointerId);drag={x:e.clientX,y:e.clientY,lon,tilt};moved=0};canvas.onpointermove=e=>{if(!drag)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;moved=Math.max(moved,Math.hypot(dx,dy));if(moved>4){lon=drag.lon-dx*.28/zoom;tilt=Math.max(-80,Math.min(80,drag.tilt+dy*.23/zoom));draw()}};canvas.onpointerup=e=>{if(!drag)return;drag=null;if(moved>5)return;const b=canvas.getBoundingClientRect(),x=e.clientX-b.left,y=e.clientY-b.top;if(pinning){const c=inverse(x,y);if(c)addAt(c);return}const leg=routeMarkers.find(m=>Math.hypot(m.x-x,m.y-y)<15);if(leg){showRoute(leg.r);return}const m=markers.find(m=>Math.hypot(m.x-x,m.y-y)<Math.max(18,(m.radius||11)+6));if(m)showDetail(m.e)};canvas.onpointercancel=()=>drag=null;canvas.ondblclick=e=>{if($('.modal-backdrop.open'))return;const b=canvas.getBoundingClientRect(),c=inverse(e.clientX-b.left,e.clientY-b.top);if(c)addAt(c)};canvas.onwheel=e=>{e.preventDefault();zoom=Math.max(.65,Math.min(1.5,zoom-e.deltaY*.0008));draw()};canvas.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();lon=((lon+(e.key==='ArrowLeft'?-10:e.key==='ArrowRight'?10:0)+540)%360)-180;tilt=Math.max(-80,Math.min(80,tilt+(e.key==='ArrowUp'?10:e.key==='ArrowDown'?-10:0)));draw()}});$('#zoomIn').onclick=()=>{zoom=Math.min(1.5,zoom+.1);draw()};$('#zoomOut').onclick=()=>{zoom=Math.max(.65,zoom-.1);draw()};$('#home').onclick=()=>{lon=105;tilt=23;zoom=1;draw()};
 if(localMode)$('#storageStatus').textContent='本机保存 · 建议定期导出备份';
@@ -328,7 +342,98 @@ function tripAppearance(g){const wish=g.e.status==='wish',recent=g.age<=90,color
 function drawTripMarkers(){markers=[];const visible=tripGroups().map(g=>({...g,p:project(g.e.lng,g.e.lat)})).filter(g=>g.p.z>.03).sort((a,b)=>a.p.z-b.p.z);const boxes=[];ctx.save();for(const g of visible){const {p,e}=g,a=tripAppearance(g),r=a.radius;markers.push({e,x:p.x,y:p.y,radius:r+3,group:g});ctx.beginPath();ctx.arc(p.x,p.y,r+7,0,Math.PI*2);ctx.fillStyle=a.color+'1a';ctx.fill();if(a.recent&&!a.wish){ctx.beginPath();ctx.arc(p.x,p.y,r+4,0,Math.PI*1.6);ctx.lineWidth=1.5;ctx.strokeStyle=a.color+'bb';ctx.stroke()}ctx.beginPath();if(a.style==='pin'){ctx.moveTo(p.x,p.y+r+7);ctx.bezierCurveTo(p.x-r*1.8,p.y-r*.2,p.x-r,p.y-r*1.5,p.x,p.y-r);ctx.bezierCurveTo(p.x+r,p.y-r*1.5,p.x+r*1.8,p.y-r*.2,p.x,p.y+r+7)}else if(a.style==='flag'){ctx.moveTo(p.x-r,p.y+r);ctx.lineTo(p.x-r,p.y-r);ctx.lineTo(p.x+r,p.y-r);ctx.lineTo(p.x+r*.5,p.y);ctx.lineTo(p.x-r,p.y);ctx.closePath()}else ctx.arc(p.x,p.y,r,0,Math.PI*2);ctx.fillStyle=a.wish?'#1a2439':a.color;ctx.strokeStyle=a.wish?a.color:'#fff6e8';ctx.lineWidth=a.wish?1.5:2;ctx.fill();ctx.stroke();ctx.fillStyle=a.wish?a.color:'#49382d';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold '+Math.round(r+1)+'px sans-serif';const glyph=a.style==='heart'?'♥':a.style==='star'||a.wish?'✦':g.visits>1?String(g.visits):'•';ctx.fillText(glyph,p.x,p.y);if(a.style!=='auto'&&g.visits>1){ctx.beginPath();ctx.arc(p.x+r*.8,p.y-r*.8,6.5,0,Math.PI*2);ctx.fillStyle='#fbf4e4';ctx.fill();ctx.font='bold 8px sans-serif';ctx.fillStyle='#67513d';ctx.fillText(String(g.visits),p.x+r*.8,p.y-r*.8)}const suffix=a.wish?'想去':markerMetric==='duration'?(g.known?g.days+'天':'未填停留'):g.visits>1?g.visits+'次':'';const label=e.place.split(' · ').filter(Boolean).pop()+(suffix?' · '+suffix:'');ctx.font='11px sans-serif';const tw=ctx.measureText(label).width+16,box={x:p.x+r+8,y:p.y-12,w:tw,h:24};if(!boxes.some(b=>box.x<b.x+b.w&&box.x+box.w>b.x&&box.y<b.y+b.h&&box.y+box.h>b.y)){boxes.push(box);ctx.fillStyle=globeScene==='day'?'#fffff2e8':'#101d31db';ctx.beginPath();ctx.roundRect(box.x,box.y,tw,24,6);ctx.fill();ctx.fillStyle=globeScene==='day'?'#42583c':'#e6e7db';ctx.textAlign='left';ctx.font='11px sans-serif';ctx.fillText(label,box.x+8,p.y+1)}}ctx.restore()}
 const plainShowDetail=showDetail;showDetail=function(e){plainShowDetail(e);const g=tripGroups(entries,null).find(g=>g.items.some(a=>a.id===e.id));if(!g)return;const info=document.createElement('div');info.className='trip-summary';info.innerHTML=(e.status==='wish'?'心愿地点':g.visits+' 次到访 · 最近 '+esc(g.e.date)+(g.known?' · 已填写停留 '+g.days+' 天':''))+(g.items.length>1?'<div class="trip-visits">'+g.items.map(v=>'<button data-trip-visit="'+esc(v.id)+'">'+esc(v.date)+'</button>').join('')+'</div>':'');$('#detailBody').appendChild(info);$$('[data-trip-visit]').forEach(b=>b.onclick=()=>showDetail(entries.find(v=>v.id===b.dataset.tripVisit)))};
 $('#markerMetric').onchange=e=>{markerMetric=e.target.value;draw();writeStore('meta',markerMetric,'markerMetric').catch(()=>{})};$('#markerMetric').value=markerMetric;readStore('meta','markerMetric').then(v=>{if(['smart','frequency','recency','duration'].includes(v)){markerMetric=v;$('#markerMetric').value=v;draw()}}).catch(()=>{});
-const louieOriginalNavigate=navigate;navigate=function(view){if(view==='home')view='travel';louieOriginalNavigate(view);louieSend({kind:'view',view})};louieNavigate=view=>navigate(view==='journal'?'journal':'travel');
+if (louiePlanMode) {
+  let plannedDays = [], selectedPlanDay = '';
+  const markerLayer = document.createElement('div');
+  markerLayer.className = 'plan-marker-layer';
+  canvas.setAttribute('aria-label', '拖动旋转旅行地球，滚动缩放');
+  canvas.parentElement.append(markerLayer);
+  const markerButtons = new Map();
+  markerLayer.onclick = event => {
+    const button = event.target.closest('[data-plan-day]');
+    if (button) louieSend({kind:'plan-select',id:button.dataset.planDay});
+  };
+  drawTripMarkers = () => { markers = []; };
+  drawRoutes = function () {
+    routeMarkers = [];
+    const active = plannedDays.find(day => day.id === selectedPlanDay);
+    const ordered = active ? [...plannedDays.filter(day => day !== active), active] : plannedDays;
+    const labeled = new Set();
+    for (const day of ordered) {
+      const selected = day === active;
+      ctx.save();
+      ctx.globalAlpha = active && !selected ? .26 : .9;
+      ctx.setLineDash(day.dash);
+      for (let i = 1; i < day.points.length; i++) {
+        mapLine(routePoints(day.points[i - 1], day.points[i]), day.color, selected ? 3 : 1.7);
+      }
+      ctx.restore();
+    }
+    for (const day of [...ordered].reverse()) {
+      const selected = day === active;
+      for (const stop of day.points) {
+        const key = stop.lat + ',' + stop.lng;
+        if (labeled.has(key)) continue;
+        const p = project(stop.lng, stop.lat);
+        if (p.z <= 0.015) continue;
+        labeled.add(key);
+        let button = markerButtons.get(key);
+        if (!button) {
+          button = document.createElement('button');
+          button.type = 'button';
+          markerButtons.set(key, button);
+          markerLayer.append(button);
+        }
+        button.dataset.planDay = day.id;
+        button.setAttribute('aria-label', '查看 ' + stop.name + ' 的日程');
+        button.title = stop.name;
+        button.style.left = (canvas.offsetLeft + p.x) + 'px';
+        button.style.top = (canvas.offsetTop + p.y) + 'px';
+        ctx.save();
+        ctx.globalAlpha = active && !selected ? .55 : 1;
+        ctx.fillStyle = day.color;
+        ctx.beginPath();
+        ctx.arc(p.x,p.y, selected ? 5.5 : 3, 0, Math.PI*2);
+        ctx.fill();
+        if (selected) {
+          ctx.font = '600 12px sans-serif';
+          ctx.strokeStyle = '#071426';
+          ctx.lineWidth = 3;
+          ctx.strokeText(stop.name,p.x + 9,p.y - 8);
+          ctx.fillStyle = '#fff';
+          ctx.fillText(stop.name,p.x + 9,p.y - 8);
+        }
+        ctx.restore();
+      }
+    }
+    for (const [key, button] of markerButtons) {
+      if (labeled.has(key)) continue;
+      button.remove();
+      markerButtons.delete(key);
+    }
+  };
+  receivePlannedRoutes = message => {
+    plannedDays = message.days;
+    selectedPlanDay = message.selected;
+    if (message.focus) {
+      const selected = plannedDays.find(day => day.id === selectedPlanDay);
+      const points = selected ? selected.points : plannedDays.flatMap(day => day.points);
+      if (points.length) {
+        const longitudes = points.map(point => point.lng);
+        const latitudes = points.map(point => point.lat);
+        const lngMin = Math.min(...longitudes), lngMax = Math.max(...longitudes);
+        const latMin = Math.min(...latitudes), latMax = Math.max(...latitudes);
+        const spread = Math.max(20, lngMax - lngMin, latMax - latMin);
+        zoom = selected ? Math.min(3, 100 / spread) : Math.max(1, Math.min(2.2, 64 / spread));
+        focusPlace({lng:(lngMax+lngMin)/2,lat:(latMax+latMin)/2});
+      }
+    }
+    draw();
+  };
+  canvas.onpointerup = () => { drag = null; };
+  canvas.ondblclick = null;
+}
+const louieOriginalNavigate=navigate;navigate=function(view){if(view==='home')view='travel';louieOriginalNavigate(view);if(!louiePlanMode)louieSend({kind:'view',view})};louieNavigate=view=>navigate(view==='journal'?'journal':'travel');
 const louieOriginalOpen=openModal,louieOriginalClose=closeModal;function louieEditing(){return ['editor','routeEditor','noteEditor','profileEditor'].some(id=>document.getElementById(id)?.classList.contains('open'))}
 openModal=function(id){louieOriginalOpen(id);louieSend({kind:'editing',value:louieEditing()})};closeModal=function(id){louieOriginalClose(id);louieSend({kind:'editing',value:louieEditing()})};
 louieNavigate(louieRequestedView);louieSend({kind:'ready'});
