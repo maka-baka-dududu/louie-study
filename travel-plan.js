@@ -184,7 +184,7 @@ function filteredTripDays(plan = getTravelPlan()) {
 function sendTripMap(focus = false) {
   if (page !== 'travelPlan' || !travelIsReady) return;
   const days = filteredTripDays().filter(day => day.points.length).map(day => ({
-    id: day.id, points: day.points, ...tripModes[day.mode]
+    id: day.id, mode: day.mode, points: day.points, ...tripModes[day.mode]
   }));
   sendTravel({kind: 'plan-route', days, selected: tripSelected, focus});
 }

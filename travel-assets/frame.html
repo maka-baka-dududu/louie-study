@@ -209,7 +209,30 @@ function syncTimeline(){timelineDates=[...new Set(entries.map(e=>e.date))].sort(
 function setTimeline(date,focus=false){timelineCutoff=date;if(focus&&date){const e=entries.filter(e=>e.date<=date).sort((a,b)=>b.date.localeCompare(a.date))[0];if(e)focusPlace(e)}render()}
 $('#timelineRange').oninput=e=>{stopPlayback();setTimeline(timelineDates[+e.target.value],true)};$('#timelinePlay').onclick=()=>{if(playTimer){stopPlayback();return}if(timelineDates.length<2)return;let index=timelineCutoff?timelineDates.indexOf(timelineCutoff):-1;if(index>=timelineDates.length-1)index=-1;const step=()=>{index++;if(index>=timelineDates.length){stopPlayback();return}setTimeline(timelineDates[index],true);$('#timelinePlay').textContent='Ⅱ 暂停';$('#timelinePlay').setAttribute('aria-pressed','true');if(index===timelineDates.length-1)stopPlayback()};step();if(index<timelineDates.length-1)playTimer=setInterval(step,1300)};
 $('#travelGlobeView').onclick=()=>{navigate('travel');$('#travelGlobeView').classList.add('active');$('#travelListView').classList.remove('active')};$('#travelListView').onclick=()=>{stopPlayback();navigate('journal');$('#travelGlobeView').classList.remove('active');$('#travelListView').classList.add('active')};
-function routePoints(a,b){const vec=e=>{const p=e.lat*rad,l=e.lng*rad;return[Math.cos(p)*Math.cos(l),Math.cos(p)*Math.sin(l),Math.sin(p)]};const u=vec(a),v=vec(b),dot=Math.max(-1,Math.min(1,u.reduce((s,x,i)=>s+x*v[i],0))),angle=Math.acos(dot);if(angle<.00001||angle>Math.PI-.0001)return[];const pts=[];for(let i=0;i<=40;i++){const t=i/40,wa=Math.sin((1-t)*angle)/Math.sin(angle),wb=Math.sin(t*angle)/Math.sin(angle),r=u.map((x,j)=>wa*x+wb*v[j]);pts.push([Math.atan2(r[1],r[0])/rad,Math.atan2(r[2],Math.hypot(r[0],r[1]))/rad])}return pts}
+function routePoints(a,b,bend=0) {
+  const vector = ({lat,lng}) => {
+    const p = lat*rad, l = lng*rad;
+    return [Math.cos(p)*Math.cos(l),Math.cos(p)*Math.sin(l),Math.sin(p)];
+  };
+  const u = vector(a), v = vector(b);
+  const dot = Math.max(-1,Math.min(1,u.reduce((sum,x,i)=>sum+x*v[i],0)));
+  const angle = Math.acos(dot), sine = Math.sin(angle);
+  if (angle < .00001 || angle > Math.PI-.0001) return [];
+  // A small offset along the great-circle normal keeps the schematic curve on the globe.
+  // Use the same side for both travel directions so a return leg follows the same line.
+  const normal = [u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]];
+  const direction = Math.sign([...normal].reverse().find(n=>Math.abs(n)>1e-8) || 1);
+  const maxOffset = Math.min(.27,angle*bend) * direction;
+  const points = [[a.lng,a.lat]];
+  for (let i=1;i<40;i++) {
+    const t=i/40, wa=Math.sin((1-t)*angle)/sine, wb=Math.sin(t*angle)/sine;
+    const offset = Math.tan(maxOffset*Math.sin(Math.PI*t))/sine;
+    const [x,y,z] = u.map((value,j)=>wa*value+wb*v[j]+offset*normal[j]);
+    points.push([Math.atan2(y,x)/rad,Math.atan2(z,Math.hypot(x,y))/rad]);
+  }
+  points.push([b.lng,b.lat]);
+  return points;
+}
 function drawRoutes(){const trips=visibleTravel().filter(e=>e.status==='visited').sort((a,b)=>a.date.localeCompare(b.date));ctx.save();ctx.setLineDash([3,5]);for(let i=1;i<trips.length;i++){pathLine(routePoints(trips[i-1],trips[i]),'#ad815679',1.1)}ctx.restore()}
 // Backups include the profile, notes, travel diaries and compressed image bytes.
 function downloadBackup(data){const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='我的小站-完整备份-'+today()+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),3000)}
@@ -552,9 +575,8 @@ if (louiePlanMode) {
       ctx.save();
       ctx.globalAlpha = active && !selected ? .26 : .9;
       ctx.setLineDash(day.dash);
-      for (let i = 1; i < day.points.length; i++) {
-        mapLine(routePoints(day.points[i - 1], day.points[i]), day.color, selected ? 3 : 1.7);
-      }
+      ctx.lineCap = 'round';
+      for (const leg of day.legs) mapLine(leg, day.color, selected ? 3 : 1.7);
       ctx.restore();
     }
     for (const day of [...ordered].reverse()) {
@@ -601,11 +623,16 @@ if (louiePlanMode) {
     }
   };
   receivePlannedRoutes = message => {
-    plannedDays = message.days;
+    plannedDays = message.days.map(day => ({
+      ...day,
+      legs: day.points.slice(1).map((stop,i)=>routePoints(day.points[i],stop,day.mode==='flight' ? .21 : .12))
+    }));
     selectedPlanDay = message.selected;
     if (message.focus) {
       const selected = plannedDays.find(day => day.id === selectedPlanDay);
-      const points = selected ? selected.points : plannedDays.flatMap(day => day.points);
+      const points = selected
+        ? [...selected.points,...selected.legs.flatMap(leg=>leg.map(([lng,lat])=>({lng,lat})))]
+        : plannedDays.flatMap(day => day.points);
       if (points.length) {
         const latitudes = points.map(point => point.lat);
         const lat = (Math.min(...latitudes) + Math.max(...latitudes)) / 2;
