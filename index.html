@@ -102,6 +102,28 @@ aside #nav{overflow-y:auto;min-height:0;flex:1;align-content:start;scrollbar-wid
 .brand-row .brand-home:hover { color: var(--green); }
 .brand-row .brand-home:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
 .brand-dot { color: var(--green); }
+/* Keep the current tab distinct in the horizontal mobile navigation. */
+@media (max-width: 850px) {
+  #nav button[data-page] {
+    color: var(--ink);
+    background: transparent;
+    border-color: transparent;
+  }
+  #nav button[data-page][aria-current="page"] {
+    color: white;
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
+  }
+  #nav button[data-page]:focus-visible {
+    outline-offset: -3px;
+  }
+}
+
+@media (max-width: 850px) and (hover: hover) {
+  #nav button[data-page]:not([aria-current="page"]):hover {
+    background: var(--accent-soft);
+  }
+}
 </style><body class="booting"><aside><div class="brand-row"><h2><button class="brand-home" type="button" data-page="home" aria-label="Louie 的小站，返回首页" title="返回首页"><span class="brand-full">Louie 的小站<span class="brand-dot">.</span></span><span class="brand-mark" aria-hidden="true"><img class="milk-frog" src="naiwa-laugh.jpg" alt="" width="29" height="29"></span></button></h2><button id="sidebarToggle" disabled type="button" aria-label="折叠导航" aria-expanded="true" onclick="toggleSidebar()">‹</button></div><nav id="nav"></nav></aside><main><header><span id="crumb"></span><span id="profile"></span></header><div id="view"></div></main><dialog id="modal"></dialog><div id="toast" role="status"></div>
 <script src="exam-info.js"></script>
 <script src="bootstrap.js?v=compact-nav"></script></body></html>
