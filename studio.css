@@ -78,3 +78,62 @@
 }
 .divination-trigram b { font-size: 20px; line-height: 1; color: var(--green); }
 .divination-guide .actions { margin-top: 16px; }
+
+.language-toolbar {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  max-width: 880px;
+}
+.language-tabs button[aria-pressed="true"], #kanaRomaji[aria-pressed="true"] {
+  color: white;
+  border-color: var(--accent-hover);
+  background: var(--accent-hover);
+}
+.kana-group { margin-bottom: 16px; }
+.kana-panel, .language-card, .language-flash { max-width: 880px; }
+.kana-chart {
+  display: grid;
+  grid-template-columns: repeat(5,minmax(0,1fr));
+  gap: 7px;
+  max-width: 620px;
+}
+.kana-chart-three { grid-template-columns: repeat(3,minmax(0,1fr)); }
+.kana-cell {
+  display: grid;
+  gap: 3px;
+  place-content: center;
+  min-height: 54px;
+  padding: 6px 3px;
+  text-align: center;
+}
+.kana-cell b { font-size: 22px; line-height: 1.15; }
+.kana-cell small { font-size: 11px; }
+.kana-quiz-symbol { font-size: clamp(46px,8vw,76px); margin: 12px 0; line-height: 1.2; }
+.word-term { font-size: clamp(32px,6vw,55px); line-height: 1.25; font-weight: 600; overflow-wrap: anywhere; }
+.language-flash { text-align: center; padding-top: 30px; padding-bottom: 30px; }
+.language-flash .actions { justify-content: center; }
+.language-flash button { margin-top: 6px; }
+.language-answer { margin: 16px auto; max-width: 55ch; white-space: pre-wrap; overflow-wrap: anywhere; }
+.language-source { font-size: 12px; margin: 16px 0 0; }
+.language-list-row { padding: 9px 0; border-bottom: 1px solid var(--line); }
+.language-list-row p { margin: 4px 0 0; }
+#wordList button { margin-top: 14px; }
+.sentence-filters { justify-content: flex-start; }
+.sentence-filters input { min-width: 0; flex: 1 1 190px; }
+.sentence-card time { color: var(--muted); font-size: 12px; }
+.sentence-card h2 { margin-top: 7px; font-size: 19px; }
+.sentence-card h2, .sentence-card p { white-space: pre-wrap; overflow-wrap: anywhere; }
+#sentenceEditor textarea { min-height: 70px; }
+@media (max-width: 560px) {
+  .kana-panel { padding: 14px; }
+  .kana-chart { gap: 5px; }
+  .kana-cell b { font-size: 19px; }
+  .kana-cell { min-height: 49px; }
+  .language-toolbar { gap: 7px; }
+  .language-tabs { gap: 5px; }
+  .language-tabs button { padding: 7px 10px; }
+}

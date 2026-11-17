@@ -1,0 +1,4 @@
+ECDICT source: https://github.com/skywind3000/ECDICT/tree/39cfb9672c0906b63569e0453c2e6abfb9ab182a
+MIT license: see language-vocab-LICENSE.txt.
+Derived lists use cet6, ky, and ielts labels, sorted by corpus frequency.
+Entries retain the word, pronunciation and up to two Chinese definition lines. These are study lists.
