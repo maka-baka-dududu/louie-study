@@ -219,10 +219,10 @@ function routePoints(a,b,bend=0) {
   const angle = Math.acos(dot), sine = Math.sin(angle);
   if (angle < .00001 || angle > Math.PI-.0001) return [];
   // A small offset along the great-circle normal keeps the schematic curve on the globe.
-  // Use the same side for both travel directions so a return leg follows the same line.
+  // Bow south in the north-up view. Both directions of a leg share the same arc.
   const normal = [u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]];
   const direction = Math.sign([...normal].reverse().find(n=>Math.abs(n)>1e-8) || 1);
-  const maxOffset = Math.min(.27,angle*bend) * direction;
+  const maxOffset = -Math.min(.27,angle*bend) * direction;
   const points = [[a.lng,a.lat]];
   for (let i=1;i<40;i++) {
     const t=i/40, wa=Math.sin((1-t)*angle)/sine, wb=Math.sin(t*angle)/sine;
