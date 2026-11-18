@@ -33,7 +33,7 @@
     ['profile-files-ui.js','LouieProfileFilesReady'],
     ['travel-model.js?v=admin-footprints','LouieTravelModel'],
     ['travel-plan.js?v=public-map','LouieTravelPlanReady'],
-    ['travel-ui.js?v=map-labels','LouieTravelReady']
+    ['travel-ui.js?v=province-stars','LouieTravelReady']
   ];
 
   function loadExtension(src,flag){
