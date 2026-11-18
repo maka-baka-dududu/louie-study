@@ -55,6 +55,10 @@ function openTravelPublication() {
     const data = new FormData(form);
     const ids = data.getAll('footprint');
     const publishDetails = data.has('includeDetails');
+    if (publishDetails && !localDisk.travelDetailsPublish) {
+      status.textContent = '当前运行的是旧版学习站服务。请关闭原启动窗口，重新打开「启动学习站.command」，再发布正文和照片。';
+      return;
+    }
     if (!ids.length && !confirm('清除网站上的全部公开足迹？')) return;
     submit.disabled = true;
     status.textContent = '正在提交到 GitHub…';
@@ -70,7 +74,8 @@ function openTravelPublication() {
         localStorage.setItem('louie-public-footprint-selection',JSON.stringify(ids));
         localStorage.setItem('louie-public-footprint-details',String(publishDetails));
       } catch (_) {}
-      status.textContent = result.changed ? `已提交 ${result.count} 枚足迹。GitHub Pages 部署完成后可见。` : '网站已收到相同足迹，无需重复发布。';
+      const description = result.details ? `足迹与正文（含 ${result.photoCount} 张照片）` : '足迹基本信息';
+      status.textContent = result.changed ? `已提交 ${result.count} 枚${description}，部署完成后可见。` : `网站上的${description}与这次提交一致。`;
     } catch (error) {
       status.textContent = error.message;
     } finally { submit.disabled = false; }
