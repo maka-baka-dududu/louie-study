@@ -13,7 +13,7 @@
     window.LouieAppReady=false;
     return new Promise((resolve,reject)=>{
       let startupError='';
-      const script=document.createElement('script');script.src='app.js';
+      const script=document.createElement('script');script.src='app.js?v=fast-start';
       const onError=event=>{if(event.filename&&new URL(event.filename,location.href).pathname.endsWith('/app.js'))startupError=event.message};
       window.addEventListener('error',onError);
       const timeout=setTimeout(()=>finish(Error('页面程序加载超时，请检查启动窗口。')),10000);
@@ -23,7 +23,46 @@
       document.body.appendChild(script);
     });
   }
-  async function loadApp(){await loadCore();for(const [src,flag] of [['algorithm-problems.js','LouieAlgorithmProblemsReady'],['algorithms-ui.js','LouieAlgorithmsReady'],['personal-ui.js?v=compact-nav','LouiePersonalReady'],['practice-ui.js','LouiePracticeReady'],['language-ui.js?v=word-tasks','LouieLanguageReady'],['studio-ui.js?v=travel-direct-2','LouieStudioReady'],['profile-files-ui.js','LouieProfileFilesReady'],['travel-model.js','LouieTravelModel'],['travel-plan.js?v=trip-overview','LouieTravelPlanReady'],['travel-ui.js?v=trip-overview','LouieTravelReady']]){try{await new Promise((resolve,reject)=>{const extension=document.createElement('script');extension.src=src;const timeout=setTimeout(()=>reject(Error('功能组件加载超时')),10000);extension.onload=()=>{clearTimeout(timeout);window[flag]?resolve():reject(Error('功能组件暂未加载'))};extension.onerror=()=>{clearTimeout(timeout);reject(Error('功能组件文件未读取'))};document.body.appendChild(extension)})}catch(error){if(window.toast)window.toast(error.message+'，其他学习功能可继续使用。')}}document.body.classList.remove('booting')}
+  const extensions=[
+    ['algorithm-problems.js','LouieAlgorithmProblemsReady'],
+    ['algorithms-ui.js','LouieAlgorithmsReady'],
+    ['personal-ui.js?v=fast-start','LouiePersonalReady'],
+    ['practice-ui.js','LouiePracticeReady'],
+    ['language-ui.js?v=word-tasks','LouieLanguageReady'],
+    ['studio-ui.js?v=travel-direct-2','LouieStudioReady'],
+    ['profile-files-ui.js','LouieProfileFilesReady'],
+    ['travel-model.js','LouieTravelModel'],
+    ['travel-plan.js?v=trip-overview','LouieTravelPlanReady'],
+    ['travel-ui.js?v=trip-overview','LouieTravelReady']
+  ];
+
+  function loadExtension(src,flag){
+    return new Promise((resolve,reject)=>{
+      const script=document.createElement('script');
+      script.async=false;
+      script.src=src;
+      const timeout=setTimeout(()=>finish('功能组件加载超时'),10000);
+      function finish(message){
+        clearTimeout(timeout);
+        script.onload=null;
+        script.onerror=null;
+        if(message)reject(Error(message));
+        else resolve();
+      }
+      script.onload=()=>finish(window[flag]?'':'功能组件暂未加载');
+      script.onerror=()=>finish('功能组件文件未读取');
+      document.body.appendChild(script);
+    });
+  }
+
+  async function loadApp(){
+    await loadCore();
+    // Download extensions concurrently while keeping their shared globals in execution order.
+    const results=await Promise.allSettled(extensions.map(([src,flag])=>loadExtension(src,flag)));
+    document.body.classList.remove('booting');
+    const failure=results.find(result=>result.status==='rejected');
+    if(failure)window.toast?.(failure.reason.message+'，部分功能可刷新后重试。');
+  }
 
   window.LouieLocal=null;
   try{await loadApp()}catch(error){showError(error.message)}
