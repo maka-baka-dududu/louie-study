@@ -1,1 +1,14 @@
-{"version":1,"entries":[]}
+{
+  "version": 1,
+  "entries": [
+    {
+      "id": "d389424b-b790-489f-8930-d7622559b77e",
+      "place": "四川省 · 德阳市 · 什邡市",
+      "lat": 31.1786,
+      "lng": 104.065,
+      "status": "visited",
+      "date": "2004-04-21",
+      "markerStyle": "star"
+    }
+  ]
+}
