@@ -10,8 +10,16 @@ function readPublicFootprints() {
     if (snapshot.version !== 1 || !Array.isArray(snapshot.entries) || snapshot.entries.length > 3000) {
       throw Error('公开足迹格式有误。');
     }
-    return snapshot.entries.map(({id,place,lat,lng,status,date,markerStyle,visitCount}) =>
-      ({id,place,lat,lng,status,date,markerStyle,visitCount,title:'',story:'',photos:[]})).filter(entry => Travel.entry(entry));
+    return snapshot.entries.flatMap(raw => {
+      if (!raw || typeof raw !== 'object') return [];
+      const {id,place,lat,lng,status,date,markerStyle,visitCount,title='',story=''} = raw;
+      const entry = {id,place,lat,lng,status,date,markerStyle,visitCount,title,story,photos:[]};
+      if (!Travel.entry(entry)) return [];
+      entry.photos = Array.isArray(raw.photos) ? raw.photos.slice(0,12)
+        .filter(path => typeof path === 'string' && /^travel-media\/[a-f0-9]{64}\.(jpg|png|webp)$/.test(path))
+        .map(path => new URL(path,location.href).href) : [];
+      return [entry];
+    });
   }).catch(error => { publicFootprintsRequest = null; throw error; });
 }
 
@@ -19,7 +27,11 @@ function openTravelPublication() {
   if (publicTravel || !localDisk) return;
   const entries = db.travel.entries;
   let previous = [];
-  try { previous = JSON.parse(localStorage.getItem('louie-public-footprint-selection') || '[]'); } catch (_) {}
+  let includeDetails = false;
+  try {
+    previous = JSON.parse(localStorage.getItem('louie-public-footprint-selection') || '[]');
+    includeDetails = localStorage.getItem('louie-public-footprint-details') === 'true';
+  } catch (_) {}
   const selected = new Set(Array.isArray(previous) ? previous : []);
   show(`<h2>发布公开足迹</h2>
     <p>网站会显示勾选足迹的地点、坐标、日期、状态、图标和手动设置的到访次数。本次发布会替换公开足迹列表。</p>
@@ -27,8 +39,9 @@ function openTravelPublication() {
       <div class="actions"><button type="button" id="travelPublishAll">全选</button><button type="button" id="travelPublishNone">清空选择</button></div>
       <div class="travel-publish-list">${entries.length ? entries.map(entry => `<label class="check">
         <input type="checkbox" name="footprint" value="${esc(entry.id)}" ${selected.has(entry.id) ? 'checked' : ''}>
-        <span>${esc(entry.place)} <small class="muted">${esc(entry.date)} · ${entry.status === 'visited' ? '去过' : '想去'}</small></span></label>`).join('') :
+        <span>${esc(entry.place)} <small class="muted">${esc(entry.date)} · ${entry.status === 'visited' ? '去过' : '想去'} · ${entry.photoIds.length} 张照片</small></span></label>`).join('') :
         '<p class="muted">本地暂无足迹。可以先在旅行星球新增，或导入旧记录。</p>'}</div>
+      <label class="check"><input type="checkbox" name="includeDetails" ${includeDetails ? 'checked' : ''}>同时公开勾选足迹的标题、正文和照片</label>
       <button class="primary" id="travelPublishSubmit">发布到网站</button>
       <p role="status" id="travelPublishStatus"></p>
     </form>`);
@@ -39,7 +52,9 @@ function openTravelPublication() {
   form.onsubmit = async event => {
     event.preventDefault();
     const submit = $('#travelPublishSubmit'), status = $('#travelPublishStatus');
-    const ids = new FormData(form).getAll('footprint');
+    const data = new FormData(form);
+    const ids = data.getAll('footprint');
+    const publishDetails = data.has('includeDetails');
     if (!ids.length && !confirm('清除网站上的全部公开足迹？')) return;
     submit.disabled = true;
     status.textContent = '正在提交到 GitHub…';
@@ -48,10 +63,13 @@ function openTravelPublication() {
       await diskQueue;
       if (diskError) throw Error('本地有未保存的记录，请保存后重试。');
       const response = await diskRequest('/api/travel/publish', {
-        method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ids})
+        method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ids,includeDetails:publishDetails})
       });
       const result = await response.json();
-      try { localStorage.setItem('louie-public-footprint-selection',JSON.stringify(ids)); } catch (_) {}
+      try {
+        localStorage.setItem('louie-public-footprint-selection',JSON.stringify(ids));
+        localStorage.setItem('louie-public-footprint-details',String(publishDetails));
+      } catch (_) {}
       status.textContent = result.changed ? `已提交 ${result.count} 枚足迹。GitHub Pages 部署完成后可见。` : '网站已收到相同足迹，无需重复发布。';
     } catch (error) {
       status.textContent = error.message;
@@ -86,7 +104,7 @@ projectNavItems = function () {
 };
 const travelLegacyPages = ['track', 'today', 'library', 'tracking', 'teacher'];
 function isTravelPage(p=page){return projectTools.travel.includes(p)}
-function sendTravel(message){if(message.kind==='reload'){travelIsReady=false;travelEditing=false;if(travelFrame){travelNonce=uid();travelFrame.src='travel-assets/frame.html?view='+(page==='travelJournal'?'journal':'travel')+'&v=visit-count'+(publicTravel?'&readonly=1':'')+'#'+travelNonce;}return}travelFrame?.contentWindow?.postMessage({channel:'louie-travel',nonce:travelNonce,...message},'*')}
+function sendTravel(message){if(message.kind==='reload'){travelIsReady=false;travelEditing=false;if(travelFrame){travelNonce=uid();travelFrame.src='travel-assets/frame.html?view='+(page==='travelJournal'?'journal':'travel')+'&v=travel-stories'+(publicTravel?'&readonly=1':'')+'#'+travelNonce;}return}travelFrame?.contentWindow?.postMessage({channel:'louie-travel',nonce:travelNonce,...message},'*')}
 function guardTravelLeave(){if(travelBusy){toast('正在保存旅行记录，请稍候。');return false}if(travelEditing){if(!confirm('旅行编辑尚未保存，离开会丢弃本次填写。继续？'))return false;travelEditing=false;sendTravel({kind:'discard-editors'})}return true}
 const openTrackBeforeTravel = openTrack;
 openTrack = function (id) {
@@ -195,7 +213,7 @@ function mountTravelFrame(container, view) {
   frame.referrerPolicy = 'no-referrer';
   travelIsReady = false;
   travelNonce = uid();
-  frame.src = 'travel-assets/frame.html?view=' + view + '&v=visit-count'+(publicTravel?'&readonly=1':'')+'#' + travelNonce;
+  frame.src = 'travel-assets/frame.html?view=' + view + '&v=travel-stories'+(publicTravel?'&readonly=1':'')+'#' + travelNonce;
   travelFrame = frame;
   container.append(frame);
 }
