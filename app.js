@@ -13,7 +13,7 @@ function save(){try{localStorage.setItem(KEY,JSON.stringify(db))}catch(e){storag
 function toast(s){$('#toast').textContent=s;$('#toast').style.display='block';setTimeout(()=>$('#toast').style.display='none',3500)}
 const labels={today:'今日学习',knowledge:'专业课',errors:'错题与复习',mocks:'模考复盘',resources:'考研信息',settings:'目标与备份'};
 function go(p){page=labels[p]?p:'today';filter='全部';render()}
-function render(){ $('#nav').innerHTML=Object.entries(labels).map(([k,v])=>`<button data-page="${k}" class="${page===k?'active':''}">${v}</button>`).join('');$('#crumb').textContent=labels[page];$('#profile').textContent=db.settings.school+' · '+db.settings.major;$('#view').innerHTML=({today:todayView,knowledge:knowledgeView,errors:errorsView,mocks:mocksView,resources:resourcesView,math:mathView,settings:settingsView})[page](); if(!storageOK)$('#view').insertAdjacentHTML('afterbegin','<p class="note warn">本地存储不可用或读取失败。请导出已有数据，勿清理浏览器。</p>');}
+function render(){ $('#nav').innerHTML=Object.entries(labels).map(([k,v])=>`<button data-page="${k}" class="${page===k?'active':''}">${v}</button>`).join('');$('#crumb').textContent=labels[page];$('#view').innerHTML=({today:todayView,knowledge:knowledgeView,errors:errorsView,mocks:mocksView,resources:resourcesView,math:mathView,settings:settingsView})[page](); if(!storageOK)$('#view').insertAdjacentHTML('afterbegin','<p class="note warn">本地存储不可用或读取失败。请导出已有数据，勿清理浏览器。</p>');}
 const subjectLabel=s=>({'数学二':'数学','英语二':'英语','408':'专业课','408综合':'专业课综合','408复习':'专业课复习'}[s]||s);
 const opts=(arr,sel)=>arr.map(x=>`<option value="${esc(x)}" ${x===sel?'selected':''}>${esc(subjectLabel(x))}</option>`).join('');
 const due=()=>db.errors.filter(e=>e.due<=today());

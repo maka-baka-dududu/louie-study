@@ -13,7 +13,7 @@
     window.LouieAppReady=false;
     return new Promise((resolve,reject)=>{
       let startupError='';
-      const script=document.createElement('script');script.src='app.js?v=fast-start';
+      const script=document.createElement('script');script.src='app.js?v=header-cleanup';
       const onError=event=>{if(event.filename&&new URL(event.filename,location.href).pathname.endsWith('/app.js'))startupError=event.message};
       window.addEventListener('error',onError);
       const timeout=setTimeout(()=>finish(Error('页面程序加载超时，请检查启动窗口。')),10000);
@@ -26,7 +26,7 @@
   const extensions=[
     ['algorithm-problems.js','LouieAlgorithmProblemsReady'],
     ['algorithms-ui.js','LouieAlgorithmsReady'],
-    ['personal-ui.js?v=travel-navigation','LouiePersonalReady'],
+    ['personal-ui.js?v=header-cleanup','LouiePersonalReady'],
     ['practice-ui.js','LouiePracticeReady'],
     ['language-ui.js?v=word-tasks','LouieLanguageReady'],
     ['studio-ui.js?v=travel-direct-2','LouieStudioReady'],
