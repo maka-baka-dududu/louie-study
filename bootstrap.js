@@ -31,9 +31,9 @@
     ['language-ui.js?v=word-tasks','LouieLanguageReady'],
     ['studio-ui.js?v=travel-direct-2','LouieStudioReady'],
     ['profile-files-ui.js','LouieProfileFilesReady'],
-    ['travel-model.js','LouieTravelModel'],
+    ['travel-model.js?v=visit-count','LouieTravelModel'],
     ['travel-plan.js?v=public-map','LouieTravelPlanReady'],
-    ['travel-ui.js?v=public-map','LouieTravelReady']
+    ['travel-ui.js?v=visit-count','LouieTravelReady']
   ];
 
   function loadExtension(src,flag){

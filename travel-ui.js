@@ -10,8 +10,8 @@ function readPublicFootprints() {
     if (snapshot.version !== 1 || !Array.isArray(snapshot.entries) || snapshot.entries.length > 3000) {
       throw Error('公开足迹格式有误。');
     }
-    return snapshot.entries.map(({id,place,lat,lng,status,date,markerStyle}) =>
-      ({id,place,lat,lng,status,date,markerStyle,title:'',story:'',photos:[]})).filter(entry => Travel.entry(entry));
+    return snapshot.entries.map(({id,place,lat,lng,status,date,markerStyle,visitCount}) =>
+      ({id,place,lat,lng,status,date,markerStyle,visitCount,title:'',story:'',photos:[]})).filter(entry => Travel.entry(entry));
   }).catch(error => { publicFootprintsRequest = null; throw error; });
 }
 
@@ -22,7 +22,7 @@ function openTravelPublication() {
   try { previous = JSON.parse(localStorage.getItem('louie-public-footprint-selection') || '[]'); } catch (_) {}
   const selected = new Set(Array.isArray(previous) ? previous : []);
   show(`<h2>发布公开足迹</h2>
-    <p>网站会显示勾选足迹的地点、坐标、日期、状态和图标。本次发布会替换公开足迹列表。</p>
+    <p>网站会显示勾选足迹的地点、坐标、日期、状态、图标和手动设置的到访次数。本次发布会替换公开足迹列表。</p>
     <form id="travelPublishForm">
       <div class="actions"><button type="button" id="travelPublishAll">全选</button><button type="button" id="travelPublishNone">清空选择</button></div>
       <div class="travel-publish-list">${entries.length ? entries.map(entry => `<label class="check">
@@ -86,7 +86,7 @@ projectNavItems = function () {
 };
 const travelLegacyPages = ['track', 'today', 'library', 'tracking', 'teacher'];
 function isTravelPage(p=page){return projectTools.travel.includes(p)}
-function sendTravel(message){if(message.kind==='reload'){travelIsReady=false;travelEditing=false;if(travelFrame){travelNonce=uid();travelFrame.src='travel-assets/frame.html?view='+(page==='travelJournal'?'journal':'travel')+'&v=public-map'+(publicTravel?'&readonly=1':'')+'#'+travelNonce;}return}travelFrame?.contentWindow?.postMessage({channel:'louie-travel',nonce:travelNonce,...message},'*')}
+function sendTravel(message){if(message.kind==='reload'){travelIsReady=false;travelEditing=false;if(travelFrame){travelNonce=uid();travelFrame.src='travel-assets/frame.html?view='+(page==='travelJournal'?'journal':'travel')+'&v=visit-count'+(publicTravel?'&readonly=1':'')+'#'+travelNonce;}return}travelFrame?.contentWindow?.postMessage({channel:'louie-travel',nonce:travelNonce,...message},'*')}
 function guardTravelLeave(){if(travelBusy){toast('正在保存旅行记录，请稍候。');return false}if(travelEditing){if(!confirm('旅行编辑尚未保存，离开会丢弃本次填写。继续？'))return false;travelEditing=false;sendTravel({kind:'discard-editors'})}return true}
 const openTrackBeforeTravel = openTrack;
 openTrack = function (id) {
@@ -195,7 +195,7 @@ function mountTravelFrame(container, view) {
   frame.referrerPolicy = 'no-referrer';
   travelIsReady = false;
   travelNonce = uid();
-  frame.src = 'travel-assets/frame.html?view=' + view + '&v=public-map'+(publicTravel?'&readonly=1':'')+'#' + travelNonce;
+  frame.src = 'travel-assets/frame.html?view=' + view + '&v=visit-count'+(publicTravel?'&readonly=1':'')+'#' + travelNonce;
   travelFrame = frame;
   container.append(frame);
 }
@@ -211,7 +211,7 @@ async function hydrateRecord(item){const {photoIds,...rest}=item;return {...rest
 async function hydrateProfile(p){if(!p)return undefined;const {avatarId,...rest}=p;return {...rest,avatar:avatarId?await photoData(avatarId):''}}
 async function stageTravelPhoto(data,candidate,staged){if(!Travel.image(data))throw Error('照片必须是完整的 JPG、PNG 或 WebP 数据。');const comma=data.indexOf(','),mime=data.slice(5,data.indexOf(';')),bytes=Uint8Array.from(atob(data.slice(comma+1)),c=>c.charCodeAt(0));const magic=mime==='image/jpeg'?bytes[0]===255&&bytes[1]===216:mime==='image/png'?bytes[0]===137&&bytes[1]===80&&bytes[2]===78&&bytes[3]===71:bytes[0]===82&&bytes[1]===73&&bytes[2]===70&&bytes[8]===87&&bytes[9]===69&&bytes[10]===66&&bytes[11]===80;if(!magic)throw Error('照片文件内容与格式不一致。');const hash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),b=>b.toString(16).padStart(2,'0')).join('');const existing=candidate.materials.find(m=>m.trackId==='travel'&&m.photoHash===hash&&m.fileId);if(existing)return existing.id;const fileId=uid(),id=uid(),extension=mime==='image/png'?'png':mime==='image/webp'?'webp':'jpg';await fileOp('put',fileId,new Blob([bytes],{type:mime}));staged.push(fileId);candidate.materials.push({id,fileId,trackId:'travel',photoHash:hash,title:'旅行照片 · '+today(),subject:'旅行照片',tags:'旅行相册',fileName:id+'.'+extension,mime,size:bytes.length,current:0,total:0,unit:'张',status:'已完成',created:today(),note:''});return id}
 async function stageTravelPhotos(photos,candidate,staged){const ids=[];for(const p of photos)ids.push(await stageTravelPhoto(p,candidate,staged));return ids}
-async function canonicalEntry(raw,candidate,staged){if(!Travel.entry(raw))throw Error('旅行记录格式不正确。');return {id:raw.id,place:raw.place,lat:raw.lat,lng:raw.lng,date:raw.date,endDate:raw.endDate||'',markerStyle:raw.markerStyle||'auto',status:raw.status,title:raw.title,story:raw.story,photoIds:await stageTravelPhotos(raw.photos,candidate,staged),updatedAt:new Date().toISOString()}}
+async function canonicalEntry(raw,candidate,staged){if(!Travel.entry(raw))throw Error('旅行记录格式不正确。');return {id:raw.id,place:raw.place,lat:raw.lat,lng:raw.lng,date:raw.date,endDate:raw.endDate||'',markerStyle:raw.markerStyle||'auto',...(raw.status==='visited'&&raw.visitCount ? {visitCount:raw.visitCount} : {}),status:raw.status,title:raw.title,story:raw.story,photoIds:await stageTravelPhotos(raw.photos,candidate,staged),updatedAt:new Date().toISOString()}}
 async function canonicalNote(raw,candidate,staged){if(!Travel.note(raw))throw Error('旧随手记录格式不正确。');const {photos,...rest}=raw;return {...rest,photoIds:await stageTravelPhotos(photos,candidate,staged)}}
 function mergeIds(old,items){const map=new Map(old.map(x=>[x.id,x]));for(const x of items)map.set(x.id,x);return [...map.values()]}
 const saveBeforeTravel=save;
@@ -230,7 +230,15 @@ async function travelBridge(op,data){
    if(op==='write-store'&&data.name==='meta'&&['globeScene','markerMetric'].includes(data.key))return data.value;
    throw Error('公开旅行记录只能查看。');
  }
- const t=db.travel;if(op==='api'){const path=data.path,options=data.options||{},method=options.method||'GET';if(path==='/api/photos'&&method==='POST'){const p=JSON.parse(options.body);if(!Travel.image(p.data))throw Error('照片格式不正确。');return {url:p.data}}if(path==='/api/entries'&&method==='GET')return Promise.all(t.entries.map(hydrateRecord));if(!/^\/api\/entries(?:\/[A-Za-z0-9_-]{1,100})?$/.test(path))throw Error('旅行接口不存在。');if(method==='DELETE'){const id=path.split('/')[3];return travelCommit(c=>{const entry=c.travel.entries.find(e=>e.id===id);if(!entry)throw Error('旅行记录不存在。');c.travel.entries=c.travel.entries.filter(e=>e.id!==id);c.travel.trash.entries=mergeIds(c.travel.trash.entries,[entry]);return {ok:true}})}if(!['POST','PUT'].includes(method))throw Error('不支持的旅行操作。');const raw=JSON.parse(options.body);raw.id=method==='PUT'?path.split('/')[3]:uid();const result=await travelCommit(async(c,staged)=>{if(method==='PUT'&&!c.travel.entries.some(e=>e.id===raw.id))throw Error('旅行记录已不存在。');const entry=await canonicalEntry(raw,c,staged);c.travel.entries=mergeIds(c.travel.entries,[entry]);return entry});return hydrateRecord(result)}
+ const t=db.travel;if(op==='api'){const path=data.path,options=data.options||{},method=options.method||'GET';if(path==='/api/photos'&&method==='POST'){const p=JSON.parse(options.body);if(!Travel.image(p.data))throw Error('照片格式不正确。');return {url:p.data}}if(path==='/api/entries'&&method==='GET')return Promise.all(t.entries.map(hydrateRecord));if(!/^\/api\/entries(?:\/[A-Za-z0-9_-]{1,100})?$/.test(path))throw Error('旅行接口不存在。');if(method==='DELETE'){const id=path.split('/')[3];return travelCommit(c=>{const entry=c.travel.entries.find(e=>e.id===id);if(!entry)throw Error('旅行记录不存在。');c.travel.entries=c.travel.entries.filter(e=>e.id!==id);c.travel.trash.entries=mergeIds(c.travel.trash.entries,[entry]);return {ok:true}})}if(!['POST','PUT'].includes(method))throw Error('不支持的旅行操作。');const raw=JSON.parse(options.body);raw.id=method==='PUT'?path.split('/')[3]:uid();const result=await travelCommit(async(c,staged)=>{if(method==='PUT'&&!c.travel.entries.some(e=>e.id===raw.id))throw Error('旅行记录已不存在。');const entry=await canonicalEntry(raw,c,staged);c.travel.entries=mergeIds(c.travel.entries,[entry]);
+if(entry.status==='visited'&&entry.visitCount){
+  for(const item of c.travel.entries){
+    if(item.status==='visited'&&item.lat.toFixed(3)===entry.lat.toFixed(3)&&item.lng.toFixed(3)===entry.lng.toFixed(3)){
+      item.visitCount=entry.visitCount;
+    }
+  }
+}
+return entry});return hydrateRecord(result)}
  if(op==='read-store'){if(data.name==='notes')return Promise.all(t.legacyNotes.map(hydrateRecord));if(data.name==='meta'){if(data.key==='routes')return t.routes;if(data.key==='profile')return hydrateProfile(t.legacyProfile);if(['globeScene','markerMetric'].includes(data.key))return t.preferences[data.key]}throw Error('旅行读取范围不正确。')}
  if(op==='write-store'&&data.name==='meta'){if(data.key==='routes'){const routes=data.value;if(!Array.isArray(routes)||routes.length>4000||!routes.every(Travel.route)||new Set(routes.map(r=>r.id)).size!==routes.length)throw Error('行程格式不正确。');return travelCommit(c=>{const removed=c.travel.routes.filter(r=>!routes.some(x=>x.id===r.id));c.travel.trash.routes=mergeIds(c.travel.trash.routes,removed);c.travel.routes=JSON.parse(JSON.stringify(routes));return routes})}if(data.key==='globeScene'&&['space','day','dusk'].includes(data.value)||data.key==='markerMetric'&&['smart','frequency','recency','duration'].includes(data.value))return travelCommit(c=>{c.travel.preferences[data.key]=data.value;return data.value})}throw Error('此页面只能修改旅行记录。')}
 window.addEventListener('message',async event=>{const m=event.data;if(!travelFrame||event.source!==travelFrame.contentWindow||event.origin!=='null'||m?.channel!=='louie-travel'||m.nonce!==travelNonce)return;if(m.kind==='ready'){travelIsReady=true;$('#travelFrameLoading')?.remove();if(page==='travelPlan')sendTripMap(true);return}if(page==='travelPlan'&&m.kind==='plan-select'){selectTripDay(m.id);return}if(m.kind==='editing'){travelEditing=m.value===true;return}if(m.kind==='view'&&isTravelPage()&&page!=='travelPlan'){page=m.view==='journal'?'travelJournal':'travelGlobe';updateTravelHeading();renderPersonalNav();renderNavigationContext();rememberProjectRoute();return}if(m.kind!=='request'||!['api','read-store','write-store','remove-store'].includes(m.op)||typeof m.id!=='string'||m.id.length>100)return;const source=event.source,nonce=travelNonce;try{const result=await travelBridge(m.op,m.data||{});source.postMessage({channel:'louie-travel',nonce,kind:'response',id:m.id,result},'*')}catch(error){source.postMessage({channel:'louie-travel',nonce,kind:'response',id:m.id,error:String(error.message||error).slice(0,1000)},'*')}});
