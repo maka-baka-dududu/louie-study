@@ -84,12 +84,8 @@ function openTravelPublication() {
 function normalizeTravel() {
   db.travel ??= Travel.blank();
   const tracks = db.personal.tracks;
-  const position = tracks.findIndex(track => track.id === 'travel');
-  if (position > 0) {
-    const [travelProject] = tracks.splice(position, 1);
-    tracks.unshift(travelProject);
-  } else if (position === -1 && tracks.length < 30) {
-    tracks.unshift({
+  if (!tracks.some(track => track.id === 'travel') && tracks.length < 30) {
+    tracks.push({
       id: 'travel', name: '旅行星球', icon: '◎', kind: 'life',
       subjects: ['旅行日记', '地球足迹', '行程轨迹'],
       goal: '', milestones: [], paused: false
@@ -103,9 +99,11 @@ if (window.LouieTravelPlanReady) {
   projectTools.travel.push('travelPlan');
 }
 let travelFrame=null,travelNonce=null,travelEditing=false,travelIsReady=false,travelBusy=0,travelQueue=Promise.resolve();const travelPhotoCache=new Map();
+stableNavItems.splice(stableNavItems.indexOf('directions')+1,0,'travelGlobe');
 const projectNavItemsBeforeTravel = projectNavItems;
 projectNavItems = function () {
-  return navigationProject === 'travel' ? projectTools.travel : projectNavItemsBeforeTravel();
+  if (navigationProject !== 'travel') return projectNavItemsBeforeTravel();
+  return stableNavItems.flatMap(item=>item==='travelGlobe' ? projectTools.travel : [item]);
 };
 const travelLegacyPages = ['track', 'today', 'library', 'tracking', 'teacher'];
 function isTravelPage(p=page){return projectTools.travel.includes(p)}
@@ -135,7 +133,13 @@ go = function (target) {
     travelPhotoCache.clear();
   }
 };
-const navigationContextBeforeTravel=renderNavigationContext;renderNavigationContext=function(){navigationContextBeforeTravel();if(page==='travelGlobe'&&navigationProject==='travel')$('#crumb').innerHTML='<button data-page="directions">我的项目</button><span class="crumb-separator" aria-hidden="true">/</span><span>旅行星球</span>'};
+const navigationContextBeforeTravel = renderNavigationContext;
+renderNavigationContext = function () {
+  if (navigationProject!=='travel' || !isTravelPage()) return navigationContextBeforeTravel();
+  const crumb = $('#crumb');
+  if (page==='travelGlobe') crumb.textContent = labels.travelGlobe;
+  else crumb.innerHTML = '<button data-page="travelGlobe">旅行星球</button><span class="crumb-separator" aria-hidden="true">/</span><span>'+esc(labels[page])+'</span>';
+};
 const renderBeforeTravel=render;
 render = function () {
   normalizeTravel();
