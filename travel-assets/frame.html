@@ -60,7 +60,16 @@ header.site-header{display:grid;grid-template-columns:1fr auto 1fr}.site-header 
   outline:2px solid #fff; outline-offset:1px;
 }
 .travel-readonly :is(.create-control,#pinMode,#pinTip,#globalDiary,#globalFrom,#globalTo,#adminDiary,#editBtn,#deleteBtn,#editRoute,#deleteRoute,#importBtn,#exportBtn) {display:none!important}
-.entry-place-level{display:flex;align-items:center;gap:8px;margin:6px 0}.entry-place-level label{margin:0}.entry-place-level select{width:auto;padding:5px 8px}</style><style>.site-header,.site-footer,#homePage,#notesPage,#aboutPage,#journalPage>.intro{display:none!important}body.page-travel #travelPage{inset:0!important}body.page-travel #travelPage .globe-panel{height:100%!important}body.page-journal{overflow:auto}#journalPage{padding:22px!important}body{background:#f6f5ef}#travelPage .map-loading{z-index:5}</style></head><body>
+.entry-place-level{display:flex;align-items:center;gap:8px;margin:6px 0}.entry-place-level label{margin:0}.entry-place-level select{width:auto;padding:5px 8px}.journal-page .entries{display:block}
+.journal-region{margin:0 0 20px}
+.journal-region-name{display:flex;align-items:center;gap:8px;margin:0 0 9px;font-size:14px}
+.journal-region-name i{width:9px;height:9px;flex:none;border-radius:50%;background:var(--region-color)}
+.journal-region-entries{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));gap:10px}
+.journal-region .entry{border-left:3px solid var(--region-color)}
+.journal-region .journal-place-icon{color:var(--region-color)}
+.journal-stats .stat span{color:var(--muted)}
+.journal-countries{color:var(--muted);font-size:12px;margin:-14px 0 20px}
+</style><style>.site-header,.site-footer,#homePage,#notesPage,#aboutPage,#journalPage>.intro{display:none!important}body.page-travel #travelPage{inset:0!important}body.page-travel #travelPage .globe-panel{height:100%!important}body.page-journal{overflow:auto}#journalPage{padding:22px!important}body{background:#f6f5ef}#travelPage .map-loading{z-index:5}</style></head><body>
 <header class="site-header"><button class="brand home-link text-btn" aria-label="回到主页"><span class="brand-icon">✳</span><span><span id="siteName">旅行星球</span></span></button><nav aria-label="主导航"><button class="nav-btn active" data-nav="home">主页</button><button class="nav-btn" data-nav="travel">地球</button><button class="nav-btn" data-nav="journal">旅行日记</button></nav></header><section class="personal-page home-page" id="homePage">
  <div class="home-hero"><div class="hero-copy"><h1>旅行星球</h1><p class="travel-home-caption">收藏足迹，记录旅程。</p><div class="hero-actions"><button class="text-btn" id="editProfileHome" hidden>编辑我的名片</button></div></div><div class="hero-art" aria-hidden="true"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="mini-earth"><div class="mini-grid"></div><span class="earth-mark m-one"></span><span class="earth-mark m-two"></span><span class="earth-mark m-three"></span></div></div></div>
  <div class="home-section-head"><div><span class="eyebrow">TRAVEL</span><h2>我的旅行</h2></div><span class="subtle">走过的路，留下的故事。</span></div>
@@ -74,7 +83,7 @@ header.site-header{display:grid;grid-template-columns:1fr auto 1fr}.site-header 
 <details class="globe-search" id="searchDrawer"><summary>搜索地点 <span class="drawer-close">×</span></summary><section class="place-finder"><div class="finder-head"><div class="finder-tabs" role="tablist" aria-label="地点搜索范围"><button id="findWorld" role="tab" aria-selected="true" aria-controls="globalExplorer" class="active">全球地点</button><button id="findChina" role="tab" aria-selected="false" aria-controls="domesticExplorer">国内区域</button></div><span class="offline-indicator">● 离线可用</span></div><section class="place-pane" id="globalExplorer"><div class="global-search"><input id="globalQuery" placeholder="搜索城市或小镇，例如 京都、Hallstatt" aria-label="全球地点关键词"><button id="globalSearch" class="primary">搜索</button></div><p id="globalStatus" role="status">输入地名，找到下一站。</p><div id="globalResults" class="admin-results"></div><div id="globalDetail" hidden><div class="admin-actions"><span id="globalSelected"></span><button id="globalDiary" hidden>写日记</button><button id="globalFrom" hidden>设为起点</button><button id="globalTo" hidden>设为终点</button><button id="globalDetailIn">周边 ＋</button><button id="globalDetailOut">周边 −</button></div><canvas id="globalMap" aria-label="所选地点的离线周边地点分布图"></canvas><p class="detail-caption">周边地点示意 · 不含街道与建筑</p></div></section><section class="place-pane" id="domesticExplorer" hidden><div class="admin-fields"><input id="adminSearch" placeholder="搜索省、市或区县" aria-label="搜索行政区域"><select id="adminProvince" aria-label="省级区域"></select><select id="adminCity" aria-label="城市"></select><select id="adminDistrict" aria-label="区县"></select></div><div class="admin-results" id="adminResults"></div><div class="admin-actions"><span id="adminSelection">选择区域</span><button id="adminFocus">定位</button><button id="adminDiary" type="button" hidden>记录此区域</button></div></section><details class="data-note"><summary>数据与覆盖范围</summary><p>全球：236,971 条城市、城镇等地点，支持部分中文别名；未收录地点可在地球上双击标记。国内：34 个省级、363 个地级、2840 个区县记录，臺灣仅省级轮廓。国内区域为2025年快照，全球地名下载于2026年11月。地图为旅行记录示意，不用于导航。</p><p>© GeoNames contributors · CC BY 4.0 ／ Natural Earth ／ NASA GEBCO。搜索、日记与照片在本机处理。</p></details></section></details><div class="workspace"><div class="travel-left"><section class="globe-panel" aria-label="可旋转的旅行地球仪"><div class="panel-top"><span class="map-panel-caption"><i class="live-dot"></i><span id="mapModeTitle">地球仪</span></span><span class="tiny" id="mapStatus"></span></div><div id="mapLoading" class="map-loading">正在展开世界地图…</div><div id="mapTooltip" class="map-tooltip" hidden></div><span class="map-scale" id="mapScaleLabel">缩放 1.0×</span><canvas id="terrainCanvas" hidden aria-hidden="true"></canvas><canvas id="globe" aria-label="拖动旋转地球，点击足迹查看日记；双击地球添加地点" tabindex="0"></canvas><div class="float-note" id="globeNote">双击地图，记录足迹。</div><div class="globe-controls"><button class="icon-btn" id="pinMode" aria-label="在地球上选点" hidden>⌖</button></div><div class="globe-foot"><span id="mapHelp">拖动旋转 · 双指或滚轮缩放 · 双击标记</span><div class="legend"><span>✦ 国内按省配色 · 国外灰蓝</span></div></div></section><details class="terrain-controls" id="settingsDrawer"><summary>地图设置 <span>×</span></summary><div class="marker-settings"><label for="markerMetric">足迹标签</label><select id="markerMetric"><option value="smart">自动</option><option value="frequency">到访次数</option><option value="recency">最近到访</option><option value="duration">停留天数</option></select><p>同一坐标合并显示；同日记录计一次到访。未填离开日期不估算停留。</p></div><div class="scene-settings"><div class="scene-label">背景氛围</div><div class="scene-choices" role="group" aria-label="地球背景"><button type="button" data-scene="day"><i class="scene-day"></i>晴昼</button><button type="button" data-scene="dusk"><i class="scene-dusk"></i>暮色</button><button type="button" data-scene="space"><i class="scene-space"></i>星空</button></div><p>氛围光影，不代表实时昼夜。</p></div><div class="map-toolbar"><div class="map-mode-switch"><button id="mapGlobeMode" class="active">◎ 地球仪</button><button id="mapFlatMode">▱ 世界地图</button></div><div class="map-options"><label><input id="mapNames" type="checkbox" checked>地名</label><select id="mapLocation" aria-label="快速定位区域"><option value="">定位区域</option><option value="105,30">亚洲</option><option value="15,48">欧洲</option><option value="20,0">非洲</option><option value="-100,40">北美洲</option><option value="-60,-20">南美洲</option><option value="140,-25">大洋洲</option><option value="0,-75">南极洲</option></select></div></div><div class="terrain-control-row"><label><input type="checkbox" id="terrainToggle" checked> 立体地形</label><label><input type="checkbox" id="seafloorToggle"> 海底起伏</label><label class="relief-slider">起伏强度 <input type="range" id="reliefAmount" min="1" max="100" step="1" value="14" aria-label="地形高度夸张倍数"><output id="reliefValue">14×</output></label></div><div class="terrain-presets"><span id="terrainDevice">宏观地形 · 高度经过夸张，非测量海拔</span><button id="terrainHimalaya" hidden>看喜马拉雅 ↗</button><button id="terrainAndes" hidden>看安第斯 ↗</button><button id="terrainMariana" hidden>看西太平洋海底 ↗</button></div><div class="height-legend"><span>深海</span><i></i><span>低地</span><i></i><span>高地</span><i></i><span>高山</span></div><div class="map-source"><span>地形：NASA / GEBCO · 边界：<a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener noreferrer">Natural Earth</a></span></div></details>
 <details class="timeline-panel" id="timeDrawer"><summary>旅程时间轴 <span class="drawer-close">×</span></summary><div class="timeline-head"><div class="timeline-title">旅程时间轴</div><label class="follow-journey"><input type="checkbox" id="followRoute" checked>回放时跟随</label><button class="timeline-play" id="timelinePlay" aria-pressed="false">▷ 播放旅程</button></div><p class="timeline-empty" id="timelineEmpty">记录足迹后，在这里回看旅程。</p><div id="timelineTrack" hidden><div class="timeline-range-wrap"><input type="range" min="0" max="0" value="0" step="1" id="timelineRange" class="timeline-range" aria-label="查看截至某日的旅行足迹"><div class="timeline-labels"><span id="timelineStart">起点</span><strong id="timelineDate" aria-live="polite">全部时间</strong><span id="timelineEnd">下一站</span></div></div><div class="timeline-years" id="timelineYears"></div><p class="help" style="margin-bottom:0">拖动查看旅程<span id="timelineSummary" style="float:right"></span></p></div></details>
 </div>
-</div></main><main class="main journal-page" id="journalPage" hidden><div class="intro"><div><div class="eyebrow">TRAVEL JOURNAL</div><h1>旅行日记</h1><p>地点、照片，以及路上的故事。</p></div></div><aside class="side"><div class="stats"><div class="stat"><strong id="placeCount">00</strong><span>去过的地方</span></div><div class="stat"><strong id="photoCount">00</strong><span>收藏的照片</span></div><div class="stat"><strong id="wishCount">00</strong><span>下一站心愿</span></div></div><div class="section-row"><h2>旅行日记</h2><small id="entryCount">MY TRAVEL JOURNAL</small></div><input class="search" id="search" aria-label="搜索足迹" placeholder="⌕  搜索地点或日记里的记忆"><div class="tabs"><button data-filter="all" class="active">全部</button><button data-filter="visited">去过的</button><button data-filter="wish">想去的</button></div><div class="entries" id="entries" aria-live="polite"><div class="empty">正在打开你的旅行档案…</div></div></aside><section class="route-panel" aria-label="我的交通轨迹"><div class="route-section-head"><div><h2>行程</h2></div></div><div class="route-legend"><span style="--mode:#bd875b">✈ 飞机</span><span style="--mode:#4f91a4">⛴ 轮船</span><span style="--mode:#6d9068">▰ 火车</span><span style="--mode:#9b879f">▣ 汽车 / 巴士</span><span style="--mode:#a79565">♧ 步行 / 骑行</span></div><div id="routeList" class="route-list"></div><p class="route-footnote">手动路线为示意；导入 GPX 可记录实际轨迹。</p></section></main><div id="travelActions"><div class="map-dock-tools"><button id="dockSearch" title="搜索地点" aria-label="搜索地点" aria-expanded="false">⌕<span>搜索</span></button><button id="dockTime" title="旅程时间轴" aria-label="旅程时间轴" aria-expanded="false">◷<span>时间</span></button><button id="dockSettings" title="地图设置" aria-label="地图设置" aria-expanded="false">☷<span>设置</span></button><i></i><button class="icon-btn" id="zoomOut" aria-label="缩小">−</button><button class="icon-btn" id="zoomIn" aria-label="放大">＋</button><button class="icon-btn" id="home" aria-label="回到亚洲视角">⌂</button><i></i></div><div class="create-control"><button class="primary" id="addBtn" aria-expanded="false" aria-controls="travelCreateMenu">＋ 新增</button><div class="create-menu" id="travelCreateMenu" hidden><button id="createFootprint">记录足迹 <span>地点、照片与日记</span></button><button  id="newRoute">添加行程 <span>交通方式与路线</span></button></div></div></div><footer class="site-footer"><span>旅行星球 · 本地保存</span><div class="footer-tools"><span id="storageStatus">本地保存</span><span><button id="importBtn">导入备份 ↑</button><button id="exportBtn">导出整站备份 ↓</button><input type="file" id="importFile" accept="application/json,.json" hidden></span></div></footer>
+</div></main><main class="main journal-page" id="journalPage" hidden><div class="intro"><div><div class="eyebrow">TRAVEL JOURNAL</div><h1>旅行日记</h1><p>地点、照片，以及路上的故事。</p></div></div><aside class="side"><div class="stats journal-stats" aria-label="去过的地方"><div class="stat"><strong id="provinceCount">0</strong><span>省级地区</span></div><div class="stat"><strong id="cityCount">0</strong><span>国内城市</span></div><div class="stat"><strong id="countryCount">0</strong><span>到访国家</span></div></div><p id="visitedCountries" class="journal-countries" hidden></p><div class="section-row"><h2>旅行日记</h2><small id="entryCount">MY TRAVEL JOURNAL</small></div><input class="search" id="search" aria-label="搜索足迹" placeholder="⌕  搜索地点或日记里的记忆"><div class="tabs"><button data-filter="all" class="active">全部</button><button data-filter="visited">去过的</button><button data-filter="wish">想去的</button></div><div class="entries" id="entries" aria-live="polite"><div class="empty">正在打开你的旅行档案…</div></div></aside><section class="route-panel" aria-label="我的交通轨迹"><div class="route-section-head"><div><h2>行程</h2></div></div><div class="route-legend"><span style="--mode:#bd875b">✈ 飞机</span><span style="--mode:#4f91a4">⛴ 轮船</span><span style="--mode:#6d9068">▰ 火车</span><span style="--mode:#9b879f">▣ 汽车 / 巴士</span><span style="--mode:#a79565">♧ 步行 / 骑行</span></div><div id="routeList" class="route-list"></div><p class="route-footnote">手动路线为示意；导入 GPX 可记录实际轨迹。</p></section></main><div id="travelActions"><div class="map-dock-tools"><button id="dockSearch" title="搜索地点" aria-label="搜索地点" aria-expanded="false">⌕<span>搜索</span></button><button id="dockTime" title="旅程时间轴" aria-label="旅程时间轴" aria-expanded="false">◷<span>时间</span></button><button id="dockSettings" title="地图设置" aria-label="地图设置" aria-expanded="false">☷<span>设置</span></button><i></i><button class="icon-btn" id="zoomOut" aria-label="缩小">−</button><button class="icon-btn" id="zoomIn" aria-label="放大">＋</button><button class="icon-btn" id="home" aria-label="回到亚洲视角">⌂</button><i></i></div><div class="create-control"><button class="primary" id="addBtn" aria-expanded="false" aria-controls="travelCreateMenu">＋ 新增</button><div class="create-menu" id="travelCreateMenu" hidden><button id="createFootprint">记录足迹 <span>地点、照片与日记</span></button><button  id="newRoute">添加行程 <span>交通方式与路线</span></button></div></div></div><footer class="site-footer"><span>旅行星球 · 本地保存</span><div class="footer-tools"><span id="storageStatus">本地保存</span><span><button id="importBtn">导入备份 ↑</button><button id="exportBtn">导出整站备份 ↓</button><input type="file" id="importFile" accept="application/json,.json" hidden></span></div></footer>
 <div class="modal-backdrop" id="routeEditor"><section class="modal route-modal" role="dialog" aria-modal="true" aria-labelledby="routeEditorTitle"><div class="modal-head"><h2 id="routeEditorTitle">添加一段行程</h2><button class="close" data-close="routeEditor" aria-label="关闭">×</button></div><form id="routeForm"><div class="route-import"><label class="text-btn" for="routeGpx">↥ 导入 GPX 轨迹</label><input type="file" id="routeGpx" accept=".gpx,application/gpx+xml,text/xml" hidden><span id="gpxStatus">也可以手动填写起点与终点</span></div><datalist id="routePlaces"></datalist><div class="route-endpoint"><span class="endpoint-dot">○</span><div class="field"><label for="routeFrom">从哪里出发 *</label><input id="routeFrom" list="routePlaces" required maxlength="100" autocomplete="off" placeholder="输入城市，或选择已有足迹"><div class="row endpoint-coords"><div><label for="routeFromLat">纬度 *</label><input id="routeFromLat" type="number" min="-90" max="90" step="any" required></div><div><label for="routeFromLng">经度 *</label><input id="routeFromLng" type="number" min="-180" max="180" step="any" required></div></div></div></div><div class="route-endpoint"><span class="endpoint-dot">●</span><div class="field"><label for="routeTo">到哪里去 *</label><input id="routeTo" list="routePlaces" required maxlength="100" autocomplete="off" placeholder="选择终点，或填写坐标"><div class="row endpoint-coords"><div><label for="routeToLat">纬度 *</label><input id="routeToLat" type="number" min="-90" max="90" step="any" required></div><div><label for="routeToLng">经度 *</label><input id="routeToLng" type="number" min="-180" max="180" step="any" required></div></div></div></div><div class="row"><div class="field"><label for="routeStart">出发时间 *</label><input type="datetime-local" id="routeStart" required></div><div class="field"><label for="routeEnd">到达时间 *</label><input type="datetime-local" id="routeEnd" required></div></div><p class="help">时间统一按你填写的本地钟表时间记录；跨时区时请换算成同一个时区。</p><div class="row"><div class="field"><label for="routeMode">怎么去 *</label><select id="routeMode"><option value="plane">✈ 飞机</option><option value="ship">⛴ 轮船</option><option value="train">▰ 火车</option><option value="car">▣ 汽车</option><option value="bus">▣ 巴士</option><option value="walk">♧ 步行</option><option value="bike">♧ 骑行</option></select></div><div class="field"><label for="routeLabel">行程名称（可选）</label><input id="routeLabel" maxlength="140" placeholder="例如：第一次飞越大海"></div></div><div class="field"><label for="routeVia">途经点（可选）</label><textarea id="routeVia" rows="3" maxlength="12000" placeholder="每行一个坐标，纬度在前：&#10;31.2, 121.5&#10;35.0, 130.0"></textarea><p class="help">可以补充火车停靠站、航道或其他途经点。最多 200 个。GPX 轨迹单独保存，不受此输入框限制。</p></div><div class="field"><label for="routeNote">路上的记忆</label><textarea id="routeNote" maxlength="5000" placeholder="窗外的云、甲板上的风，或站台上的告别…"></textarea></div><div id="routeError" class="note-error" role="alert"></div><div class="actions"><button class="primary" id="saveRoute">把这段路留在地球上 ↗</button></div></form></section></div>
 <div class="modal-backdrop" id="routeDetail"><section class="modal" role="dialog" aria-modal="true" aria-labelledby="routeDetailTitle"><div class="modal-head"><span class="eyebrow" style="margin:0">BETWEEN TWO PLACES</span><button class="close" data-close="routeDetail" aria-label="关闭">×</button></div><div id="routeDetailBody"></div><div class="route-detail-actions"><button class="primary" id="playRoute">▷ 回放这段路</button><button class="text-btn" id="editRoute">编辑行程</button><button class="text-btn danger" id="deleteRoute">删除</button></div></section></div>
 <div class="modal-backdrop" id="profileEditor"><section class="modal" role="dialog" aria-modal="true" aria-labelledby="profileHeading"><div class="modal-head"><h2 id="profileHeading">我的个人名片</h2><button class="close" data-close="profileEditor" aria-label="关闭">×</button></div><form id="profileForm"><div class="profile-avatar-edit"><div class="big-avatar" id="avatarPreview">L</div><div><label for="avatarFile" class="text-btn upload-avatar">选择一张头像 ↗</label><input id="avatarFile" type="file" accept="image/jpeg,image/png,image/webp" hidden><button class="text-btn" type="button" id="removeAvatar">移除头像</button></div></div><div class="row"><div class="field"><label for="profileName">名字 *</label><input id="profileName" required maxlength="40" placeholder="你希望别人怎么称呼你"></div><div class="field"><label for="profileLocation">所在城市</label><input id="profileLocation" maxlength="80" placeholder="例如：南京 / 在路上"></div></div><div class="field"><label for="profileHeadline">一句话介绍</label><input id="profileHeadline" maxlength="100" placeholder="一个正在记录生活的人"></div><div class="field"><label for="profileBio">自我介绍</label><textarea id="profileBio" maxlength="5000" placeholder="你在做什么、喜欢什么、最近在想什么…"></textarea></div><div class="field"><label for="profileTagInput">我的关键词</label><input id="profileTagInput" maxlength="200" placeholder="旅行，摄影，阅读"><div class="help">用逗号分隔，最多 12 个。</div></div><div class="row"><div class="field"><label for="profileEmail">邮箱（可选）</label><input id="profileEmail" type="email" maxlength="200"></div><div class="field"><label for="profileLink">个人链接（可选）</label><input id="profileLink" type="url" placeholder="https://" maxlength="500"></div></div><div class="note-error" id="profileError" role="alert"></div><div class="actions"><button class="text-btn" type="button" data-close="profileEditor">取消</button><button class="primary" id="saveProfile">保存名片</button></div></form></section></div>
@@ -144,7 +153,7 @@ function enhanceChinaBoundaries() {
   const nearby = provinceBoundaries.filter(boundaryInView);
   if (!nearby.length || mapLabelLevel()==='province') return;
   if (mapLabelLevel()==='city') {
-    loadBoundaryLayer('city-boundaries.json',data=>{cityBoundaries=data});
+    loadCityBoundaries();
     return;
   }
   for (const province of nearby) {
@@ -200,7 +209,13 @@ async function api(path,options={}){return localApi(path,options)}
 function openModal(id){$('#'+id).classList.add('open');document.body.style.overflow='hidden';setTimeout(()=>$('#'+id+' input, #'+id+' button')?.focus(),50)}
 function closeModal(id){$('#'+id).classList.remove('open');if(!$('.modal-backdrop.open'))document.body.style.overflow=''}
 $$('[data-close]').forEach(b=>b.onclick=()=>closeModal(b.dataset.close));$$('.modal-backdrop').forEach(b=>b.addEventListener('click',e=>{if(e.target===b)closeModal(b.id)}));document.addEventListener('keydown',e=>{if(e.key==='Escape'){const all=$$('.modal-backdrop.open');if(all.length)closeModal(all.at(-1).id);stopPin()}});
-function render(){syncTimeline();const n=new Set(entries.filter(e=>e.status==='visited').map(e=>e.place+'|'+Number(e.lat).toFixed(3)+'|'+Number(e.lng).toFixed(3))).size;$('#placeCount').textContent=String(n).padStart(2,'0');$('#photoCount').textContent=String(entries.reduce((n,e)=>n+e.photos.length,0)).padStart(2,'0');$('#wishCount').textContent=String(entries.filter(e=>e.status==='wish').length).padStart(2,'0');$('#entryCount').textContent=entries.length?visibleTravel().length+' / '+entries.length+' 段旅途记忆':'MY TRAVEL JOURNAL';$('#globeNote').style.display=entries.length?'none':'block';const q=$('#search').value.trim().toLowerCase();const list=visibleTravel().filter(e=>(filter==='all'||e.status===filter)&&[e.place,e.title,e.story].join(' ').toLowerCase().includes(q)).sort((a,b)=>b.date.localeCompare(a.date));$('#entries').innerHTML=list.length?list.map(e=>'<button class="entry" data-id="'+esc(e.id)+'">'+(e.photos[0]?'<img class="thumb" src="'+esc(e.photos[0])+'" alt="'+esc(e.place)+'的旅行照片" loading="lazy">':'<span class="thumb">'+(e.status==='wish'?'✧':'⌖')+'</span>')+'<div class="entry-body"><div class="entry-top"><h3>'+esc(e.place)+'</h3><span class="badge">'+(e.status==='wish'?'想去':'去过')+'</span></div><p>'+esc(e.title||e.story||'一枚坐标，一段属于你的故事')+'</p><time>'+esc(e.date.replaceAll('-','.'))+' · '+e.photos.length+' 张照片</time></div></button>').join(''):'<div class="empty">✳<b>'+(entries.length?'还没有找到这段记忆':'你的第一枚足迹，会在哪里？')+'</b>'+(entries.length?'换个关键词，或看看其他分类。':'点击右上角“新增”，记录第一枚足迹。')+(!entries.length?'':'')+'</div>';$$('.entry').forEach(b=>b.onclick=()=>{const e=entries.find(e=>e.id===b.dataset.id);focusPlace(e);showDetail(e)});$('#emptyAdd')?.addEventListener('click',()=>showEditor());refreshHome();draw()}
+function render() {
+  syncTimeline();
+  $('#globeNote').style.display = entries.length ? 'none' : 'block';
+  if (currentPage==='journal') renderTravelJournal();
+  refreshHome();
+  draw();
+}
 function updateVisitCountField(){
   const hidden = $('#status').value !== 'visited';
   $('#visitCountField').hidden = hidden;
@@ -254,7 +269,7 @@ function tagArray(s){return [...new Set(String(s).split(/[,，\n]/).map(v=>v.tri
 function shortDate(s){return String(s||'').replaceAll('-','.')}function safeLink(s){try{const u=new URL(s);return ['https:','http:'].includes(u.protocol)?u.href:''}catch{return ''}}
 function avatarHTML(value,name){return value?'<img src="'+esc(value)+'" alt="'+esc(name)+' 的头像">':esc((name||'L').slice(0,1).toUpperCase())}
 function refreshProfile(){$$('.profile-name').forEach(el=>el.textContent=profile.name);$$('.profile-bio').forEach(el=>el.textContent=profile.bio);$('#siteName').textContent='旅行星球';document.title='旅行星球';$('#aboutHeadline').textContent=profile.headline||'一个正在记录生活的人';$('#aboutLocation').textContent=profile.location?'⌖ '+profile.location:'';$('#aboutAvatar').innerHTML=avatarHTML(profile.avatar,profile.name);$('#profileTags').innerHTML=profile.tags.length?profile.tags.map(t=>'<span>'+esc(t)+'</span>').join(''):'<span>等你添上自己的关键词</span>';$('#profileLinks').innerHTML=(profile.email?'<a href="mailto:'+esc(profile.email)+'">写信给我 ↗</a>':'')+(safeLink(profile.link)?'<a href="'+esc(safeLink(profile.link))+'" target="_blank" rel="noopener noreferrer">我的另一个角落 ↗</a>':'')+(!profile.email&&!safeLink(profile.link)?'<span class="subtle">暂时没有留下联系方式，可以在名片里添加。</span>':'')}
-function navigate(page){if(!['home','travel','journal'].includes(page))page='home';if(page!=='travel')stopPlayback();currentPage=page;document.body.classList.toggle('page-travel',page==='travel');document.body.classList.toggle('page-journal',page==='journal');document.body.classList.remove('view-journal');$('#journalPage').hidden=page!=='journal';$('#homePage').hidden=page!=='home';$('#travelPage').hidden=page!=='travel';$('#notesPage').hidden=page!=='notes';$('#aboutPage').hidden=page!=='about';$$('[data-nav]').forEach(b=>b.classList.toggle('active',b.dataset.nav===page));const target=$('#'+(page==='travel'?'travelPage':page+'Page'));target.classList.remove('fade-in');requestAnimationFrame(()=>target.classList.add('fade-in'));if(page==='travel'){resize();requestAnimationFrame(resize);setTimeout(resize,80);}window.scrollTo({top:0,behavior:'instant'})}
+function navigate(page){if(!['home','travel','journal'].includes(page))page='home';if(page!=='travel')stopPlayback();currentPage=page;document.body.classList.toggle('page-travel',page==='travel');document.body.classList.toggle('page-journal',page==='journal');document.body.classList.remove('view-journal');$('#journalPage').hidden=page!=='journal';$('#homePage').hidden=page!=='home';$('#travelPage').hidden=page!=='travel';$('#notesPage').hidden=page!=='notes';$('#aboutPage').hidden=page!=='about';$$('[data-nav]').forEach(b=>b.classList.toggle('active',b.dataset.nav===page));const target=$('#'+(page==='travel'?'travelPage':page+'Page'));target.classList.remove('fade-in');requestAnimationFrame(()=>target.classList.add('fade-in'));if(page==='travel'){resize();requestAnimationFrame(resize);setTimeout(resize,80);}else if(page==='journal')renderTravelJournal();window.scrollTo({top:0,behavior:'instant'})}
 $$('[data-nav]').forEach(b=>b.onclick=()=>navigate(b.dataset.nav));$$('[data-go]').forEach(b=>b.onclick=()=>navigate(b.dataset.go));$('.home-link').onclick=()=>navigate('home');
 function refreshHome(){if(!$('#moduleTravel'))return;$('#moduleTravel').textContent=entries.length+' 枚足迹 · '+entries.filter(e=>e.status==='wish').length+' 个想去的地方';$('#moduleNotes').textContent=personalNotes.length+' 篇记录 · 日常也值得收藏';const feed=[...entries.map(e=>({...e,type:'travel'})),].sort((a,b)=>b.date.localeCompare(a.date)||String(b.updatedAt).localeCompare(String(a.updatedAt))).slice(0,6);$('#recentFeed').innerHTML=feed.length?feed.map(e=>'<button class="feed-item" data-feed-id="'+esc(e.id)+'" data-feed-type="'+e.type+'"><time>'+shortDate(e.date)+'</time><span class="feed-kind">'+(e.type==='travel'?'◎':'✎')+'</span><span><h3>'+esc(e.type==='travel'?(e.title||e.place):e.title)+'</h3><p>'+esc(e.type==='travel'?e.place+' · '+(e.status==='wish'?'想去的地方':'旅行日记'):e.category+' · '+(e.content||'用照片记下的一天'))+'</p></span><span class="feed-arrow">↗</span></button>').join(''):'<div class="feed-empty">这里会慢慢长出你的故事。<br>从第一枚足迹开始。</div>';$$('[data-feed-id]').forEach(b=>b.onclick=()=>{if(b.dataset.feedType==='travel'){const e=entries.find(e=>e.id===b.dataset.feedId);navigate('travel');setTimeline(null);requestAnimationFrame(()=>{focusPlace(e);showDetail(e)})}else showNote(personalNotes.find(e=>e.id===b.dataset.feedId))})}
 function openProfile(){profileAvatar=profile.avatar;$('#profileName').value=profile.name;$('#profileLocation').value=profile.location;$('#profileHeadline').value=profile.headline;$('#profileBio').value=profile.bio;$('#profileTagInput').value=profile.tags.join('，');$('#profileEmail').value=profile.email;$('#profileLink').value=profile.link;$('#profileError').textContent='';$('#avatarPreview').innerHTML=avatarHTML(profileAvatar,profile.name);openModal('profileEditor')}
@@ -815,26 +830,142 @@ function loadProvinceBoundaries() {
   loadBoundaryLayer('province-boundaries.json?v=map-details',boundaries => {
     provinceBoundaries = boundaries;
     provinceNames = new Map(boundaries.map(area => [normalizeProvinceName(area.name),area.id.slice(0,2)]));
+    if (currentPage==='journal') renderTravelJournal();
   });
 }
 
-function footprintStarColor(entry) {
-  const known = provinceColorCache.get(entry);
-  if (known) return known;
-  const explicit = provinceStarColors[entry.adminId?.slice(0,2)];
-  if (explicit) return explicit;
-  if (!provinceBoundaries.length) return overseasStarColor;
-  const place = entry.place.split(/[·,，/]/).map(part=>part.trim()).find(part=>part && part!=='中国');
-  const named = place && provinceNames.get(normalizeProvinceName(place));
-  const province = named || provinceBoundaries.find(area => {
-    const [west,south,east,north] = area.bbox;
-    return entry.lng>=west && entry.lng<=east && entry.lat>=south && entry.lat<=north &&
-      area.rings.some(ring=>inside(entry.lng,entry.lat,ring));
-  })?.id.slice(0,2);
-  const color = provinceStarColors[province] || overseasStarColor;
-  provinceColorCache.set(entry,color);
-  return color;
+function entryPlaceParts(entry) {
+  return entry.place.split(/[·,，/]/).map(part=>part.trim()).filter(part=>part && part!=='中国');
 }
+
+function areaContains(area,entry) {
+  const [west,south,east,north] = area.bbox;
+  return entry.lng>=west && entry.lng<=east && entry.lat>=south && entry.lat<=north &&
+    area.rings.some(ring=>inside(entry.lng,entry.lat,ring));
+}
+
+function footprintProvince(entry) {
+  const known = provinceColorCache.get(entry);
+  if (known!==undefined) return known;
+  const explicit = entry.adminId?.slice(0,2);
+  if (Object.hasOwn(provinceStarColors,explicit)) return explicit;
+  if (!provinceBoundaries.length) return null;
+  const [place] = entryPlaceParts(entry);
+  const province = (place && provinceNames.get(normalizeProvinceName(place))) ||
+    provinceBoundaries.find(area=>areaContains(area,entry))?.id.slice(0,2) || null;
+  provinceColorCache.set(entry,province);
+  return province;
+}
+
+function footprintStarColor(entry) {
+  return provinceStarColors[footprintProvince(entry)] || overseasStarColor;
+}
+
+function loadCityBoundaries() {
+  loadBoundaryLayer('city-boundaries.json',data => {
+    cityBoundaries = data;
+    if (currentPage==='journal') renderTravelJournal();
+  });
+}
+
+const municipalityCodes = new Set(['11','12','31','50']);
+const countryForEntry = new WeakMap();
+const cityForEntry = new WeakMap();
+
+function footprintCity(entry,province) {
+  if (municipalityCodes.has(province)) return province+'0000';
+  const [first,...rest] = entryPlaceParts(entry);
+  const isProvinceOnly = entry.adminId===province+'0000' ||
+    (!rest.length && first && provinceNames.get(normalizeProvinceName(first))===province);
+  if (isProvinceOnly || !cityBoundaries) return null;
+  if (cityForEntry.has(entry)) return cityForEntry.get(entry);
+  const cities = cityBoundaries.filter(area=>area.id.startsWith(province));
+  const parentCode = entry.adminId && entry.adminId.slice(0,4)+'00';
+  const namedPlaces = [first,...rest].filter(Boolean).map(normalizeProvinceName);
+  const city = cities.find(area=>area.id===parentCode) ||
+    cities.find(area=>namedPlaces.includes(normalizeProvinceName(area.name))) ||
+    cities.find(area=>areaContains(area,entry));
+  cityForEntry.set(entry,city?.id || null);
+  return city?.id || null;
+}
+
+function footprintCountry(entry) {
+  if (countryForEntry.has(entry)) return countryForEntry.get(entry);
+  const tokens = entryPlaceParts(entry).map(part=>part.toLowerCase());
+  const named = geoCountries.find(country=>tokens.includes(countryName(country).toLowerCase()) ||
+    tokens.includes(country.properties.name.toLowerCase()));
+  const country = named || countryAt(entry.lng,entry.lat);
+  const singapore = tokens.includes('新加坡') || tokens.includes('singapore');
+  const result = singapore ? {id:'SGP',name:'新加坡'} : country ?
+    {id:country.id || country.properties.name,name:countryName(country)} : null;
+  countryForEntry.set(entry,result);
+  return result;
+}
+
+function travelJournalRegion(entry) {
+  const province = footprintProvince(entry);
+  if (province) {
+    const area = provinceBoundaries.find(item=>item.id===province+'0000');
+    if (area) return {key:province,name:area.name,color:provinceStarColors[province],province,city:footprintCity(entry,province)};
+  }
+  const country = footprintCountry(entry);
+  if (country && country.id!=='CHN') return {key:country.id,name:country.name,color:overseasStarColor,country:country.id};
+  return {key:'unassigned',name:'其他地点',color:overseasStarColor};
+}
+
+function renderJournalEntry(entry) {
+  const preview = entry.title || entry.story;
+  const thumb = entry.photos[0] ? '<img class="thumb" src="'+esc(entry.photos[0])+'" alt="'+esc(entry.place)+'的旅行照片" loading="lazy">' :
+    '<span class="thumb journal-place-icon" aria-hidden="true">✦</span>';
+  return '<button type="button" class="entry" data-id="'+esc(entry.id)+'">'+thumb+
+    '<div class="entry-body"><div class="entry-top"><h3>'+esc(entry.place)+'</h3><span class="badge">'+
+    (entry.status==='wish'?'想去':'去过')+'</span></div>'+(preview?'<p>'+esc(preview)+'</p>':'')+
+    '<time>'+esc(entry.date.replaceAll('-','.'))+(entry.photos.length?' · '+entry.photos.length+' 张照片':'')+'</time></div></button>';
+}
+
+function renderTravelJournal() {
+  if (entries.length) loadProvinceBoundaries();
+  const regions = new Map(entries.map(entry=>[entry.id,travelJournalRegion(entry)]));
+  if ([...regions.values()].some(region=>region.province && !municipalityCodes.has(region.province))) loadCityBoundaries();
+  const provinces = new Set(), cities = new Set(), countries = new Map();
+  for (const entry of entries) {
+    if (entry.status!=='visited') continue;
+    const region = regions.get(entry.id);
+    if (region.province) provinces.add(region.province);
+    if (region.city) cities.add(region.city);
+    if (region.country) countries.set(region.country,region.name);
+  }
+  $('#provinceCount').textContent = provinces.size;
+  $('#cityCount').textContent = cities.size;
+  $('#countryCount').textContent = countries.size;
+  $('#visitedCountries').hidden = !countries.size;
+  $('#visitedCountries').textContent = [...countries.values()].sort((a,b)=>a.localeCompare(b,'zh')).join(' · ');
+
+  const query = $('#search').value.trim().toLowerCase();
+  const visible = visibleTravel().filter(entry=>(filter==='all'||entry.status===filter) &&
+    [entry.place,entry.title,entry.story,regions.get(entry.id).name].join(' ').toLowerCase().includes(query))
+    .sort((a,b)=>b.date.localeCompare(a.date));
+  $('#entryCount').textContent = visible.length ? visible.length+' 条记录' : '';
+  const groups = new Map();
+  for (const entry of visible) {
+    const region = regions.get(entry.id);
+    if (!groups.has(region.key)) groups.set(region.key,{...region,entries:[]});
+    groups.get(region.key).entries.push(entry);
+  }
+  const sections = [...groups.values()].sort((a,b)=>Number(Boolean(b.province))-Number(Boolean(a.province)) ||
+    Number(a.key==='unassigned')-Number(b.key==='unassigned') || a.name.localeCompare(b.name,'zh'));
+  $('#entries').innerHTML = sections.length ? sections.map(group=>
+    '<section class="journal-region" style="--region-color:'+group.color+'"><h3 class="journal-region-name"><i aria-hidden="true"></i>'+
+    esc(group.name)+'</h3><div class="journal-region-entries">'+group.entries.map(renderJournalEntry).join('')+'</div></section>').join('') :
+    '<div class="empty"><b>'+(entries.length?'没有符合条件的足迹':'还没有旅行足迹')+'</b></div>';
+}
+
+$('#entries').addEventListener('click',event => {
+  const button = event.target.closest('.entry[data-id]');
+  if (!button) return;
+  const entry = entries.find(item=>item.id===button.dataset.id);
+  if (entry) { focusPlace(entry); showDetail(entry); }
+});
 
 function drawFootprintStar(point,color,radius) {
   ctx.beginPath();
