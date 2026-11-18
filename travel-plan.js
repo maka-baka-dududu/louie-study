@@ -167,7 +167,7 @@ function validTravelPlan(plan) {
 
 const tripDefault = defaultTravelPlan();
 let tripGroup = 'all', tripMode = 'all', tripSelected = '', tripSaving = false;
-const getTravelPlan = () => db.travelPlan ?? tripDefault;
+const getTravelPlan = () => window.LouiePublicSite ? tripDefault : db.travelPlan ?? tripDefault;
 const tripMoney = n => '¥' + n.toLocaleString('zh-CN');
 
 function tripDate(start, offset) {
@@ -211,8 +211,121 @@ function showTripScope(group) {
   $('#tripList').scrollTop = 0;
 }
 
+const tripMapColors = ['#b34024','#087462','#3159ac','#873d8b','#986500','#007592'];
+
+function showFullTripMap() {
+  const plan = getTravelPlan();
+  const stages = tripStageSummary(plan);
+  const stops = plan.days.flatMap(day => day.points);
+  show(`<section class="trip-full-map">
+    <h2>全程地图</h2><p class="muted">${esc(plan.title)} · ${plan.days.length} 天 · 路线示意</p>
+    ${stops.length ? `<canvas id="tripFullCanvas" role="img" aria-label="${esc(plan.title)}全程二维路线"></canvas>
+      <div class="trip-full-legend" aria-label="路线分段">
+        ${stages.map(stage => `<div><i style="--stage-color:${tripMapColors[stage.group]}"></i><span>
+          <strong>${esc(stage.name)}</strong><small>${esc(stage.highlights.join(' · '))}</small>
+        </span></div>`).join('')}
+      </div>` : '<p class="muted">行程还没有地图地点。</p>'}
+  </section>`);
+  if (!stops.length) return;
+
+  const canvas = $('#tripFullCanvas'), context = canvas.getContext('2d');
+  const background = new Image();
+  // Put the map seam in the largest gap between stops, including trips across the date line.
+  const longitudes = [...new Set(stops.map(point => point.lng))].sort((a,b) => a-b);
+  let seam = -180, largestGap = -1;
+  longitudes.forEach((lng,index) => {
+    const next = longitudes[index+1] ?? longitudes[0]+360;
+    if (next-lng > largestGap) { largestGap = next-lng; seam = next; }
+  });
+  const unwrap = lng => seam + ((lng-seam)%360+360)%360;
+  const east = Math.max(...longitudes.map(unwrap)), west = seam;
+  const south = Math.min(...stops.map(stop=>stop.lat)), north = Math.max(...stops.map(stop=>stop.lat));
+  const highlights = new Set([stops[0].name,stops.at(-1).name,...stages.flatMap(stage=>stage.highlights)]);
+
+  function paint() {
+    const {width,height} = canvas.getBoundingClientRect();
+    if (!width || !height) return;
+    const density = Math.min(devicePixelRatio || 1,2);
+    canvas.width = Math.round(width*density);
+    canvas.height = Math.round(height*density);
+    context.setTransform(density,0,0,density,0,0);
+    const padding = width < 520 ? 30 : 70;
+    const scale = Math.min((width-2*padding)/Math.max(12,east-west),(height-64)/Math.max(10,north-south));
+    const x = lng => width/2+(lng-(east+west)/2)*scale;
+    const y = lat => height/2-(lat-(south+north)/2)*scale;
+    context.fillStyle = '#dbeaf1';
+    context.fillRect(0,0,width,height);
+    if (background.naturalWidth) {
+      for (let shift = -360; shift <= 720; shift += 360) {
+        const left = x(-180+shift);
+        context.drawImage(background,left,y(90),360*scale,180*scale);
+      }
+      context.fillStyle = '#f8faf4aa';
+      context.fillRect(0,0,width,height);
+    }
+    context.strokeStyle = '#748e9a35';
+    context.lineWidth = 1;
+    context.beginPath();
+    for (let lng = -360; lng <= 900; lng += 15) { context.moveTo(x(lng),0); context.lineTo(x(lng),height); }
+    for (let lat = -90; lat <= 90; lat += 15) { context.moveTo(0,y(lat)); context.lineTo(width,y(lat)); }
+    context.stroke();
+
+    context.lineJoin = context.lineCap = 'round';
+    for (const day of plan.days) {
+      if (day.points.length < 2) continue;
+      context.beginPath();
+      const points = day.points.map(point => ({x:x(unwrap(point.lng)),y:y(point.lat)}));
+      context.moveTo(points[0].x,points[0].y);
+      for (let index = 1; index < points.length; index++) {
+        const from = points[index-1], to = points[index];
+        if (day.mode === 'flight' && Math.abs(to.x-from.x)>45) {
+          const bend = Math.sign(to.x-from.x)*Math.min(42,Math.abs(to.x-from.x)*.12);
+          context.quadraticCurveTo((from.x+to.x)/2,(from.y+to.y)/2+bend,to.x,to.y);
+        } else context.lineTo(to.x,to.y);
+      }
+      context.lineWidth = 6;
+      context.strokeStyle = '#fffefa';
+      context.stroke();
+      context.lineWidth = 3;
+      context.strokeStyle = tripMapColors[day.group];
+      context.stroke();
+    }
+    const placed = [], seen = new Set();
+    context.font = '600 12px system-ui,sans-serif';
+    for (const point of stops) {
+      if (seen.has(point.name)) continue;
+      seen.add(point.name);
+      const px = x(unwrap(point.lng)), py = y(point.lat);
+      context.beginPath();
+      context.arc(px,py,highlights.has(point.name) ? 4 : 2.5,0,Math.PI*2);
+      context.fillStyle = '#193746';
+      context.fill();
+      context.lineWidth = 1.5;
+      context.strokeStyle = '#fff';
+      context.stroke();
+      if (!highlights.has(point.name)) continue;
+      const labelWidth = context.measureText(point.name).width;
+      const left = Math.max(6,Math.min(width-labelWidth-6,px+7));
+      const top = Math.max(16,py-8);
+      if (placed.some(box => left < box.left+box.width+5 && left+labelWidth+5 > box.left && Math.abs(top-box.top)<17)) continue;
+      placed.push({left,top,width:labelWidth});
+      context.lineWidth = 4;
+      context.strokeStyle = '#fffefa';
+      context.strokeText(point.name,left,top);
+      context.fillStyle = '#203743';
+      context.fillText(point.name,left,top);
+    }
+  }
+
+  const resize = new ResizeObserver(paint);
+  resize.observe(canvas);
+  $('#modal').addEventListener('close',() => resize.disconnect(),{once:true});
+  background.onload = paint;
+  background.src = 'travel-assets/data/0442cb7361cd8012/world-base.png';
+  paint();
+}
+
 function updateTripOverview(plan, stages) {
-  $('#tripAll').setAttribute('aria-pressed', String(tripGroup === 'all' && tripMode === 'all' && !tripSelected));
   $('#tripStages').innerHTML = stages.length ? stages.map(({name,group,days,start,end,stops,highlights}) => {
     const dayRange = start === end ? 'D' + (start+1) : 'D' + (start+1) + '–D' + (end+1);
     return `<button type="button" class="trip-stage-button" data-group="${group}" aria-pressed="${tripGroup === group}">
@@ -245,8 +358,8 @@ function renderTravelPlan() {
     <article class="trip-plan" id="tripPlanner">
       <header class="trip-header">
         <div><h1 id="tripTitle"></h1><p id="tripSubtitle" class="muted"></p></div>
-        <div class="trip-actions"><button type="button" id="tripSettings">计划与预算</button>
-          <button type="button" class="primary" id="tripAdd">＋ 新增一天</button></div>
+        ${window.LouiePublicSite ? '' : `<div class="trip-actions"><button type="button" id="tripSettings">计划与预算</button>
+          <button type="button" class="primary" id="tripAdd">＋ 新增一天</button></div>`}
       </header>
       <section class="trip-overview" aria-labelledby="tripOverviewTitle">
         <div class="trip-overview-head"><h2 id="tripOverviewTitle">全程总览</h2>
@@ -285,15 +398,17 @@ function renderTravelPlan() {
         <a href="https://cs.mfa.gov.cn/aqtx/" target="_blank" rel="noopener noreferrer">领事提醒</a></p>
       </details>
     </article>`;
-  $('#tripSettings').onclick = openTripSettings;
-  $('#tripAdd').onclick = () => openTripDay();
+  if (!window.LouiePublicSite) {
+    $('#tripSettings').onclick = openTripSettings;
+    $('#tripAdd').onclick = () => openTripDay();
+  }
   for (const [id, direction] of [['tripZoomOut', -1], ['tripZoomIn', 1]]) {
     $('#' + id).onclick = () => {
       if (travelIsReady) sendTravel({kind:'plan-zoom', direction});
     };
   }
   $('#tripOverview').onclick = () => { tripSelected = ''; refreshTripPlanner({focus: true}); };
-  $('#tripAll').onclick = () => showTripScope('all');
+  $('#tripAll').onclick = showFullTripMap;
   $('#tripStages').onclick = e => {
     const button = e.target.closest('[data-group]');
     if (!button) return;
@@ -341,12 +456,12 @@ function refreshTripPlanner({focus = false} = {}) {
       <span class="trip-tag">${mode.label}</span></button>`;
   }).join('') : '<p class="muted trip-no-results">这个筛选范围内没有日程。</p>';
   const detail = $('#tripDetail');
-  detail.innerHTML = active ? `<div class="trip-detail-head"><h2>${esc(active.title)}</h2><button type="button" id="tripEditDay">编辑这一天</button></div>
+  detail.innerHTML = active ? `<div class="trip-detail-head"><h2>${esc(active.title)}</h2>${window.LouiePublicSite ? '' : '<button type="button" id="tripEditDay">编辑这一天</button>'}</div>
     <p>${esc(active.activity || '暂无安排。')}</p>
     <p class="muted">住宿 · ${esc(active.lodging || '待定')}</p>
     <p class="trip-stop-line">${active.points.length ? active.points.map(p => esc(p.name)).join(' → ') : '尚未设置地图地点'}</p>
     ` : '<p class="muted">点击某一天，查看当天安排、住宿和地图路线。</p>';
-  if (active) $('#tripEditDay').onclick = () => openTripDay(active.id);
+  if (active && !window.LouiePublicSite) $('#tripEditDay').onclick = () => openTripDay(active.id);
   sendTripMap(focus);
 }
 

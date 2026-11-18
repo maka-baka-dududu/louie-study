@@ -32,8 +32,8 @@
     ['studio-ui.js?v=travel-direct-2','LouieStudioReady'],
     ['profile-files-ui.js','LouieProfileFilesReady'],
     ['travel-model.js','LouieTravelModel'],
-    ['travel-plan.js?v=trip-overview','LouieTravelPlanReady'],
-    ['travel-ui.js?v=pinch-zoom','LouieTravelReady']
+    ['travel-plan.js?v=public-map','LouieTravelPlanReady'],
+    ['travel-ui.js?v=public-map','LouieTravelReady']
   ];
 
   function loadExtension(src,flag){
@@ -64,6 +64,7 @@
     if(failure)window.toast?.(failure.reason.message+'，部分功能可刷新后重试。');
   }
 
+  window.LouiePublicSite=true;
   window.LouieLocal=null;
   try{await loadApp()}catch(error){showError(error.message)}
 })();

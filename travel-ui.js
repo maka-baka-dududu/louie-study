@@ -1,5 +1,63 @@
 'use strict';
 const Travel=window.LouieTravelModel;
+const publicTravel = window.LouiePublicSite === true;
+let publicFootprintsRequest;
+
+function readPublicFootprints() {
+  return publicFootprintsRequest ??= fetch('travel-public.json', {cache:'no-cache'}).then(async response => {
+    if (!response.ok) throw Error('公开足迹暂时无法读取，请刷新后重试。');
+    const snapshot = await response.json();
+    if (snapshot.version !== 1 || !Array.isArray(snapshot.entries) || snapshot.entries.length > 3000) {
+      throw Error('公开足迹格式有误。');
+    }
+    return snapshot.entries.map(({id,place,lat,lng,status,date,markerStyle}) =>
+      ({id,place,lat,lng,status,date,markerStyle,title:'',story:'',photos:[]})).filter(entry => Travel.entry(entry));
+  }).catch(error => { publicFootprintsRequest = null; throw error; });
+}
+
+function openTravelPublication() {
+  if (publicTravel || !localDisk) return;
+  const entries = db.travel.entries;
+  let previous = [];
+  try { previous = JSON.parse(localStorage.getItem('louie-public-footprint-selection') || '[]'); } catch (_) {}
+  const selected = new Set(Array.isArray(previous) ? previous : []);
+  show(`<h2>发布公开足迹</h2>
+    <p>网站会显示勾选足迹的地点、坐标、日期、状态和图标。本次发布会替换公开足迹列表。</p>
+    <form id="travelPublishForm">
+      <div class="actions"><button type="button" id="travelPublishAll">全选</button><button type="button" id="travelPublishNone">清空选择</button></div>
+      <div class="travel-publish-list">${entries.length ? entries.map(entry => `<label class="check">
+        <input type="checkbox" name="footprint" value="${esc(entry.id)}" ${selected.has(entry.id) ? 'checked' : ''}>
+        <span>${esc(entry.place)} <small class="muted">${esc(entry.date)} · ${entry.status === 'visited' ? '去过' : '想去'}</small></span></label>`).join('') :
+        '<p class="muted">本地暂无足迹。可以先在旅行星球新增，或导入旧记录。</p>'}</div>
+      <button class="primary" id="travelPublishSubmit">发布到网站</button>
+      <p role="status" id="travelPublishStatus"></p>
+    </form>`);
+  const form = $('#travelPublishForm');
+  for (const [button, checked] of [['#travelPublishAll',true],['#travelPublishNone',false]]) {
+    $(button).onclick = () => form.querySelectorAll('[name="footprint"]').forEach(box => { box.checked = checked; });
+  }
+  form.onsubmit = async event => {
+    event.preventDefault();
+    const submit = $('#travelPublishSubmit'), status = $('#travelPublishStatus');
+    const ids = new FormData(form).getAll('footprint');
+    if (!ids.length && !confirm('清除网站上的全部公开足迹？')) return;
+    submit.disabled = true;
+    status.textContent = '正在提交到 GitHub…';
+    try {
+      await travelQueue.catch(() => {});
+      await diskQueue;
+      if (diskError) throw Error('本地有未保存的记录，请保存后重试。');
+      const response = await diskRequest('/api/travel/publish', {
+        method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ids})
+      });
+      const result = await response.json();
+      try { localStorage.setItem('louie-public-footprint-selection',JSON.stringify(ids)); } catch (_) {}
+      status.textContent = result.changed ? `已提交 ${result.count} 枚足迹。GitHub Pages 部署完成后可见。` : '网站已收到相同足迹，无需重复发布。';
+    } catch (error) {
+      status.textContent = error.message;
+    } finally { submit.disabled = false; }
+  };
+}
 function normalizeTravel() {
   db.travel ??= Travel.blank();
   const tracks = db.personal.tracks;
@@ -28,7 +86,7 @@ projectNavItems = function () {
 };
 const travelLegacyPages = ['track', 'today', 'library', 'tracking', 'teacher'];
 function isTravelPage(p=page){return projectTools.travel.includes(p)}
-function sendTravel(message){if(message.kind==='reload'){travelIsReady=false;travelEditing=false;if(travelFrame){travelNonce=uid();travelFrame.src='travel-assets/frame.html?view='+(page==='travelJournal'?'journal':'travel')+'&v=pinch-zoom#'+travelNonce;}return}travelFrame?.contentWindow?.postMessage({channel:'louie-travel',nonce:travelNonce,...message},'*')}
+function sendTravel(message){if(message.kind==='reload'){travelIsReady=false;travelEditing=false;if(travelFrame){travelNonce=uid();travelFrame.src='travel-assets/frame.html?view='+(page==='travelJournal'?'journal':'travel')+'&v=public-map'+(publicTravel?'&readonly=1':'')+'#'+travelNonce;}return}travelFrame?.contentWindow?.postMessage({channel:'louie-travel',nonce:travelNonce,...message},'*')}
 function guardTravelLeave(){if(travelBusy){toast('正在保存旅行记录，请稍候。');return false}if(travelEditing){if(!confirm('旅行编辑尚未保存，离开会丢弃本次填写。继续？'))return false;travelEditing=false;sendTravel({kind:'discard-editors'})}return true}
 const openTrackBeforeTravel = openTrack;
 openTrack = function (id) {
@@ -108,6 +166,8 @@ render = function () {
   $('#view').innerHTML = `<div class="travel-heading">
     <h1 id="travelPageTitle"></h1>
     <div class="actions">
+      ${publicTravel ? `<span class="muted">访客模式</span>${db.travel.entries.length || db.travel.routes.length || db.travel.legacyNotes.length
+        ? '<button type="button" onclick="exportTravelBackup()">导出此浏览器的旧旅行记录</button>' : ''}` : `
       <button id="travelJournalAdd" type="button" hidden onclick="travelNewEntry()">＋ 记录旅行</button>
       <details id="travelTools" class="travel-tools">
         <summary>记录管理</summary>
@@ -115,9 +175,11 @@ render = function () {
           <button type="button" onclick="this.closest('details').open=false;chooseTravelImport()">导入旧记录</button>
           <button type="button" onclick="this.closest('details').open=false;exportTravelBackup()">导出旅行备份</button>
           <button type="button" onclick="this.closest('details').open=false;travelTrashForm()">已删除记录</button>
+          ${localDisk ? `<button type="button" onclick="this.closest('details').open=false;openTravelPublication()">发布公开足迹</button>` : ''}
         </div>
       </details>
       <input id="travelImportFile" type="file" accept="application/json,.json" hidden onchange="importTravelBackup(this.files[0]);this.value=''">
+      `}
     </div>
   </div><section class="travel-frame-wrap"><p class="travel-frame-loading" id="travelFrameLoading">正在打开离线旅行星球…</p></section>`;
   updateTravelHeading();
@@ -133,14 +195,14 @@ function mountTravelFrame(container, view) {
   frame.referrerPolicy = 'no-referrer';
   travelIsReady = false;
   travelNonce = uid();
-  frame.src = 'travel-assets/frame.html?view=' + view + '&v=pinch-zoom#' + travelNonce;
+  frame.src = 'travel-assets/frame.html?view=' + view + '&v=public-map'+(publicTravel?'&readonly=1':'')+'#' + travelNonce;
   travelFrame = frame;
   container.append(frame);
 }
 
 function updateTravelHeading() {
   $('#travelPageTitle').textContent = labels[page];
-  $('#travelJournalAdd').hidden = page !== 'travelJournal';
+  if (!publicTravel) $('#travelJournalAdd').hidden = page !== 'travelJournal';
 }
 function travelNewEntry(){if(!travelIsReady)return toast('离线地图还在加载，请稍候。');if(guardTravelLeave())sendTravel({kind:'new-entry'})}
 function chooseTravelImport(){if(guardTravelLeave())$('#travelImportFile')?.click()}
@@ -156,8 +218,19 @@ const saveBeforeTravel=save;
 // Other app writers may still finish a focus session while photos are uploading.
 // Defer their disk snapshots; patch only travel-owned fields after a successful write.
 save=function(){return travelBusy?travelQueue.catch(()=>{}).then(()=>saveBeforeTravel()):saveBeforeTravel()};
-function travelCommit(change, nextPlan){travelBusy++;const job=travelQueue.catch(()=>{}).then(async()=>{await diskQueue;if(diskError)throw Error('本地记录尚未保存，请先处理保存问题。');const candidate=JSON.parse(JSON.stringify(db)),originalMaterialIds=new Set(candidate.materials.map(m=>m.id)),staged=[];try{const result=change ? await change(candidate,staged) : undefined;if(!Travel.canonical(candidate.travel))throw Error('旅行数据未通过检查，原记录未修改。');const added=candidate.materials.filter(m=>!originalMaterialIds.has(m.id)),latest=JSON.parse(JSON.stringify(db));latest.travel=candidate.travel;if(nextPlan)latest.travelPlan=nextPlan;latest.materials.push(...added.filter(m=>!latest.materials.some(x=>x.id===m.id)));await persistCandidate(latest);db.travel=candidate.travel;if(nextPlan)db.travelPlan=nextPlan;db.materials.push(...added.filter(m=>!db.materials.some(x=>x.id===m.id)));travelPhotoCache.clear();return result}catch(error){for(const fileId of staged)await fileOp('delete',fileId).catch(()=>{});throw error}});travelQueue=job;return job.finally(()=>travelBusy--)}
-async function travelBridge(op,data){const t=db.travel;if(op==='api'){const path=data.path,options=data.options||{},method=options.method||'GET';if(path==='/api/photos'&&method==='POST'){const p=JSON.parse(options.body);if(!Travel.image(p.data))throw Error('照片格式不正确。');return {url:p.data}}if(path==='/api/entries'&&method==='GET')return Promise.all(t.entries.map(hydrateRecord));if(!/^\/api\/entries(?:\/[A-Za-z0-9_-]{1,100})?$/.test(path))throw Error('旅行接口不存在。');if(method==='DELETE'){const id=path.split('/')[3];return travelCommit(c=>{const entry=c.travel.entries.find(e=>e.id===id);if(!entry)throw Error('旅行记录不存在。');c.travel.entries=c.travel.entries.filter(e=>e.id!==id);c.travel.trash.entries=mergeIds(c.travel.trash.entries,[entry]);return {ok:true}})}if(!['POST','PUT'].includes(method))throw Error('不支持的旅行操作。');const raw=JSON.parse(options.body);raw.id=method==='PUT'?path.split('/')[3]:uid();const result=await travelCommit(async(c,staged)=>{if(method==='PUT'&&!c.travel.entries.some(e=>e.id===raw.id))throw Error('旅行记录已不存在。');const entry=await canonicalEntry(raw,c,staged);c.travel.entries=mergeIds(c.travel.entries,[entry]);return entry});return hydrateRecord(result)}
+function travelCommit(change, nextPlan){if(publicTravel)return Promise.reject(Error('公开旅行记录只能查看。'));travelBusy++;const job=travelQueue.catch(()=>{}).then(async()=>{await diskQueue;if(diskError)throw Error('本地记录尚未保存，请先处理保存问题。');const candidate=JSON.parse(JSON.stringify(db)),originalMaterialIds=new Set(candidate.materials.map(m=>m.id)),staged=[];try{const result=change ? await change(candidate,staged) : undefined;if(!Travel.canonical(candidate.travel))throw Error('旅行数据未通过检查，原记录未修改。');const added=candidate.materials.filter(m=>!originalMaterialIds.has(m.id)),latest=JSON.parse(JSON.stringify(db));latest.travel=candidate.travel;if(nextPlan)latest.travelPlan=nextPlan;latest.materials.push(...added.filter(m=>!latest.materials.some(x=>x.id===m.id)));await persistCandidate(latest);db.travel=candidate.travel;if(nextPlan)db.travelPlan=nextPlan;db.materials.push(...added.filter(m=>!db.materials.some(x=>x.id===m.id)));travelPhotoCache.clear();return result}catch(error){for(const fileId of staged)await fileOp('delete',fileId).catch(()=>{});throw error}});travelQueue=job;return job.finally(()=>travelBusy--)}
+async function travelBridge(op,data){
+ if(publicTravel){
+   if(op==='api'&&data.path==='/api/entries'&&(data.options?.method||'GET')==='GET')return readPublicFootprints();
+   if(op==='read-store'){
+     if(data.name==='notes'||data.key==='routes')return [];
+     if(data.key==='profile')return null;
+     return db.travel.preferences[data.key];
+   }
+   if(op==='write-store'&&data.name==='meta'&&['globeScene','markerMetric'].includes(data.key))return data.value;
+   throw Error('公开旅行记录只能查看。');
+ }
+ const t=db.travel;if(op==='api'){const path=data.path,options=data.options||{},method=options.method||'GET';if(path==='/api/photos'&&method==='POST'){const p=JSON.parse(options.body);if(!Travel.image(p.data))throw Error('照片格式不正确。');return {url:p.data}}if(path==='/api/entries'&&method==='GET')return Promise.all(t.entries.map(hydrateRecord));if(!/^\/api\/entries(?:\/[A-Za-z0-9_-]{1,100})?$/.test(path))throw Error('旅行接口不存在。');if(method==='DELETE'){const id=path.split('/')[3];return travelCommit(c=>{const entry=c.travel.entries.find(e=>e.id===id);if(!entry)throw Error('旅行记录不存在。');c.travel.entries=c.travel.entries.filter(e=>e.id!==id);c.travel.trash.entries=mergeIds(c.travel.trash.entries,[entry]);return {ok:true}})}if(!['POST','PUT'].includes(method))throw Error('不支持的旅行操作。');const raw=JSON.parse(options.body);raw.id=method==='PUT'?path.split('/')[3]:uid();const result=await travelCommit(async(c,staged)=>{if(method==='PUT'&&!c.travel.entries.some(e=>e.id===raw.id))throw Error('旅行记录已不存在。');const entry=await canonicalEntry(raw,c,staged);c.travel.entries=mergeIds(c.travel.entries,[entry]);return entry});return hydrateRecord(result)}
  if(op==='read-store'){if(data.name==='notes')return Promise.all(t.legacyNotes.map(hydrateRecord));if(data.name==='meta'){if(data.key==='routes')return t.routes;if(data.key==='profile')return hydrateProfile(t.legacyProfile);if(['globeScene','markerMetric'].includes(data.key))return t.preferences[data.key]}throw Error('旅行读取范围不正确。')}
  if(op==='write-store'&&data.name==='meta'){if(data.key==='routes'){const routes=data.value;if(!Array.isArray(routes)||routes.length>4000||!routes.every(Travel.route)||new Set(routes.map(r=>r.id)).size!==routes.length)throw Error('行程格式不正确。');return travelCommit(c=>{const removed=c.travel.routes.filter(r=>!routes.some(x=>x.id===r.id));c.travel.trash.routes=mergeIds(c.travel.trash.routes,removed);c.travel.routes=JSON.parse(JSON.stringify(routes));return routes})}if(data.key==='globeScene'&&['space','day','dusk'].includes(data.value)||data.key==='markerMetric'&&['smart','frequency','recency','duration'].includes(data.value))return travelCommit(c=>{c.travel.preferences[data.key]=data.value;return data.value})}throw Error('此页面只能修改旅行记录。')}
 window.addEventListener('message',async event=>{const m=event.data;if(!travelFrame||event.source!==travelFrame.contentWindow||event.origin!=='null'||m?.channel!=='louie-travel'||m.nonce!==travelNonce)return;if(m.kind==='ready'){travelIsReady=true;$('#travelFrameLoading')?.remove();if(page==='travelPlan')sendTripMap(true);return}if(page==='travelPlan'&&m.kind==='plan-select'){selectTripDay(m.id);return}if(m.kind==='editing'){travelEditing=m.value===true;return}if(m.kind==='view'&&isTravelPage()&&page!=='travelPlan'){page=m.view==='journal'?'travelJournal':'travelGlobe';updateTravelHeading();renderPersonalNav();renderNavigationContext();rememberProjectRoute();return}if(m.kind!=='request'||!['api','read-store','write-store','remove-store'].includes(m.op)||typeof m.id!=='string'||m.id.length>100)return;const source=event.source,nonce=travelNonce;try{const result=await travelBridge(m.op,m.data||{});source.postMessage({channel:'louie-travel',nonce,kind:'response',id:m.id,result},'*')}catch(error){source.postMessage({channel:'louie-travel',nonce,kind:'response',id:m.id,error:String(error.message||error).slice(0,1000)},'*')}});
