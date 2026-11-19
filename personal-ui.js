@@ -34,7 +34,7 @@ render=function(){normalizePersonal();if(!db.personal.tracks.some(t=>t.id===pers
 let navigationProject=null;
 const stableNavItems=['home','directions','about','settings'];
 const examToolPages=['knowledge','math','errors','mocks','resources','examSettings'];
-const projectTools={exam:examToolPages,coding:['algorithms'],guitar:['guitarPractice'],english:['englishPractice'],calligraphy:['calligraphyStudio'],fitness:['fitnessStudio'],divination:['divinationGuide']};
+const projectTools={exam:examToolPages,coding:['algorithms'],guitar:['guitarBasics','guitarPractice'],english:['englishPractice'],calligraphy:['calligraphyStudio'],fitness:['fitnessStudio'],divination:['divinationGuide']};
 function projectNavItems(){return navigationProject?['track','today',...(projectTools[navigationProject]||[]).filter(k=>labels[k]),'library','tracking']:stableNavItems}
 function setProjectContext(id){window.LouieTeacherProject?.select(id);navigationProject=id;personalTrackId=id;db.personal.activeTrack=id;libraryTrack=id;librarySubject='全部';libraryStatus='全部';librarySearch='';save()}
 function clearProjectContext(){navigationProject=null;resetGlobalLibrary()}

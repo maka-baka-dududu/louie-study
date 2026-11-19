@@ -8,7 +8,7 @@ const speakingStarters=[
 ];
 function normalizePractice(){db.practice??={version:1,songs:[],prompts:[],drafts:{},metronome:{bpm:80,beats:4,subdivision:1,volume:0.35}};}
 normalizePractice();
-Object.assign(labels,{guitarPractice:'吉他练习',englishPractice:'口语练习'});
+Object.assign(labels,{guitarBasics:'吉他基础',guitarPractice:'吉他练习',englishPractice:'口语练习'});
 let practiceSongId=null,practiceSegmentId=null,practicePromptId=null,practiceDraftTimer=null,practiceTimer=null,practiceTimerStarted=0,practiceTimerElapsed=0,practiceSaving=false;
 let capture={generation:0,state:'idle',stream:null,recorder:null,chunks:[],blob:null,url:'',started:0,seconds:0,promptId:null,error:'',timer:null};
 const metro={ctx:null,generation:0,running:false,next:0,tick:0,interval:null,timeouts:new Set(),nodes:new Set(),beat:0,error:''};
@@ -18,10 +18,10 @@ const practicePrompt=()=>db.practice.prompts.find(p=>p.id===practicePromptId)||d
 const practiceSegment=()=>practiceSong()?.segments.find(s=>s.id===practiceSegmentId)||null;
 const practiceClock=seconds=>`${String(Math.floor(seconds/60)).padStart(2,'0')}:${String(Math.floor(seconds%60)).padStart(2,'0')}`;
 const practiceSessions=kind=>db.sessions.filter(s=>s.practice?.kind===kind);
-window.LouiePractice={trackAction:id=>id==='guitar'?'<button class="primary" onclick="openPractice(\'guitar\')">♫ 曲目与节拍器</button>':id==='english'?'<button class="primary" onclick="openPractice(\'english\')">◉ 口语练习</button>':''};
+window.LouiePractice={trackAction:id=>id==='guitar'?'<button class="primary" data-page="guitarBasics">吉他基础</button><button onclick="openPractice(\'guitar\')">♫ 曲目与节拍器</button>':id==='english'?'<button class="primary" onclick="openPractice(\'english\')">◉ 口语练习</button>':''};
 function openPractice(kind){const id=kind==='guitar'?'guitar':'english';if(!preparePracticeLeave())return;setProjectContext(id);go(id==='guitar'?'guitarPractice':'englishPractice')}
 const renderBeforePractice=render;
-render=function(){normalizePractice();const target=page,isPractice=['guitarPractice','englishPractice'].includes(target);if(isPractice){page='track';renderBeforePractice();page=target;$('#crumb').textContent=labels[target];$('#view').innerHTML=target==='guitarPractice'?guitarPracticeView():englishPracticeView();renderPersonalNav();renderNavigationContext();updatePracticeClock();updateMetronomeBeat(metro.beat)}else renderBeforePractice()};
+render=function(){normalizePractice();const target=page,isPractice=['guitarBasics','guitarPractice','englishPractice'].includes(target);if(isPractice){page='track';renderBeforePractice();page=target;$('#crumb').textContent=labels[target];$('#view').innerHTML=target==='guitarBasics'?guitarBasicsView():target==='guitarPractice'?guitarPracticeView():englishPracticeView();renderPersonalNav();renderNavigationContext();updatePracticeClock();updateMetronomeBeat(metro.beat)}else renderBeforePractice()};
 function preparePracticeLeave(){if(capture.state!=='idle'&&capture.state!=='error'){if(!confirm('这段录音还未保存。离开会丢弃录音，继续？'))return false;discardSpeakingRecording(true)}return true}
 const openTrackBeforePractice=openTrack;openTrack=function(id){if(preparePracticeLeave())openTrackBeforePractice(id)};
 const goBeforePractice=go;
@@ -73,4 +73,90 @@ importData=async function(file){stopMetronome();stopPracticeTimer();if(capture.s
 window.addEventListener('beforeunload',event=>{flushPracticeDraft();if(['requesting','recording','stopping','ready'].includes(capture.state)){event.preventDefault();event.returnValue=''}});
 window.addEventListener('pagehide',()=>{stopMetronome();discardSpeakingRecording(true);releasePracticeAudio()});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&metro.running)stopMetronome()});
+
+// Short, original Chinese lessons; references are optional further reading.
+const guitarBasicsLessons = [
+ {title:'先认清弦和品',goal:'找到别人说的“几弦几品”。',
+  points:['最细的是1弦，最粗的是6弦。标准调弦从6弦到1弦是 E A D G B E；两根E相差两个八度。','0品就是空弦，不按左手。1品是琴枕后第一个格子，手指按在格内、靠近右侧品丝，不压在品丝上。','音名是 C D E F G A B。先记弦的音名，再理解它们在不同调里的唱名。'],
+  example:'“2弦1品”＝第二细的弦，按第一个格子，弹出来是C。不是弹第1弦两次。',
+  practice:'调好音，从6弦到1弦慢弹并念 E A D G B E，再找出2弦1品的C。',tool:'fretboard',source:'https://www.fender.com/articles/chords/how-to-read-a-chord-chart',sourceName:'Fender · 弦序与指板图'},
+ {title:'六线谱、简谱怎么看',goal:'分清“按哪里”和“唱什么”。',
+  points:['六线谱从上到下是1至6弦，上面最细、下面最粗；从左往右读。数字表示品位，不是手指，也不是简谱音级。','数字0＝空弦；上下对齐的数字通常一起弹。只写数字的纯六线谱不一定能交代节奏，还要看符干、节奏标记或配套示范。','简谱1～7通常表示调内音级；1=C时，1对应C，1=D时对应D。0表示休止，音符上下的点表示八度。五线谱主要用音符位置表示音高、形状表示时值。'],
+  example:'下面是原创C大调练习，每个音先弹一拍。开头依次是5弦3品、4弦0品、4弦2品，音名C、D、E。',
+  practice:'按下面的六线谱慢弹8个音，边弹边念 C D E F G A B C。',tool:'tab',source:'https://www.fender.com/articles/techniques/how-to-read-tabs',sourceName:'Fender · 六线谱'},
+ {title:'先把节奏弹稳',goal:'知道拍号、速度和音符时值分别说什么。',
+  points:['4/4表示每小节4拍、四分音符作一拍；3/4每小节3拍。BPM是每分钟的拍数，这里的练习都让节拍器每响一次对应一拍。','在4/4里：四分音符1拍，二分音符2拍，全音符4拍，八分音符半拍。休止也要数拍，不是暂停计时。','先一拍一下弹空弦，再一拍两下，口数“1 和 2 和 3 和 4 和”。慢而均匀，比突然快起来更重要。'],
+  example:'60 BPM：一拍约1秒。四分音符弹4下占一小节；八分音符弹8下也占一小节。',
+  practice:'节拍器设60 BPM、每小节4拍。先一拍弹1下，稳住后改成一拍2下，各练1分钟。',tool:'rhythm',source:'https://musictheory.pugetsound.edu/mt21c/TimeSignature.html',sourceName:'普吉特海湾大学 · 拍号'},
+ {title:'半音、全音与音阶',goal:'理解为什么有的音隔一品，有的隔两品。',
+  points:['同一根弦上，每往琴桥方向一品升高一个半音；两品是一个全音。升号♯升半音，降号♭降半音。','自然音中 E—F、B—C只差半音；C—D、D—E、F—G、G—A、A—B差全音。C♯和D♭在常用十二平均律中同音，名称看语境。','大调音阶的间隔是“全 全 半 全 全 全 半”。从C出发得到C D E F G A B C；从G出发得到G A B C D E F♯ G。'],
+  example:'1弦空弦是E，1品F，2品F♯，3品G。不是每个字母之间都有一个升号音。',
+  practice:'在1弦依次弹0、1、3、5品，念 E F G A；再解释E到F为什么只移动一品。',tool:'fretboard',source:'https://musictheory.pugetsound.edu/mt21c/TheMajorScale.html',sourceName:'普吉特海湾大学 · 大调音阶'},
+ {title:'和弦是什么、图怎么看',goal:'理解和弦名字与按法的关系。',
+  points:['先学三和弦：三个不同音按三度关系组合。C大三和弦的音是C E G；Am小三和弦是A C E。吉他可以重复某些音，所以按5根弦不等于5种音。','大三和弦从根音到三音4个半音、三音到五音3个；小三和弦反过来是3＋4。Am里的m表示“小”，不是“把A弹轻一点”。','下图左到右是6至1弦，上方是琴枕。×不弹，○弹空弦，圆点内1/2/3/4分别是左手食指/中指/无名指/小指；圆点所在格子才是品位。'],
+  example:'C和弦常用按法 x32010：6弦不弹、5弦3品、4弦2品、3弦空弦、2弦1品、1弦空弦。',
+  practice:'先选Em，再选Am、C。按好后逐根拨，听是否每根该响的弦都清楚，不急着换和弦。',tool:'chords',source:'https://musictheory.pugetsound.edu/mt21c/TriadsIntroduction.html',sourceName:'普吉特海湾大学 · 三和弦'},
+ {title:'“什么调”和“几级和弦”',goal:'分清C调、C和弦与简谱的1。',
+  points:['调是整段音乐围绕的主音和音阶体系；和弦是某个时刻使用的一组音。C大调不是整首歌只弹C和弦，也不能只看第一个和弦判断调。','在C大调中，音级1～7对应C D E F G A B。由这些音建立的三和弦依次是C、Dm、Em、F、G、Am、Bdim；大调记 I ii iii IV V vi vii°。','常说的“1—5—6—4”，在C大调常指C—G—Am—F；在G大调则是G—D—Em—C。这里讲的是和弦级数，不是六线谱的品数。'],
+  example:'看到1=C，是简谱主音的音高；看到C，是和弦符号时表示C大和弦。它们用同一个字母，说的对象不同。',
+  practice:'先在纸上写出C大调的1、4、5、6级和弦：C、F、G、Am，再对照一份熟悉的歌谱。',tool:'degrees',source:'https://musictheory.pugetsound.edu/mt21c/DiatonicChordsInMajor.html',sourceName:'普吉特海湾大学 · 大调调内和弦'},
+ {title:'变调夹与实际听到的调',goal:'看懂“选调C、Capo 2”这种标注。',
+  points:['变调夹把它所在的位置当成新的空弦起点。夹高一品，按同一套指型，实际音高升一个半音。','C指型配Capo 2，实际响的是D和弦；Am指型配Capo 2，实际响的是Bm。和弦性质不变，根音整体升高。','六线谱在使用变调夹时通常从夹子重新计品，但要先看该谱的说明。选调/指型与原调/实际调可能不同，不能只看字母猜。'],
+  example:'谱写“选调C，Capo 2”：若整段按C大调指型弹，实际响D大调。下面只换算单个和弦，不替整首歌判断调。',
+  practice:'不夹时弹C，再夹2品按同样指型弹C，听整体变高；夹好后检查调音。',tool:'capo',source:'https://hub.yamaha.com/guitars/g-how-to/the-art-of-using-a-capo/',sourceName:'Yamaha · 变调夹'},
+ {title:'把会弹的一首歌看懂',goal:'把学到的基础用回真实的歌。',
+  points:['拿一首你已经会弹的歌，先找拍号、速度、调或选调、Capo位置。缺失的先标“待确认”，不要只凭第一个和弦下结论。','挑4小节，圈出和弦变化，写清每个和弦持续几拍。分清旋律、和弦名、左手指型与右手节奏。','先用原来会的按法慢弹，再解释：这一下弹哪根弦？是什么音？当前是什么和弦？实际响什么调？一次只解决一个不懂的地方。'],
+  example:'原创练习：1=C，4/4，60 BPM，无变调夹。| C | G | Am | C |，每小节一个和弦、每拍向下扫一次。',
+  practice:'先用60 BPM弹完这4小节；再拿自己熟悉的一首歌，标出调、拍号、变调夹与4小节和弦。',tool:'application',source:'https://www.fender.com/articles/techniques/how-to-read-tabs',sourceName:'Fender · 读谱参考'}
+];
+const guitarBasicChords = {
+ C:{frets:[null,3,2,0,1,0],fingers:[0,3,2,0,1,0],tones:'C E G'},
+ Am:{frets:[null,0,2,2,1,0],fingers:[0,0,2,3,1,0],tones:'A C E'},
+ Em:{frets:[0,2,2,0,0,0],fingers:[0,2,3,0,0,0],tones:'E G B'},
+ G:{frets:[3,2,0,0,0,3],fingers:[2,1,0,0,0,3],tones:'G B D'},
+ D:{frets:[null,null,0,2,3,2],fingers:[0,0,0,1,3,2],tones:'D F♯ A'}
+};
+let guitarBasicsIndex=0,guitarBasicChord='Em',guitarBasicCapo=2,guitarBasicShape='C';
+const guitarPitchNames=['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'];
+const guitarOpenMidi=[40,45,50,55,59,64];
+function guitarFretNote(string,fret){const midi=guitarOpenMidi[6-string]+fret;return guitarPitchNames[midi%12]+(Math.floor(midi/12)-1)}
+function guitarCapoChord(shape,fret){const roots={C:0,Am:9,Em:4,G:7,D:2};return guitarPitchNames[(roots[shape]+fret)%12]+(shape.endsWith('m')?'m':'')}
+function guitarChordDiagram(name){
+ const chord=guitarBasicChords[name];
+ const label=chord.frets.map((fret,i)=>`${6-i}弦${fret===null?'不弹':fret===0?'空弦':fret+'品'}`).join('，');
+ return `<svg viewBox="0 0 180 205" role="img" aria-label="${name}和弦：${label}">
+ <title>${name}和弦指法图</title><g fill="none" stroke="currentColor" opacity=".55">
+ ${Array.from({length:6},(_,i)=>`<path d="M${30+i*24} 35V171"/>`).join('')}
+ ${Array.from({length:5},(_,i)=>`<path d="M30 ${35+i*34}H150" stroke-width="${i?1:4}"/>`).join('')}</g>
+ ${chord.frets.map((fret,i)=>`<text x="${30+i*24}" y="23" text-anchor="middle" fill="currentColor" font-size="16">${fret===null?'×':fret===0?'○':''}</text>
+ ${fret>0?`<circle cx="${30+i*24}" cy="${18+fret*34}" r="10" fill="var(--green)"/><text x="${30+i*24}" y="${22+fret*34}" text-anchor="middle" fill="white" font-size="12">${chord.fingers[i]}</text>`:''}
+ <text x="${30+i*24}" y="193" text-anchor="middle" fill="currentColor" font-size="11">${6-i}弦</text>`).join('')}</svg>`;
+}
+function guitarBasicsTool(kind){
+ if(kind==='fretboard')return `<div class="guitar-fretboard" role="group" aria-label="标准调弦指板，0至5品"><div class="guitar-fret-row"><span></span>${Array.from({length:6},(_,f)=>`<span>${f===0?'空弦':f+'品'}</span>`).join('')}</div>${[1,2,3,4,5,6].map(string=>`<div class="guitar-fret-row"><span>${string}弦</span>${Array.from({length:6},(_,fret)=>`<button type="button" aria-label="${string}弦${fret}品 ${guitarFretNote(string,fret)}" onclick="document.querySelector('#guitarNoteInfo').textContent='${string}弦${fret}品：${guitarFretNote(string,fret)}'">${guitarFretNote(string,fret).replace(/\d/,'')}</button>`).join('')}</div>`).join('')}<p id="guitarNoteInfo" role="status">点一个位置，查看音名和八度。1弦在上，6弦在下。</p></div>`;
+ if(kind==='tab'){
+  const notes=[[5,3],[4,0],[4,2],[4,3],[3,0],[3,2],[2,0],[2,1]];
+  const tab=[1,2,3,4,5,6].map((string,i)=>`${['e','B','G','D','A','E'][i]} |`+notes.map(([s,f])=>s===string?f+'-':'--').join('')+'|').join('\n');
+  return `<pre class="guitar-tab" aria-label="C大调六线谱，依次弹C D E F G A B C">${tab}</pre><p class="muted">每列一个音，每个音1拍；本例时值由文字指定。上面的e是高音E弦。</p>`;
+ }
+ if(kind==='chords')return `<div class="actions">${Object.keys(guitarBasicChords).map(name=>`<button type="button" aria-pressed="${guitarBasicChord===name}" onclick="guitarBasicChord='${name}';render()">${name}</button>`).join('')}</div><figure class="guitar-chord">${guitarChordDiagram(guitarBasicChord)}<figcaption><strong>${guitarBasicChord}</strong> · 组成音 ${guitarBasicChords[guitarBasicChord].tones}</figcaption></figure>`;
+ if(kind==='capo')return `<div class="formgrid"><label>弹的指型<select aria-label="变调夹和弦指型" onchange="guitarBasicShape=this.value;render()">${Object.keys(guitarBasicChords).map(name=>`<option ${name===guitarBasicShape?'selected':''}>${name}</option>`).join('')}</select></label><label>变调夹位置<select aria-label="变调夹位置" onchange="guitarBasicCapo=Number(this.value);render()">${Array.from({length:8},(_,f)=>`<option value="${f}" ${f===guitarBasicCapo?'selected':''}>${f===0?'不夹':f+'品'}</option>`).join('')}</select></label></div><p class="guitar-capo-result" role="status">${guitarBasicShape} 指型 ＋ ${guitarBasicCapo} 品 → 实际响 <strong>${guitarCapoChord(guitarBasicShape,guitarBasicCapo)}</strong> 和弦</p>`;
+ if(kind==='degrees')return '<p class="guitar-notation">C大调：I C · ii Dm · iii Em · IV F · V G · vi Am · vii° Bdim</p>';
+ if(kind==='rhythm')return '<p class="guitar-notation">四分：1　2　3　4<br>八分：1 和 2 和 3 和 4 和</p>';
+ return '<p class="guitar-notation">1=C　4/4　60 BPM　Capo 0<br>| C | G | Am | C |</p>';
+}
+function guitarBasicsView(){const lesson=guitarBasicsLessons[guitarBasicsIndex];return `<div class="pagehead"><div><h1>吉他基础</h1><p class="muted">会弹歌，从这里补乐理。每次一课，先读懂，再拿琴试。</p></div></div>
+ <div class="guitar-basics-layout"><nav class="guitar-lessons" aria-label="吉他基础课程">${guitarBasicsLessons.map((item,index)=>`<button type="button" aria-current="${index===guitarBasicsIndex?'step':'false'}" onclick="selectGuitarBasics(${index})"><small>${String(index+1).padStart(2,'0')}</small>${item.title}</button>`).join('')}</nav>
+ <article class="card guitar-lesson"><small class="muted">第 ${guitarBasicsIndex+1} / ${guitarBasicsLessons.length} 课</small><h2>${lesson.title}</h2><p class="guitar-lesson-goal">${lesson.goal}</p>
+ ${lesson.points.map(text=>`<p>${text}</p>`).join('')}
+ ${guitarBasicsTool(lesson.tool)}
+ <div class="guitar-lesson-example"><strong>对照着看</strong><p>${lesson.example}</p></div>
+ <div class="guitar-lesson-practice"><strong>拿琴练 5 分钟</strong><p>${lesson.practice}</p></div>
+ <div class="actions"><button type="button" onclick="arrangeGuitarBasics()">安排这项练习</button><button type="button" onclick="openPractice('guitar')">打开节拍器</button></div>
+ <details class="guitar-reference"><summary>参考资料（英文，可选）</summary><a href="${lesson.source}" target="_blank" rel="noopener noreferrer">${lesson.sourceName} ↗</a></details>
+ <div class="actions guitar-lesson-pager">${guitarBasicsIndex?'<button type="button" onclick="selectGuitarBasics(guitarBasicsIndex-1)">上一课</button>':''}${guitarBasicsIndex<guitarBasicsLessons.length-1?'<button type="button" class="primary" onclick="selectGuitarBasics(guitarBasicsIndex+1)">下一课</button>':''}</div>
+ </article></div>`}
+function selectGuitarBasics(index){if(!Number.isInteger(index)||!guitarBasicsLessons[index])return;guitarBasicsIndex=index;render();$('#view').scrollIntoView?.({block:'start'})}
+function arrangeGuitarBasics(){if(navigationProject!=='guitar')return;taskForm('guitar');const form=$('#personalTaskForm');if(!form?.elements)return;form.elements.title.value=guitarBasicsLessons[guitarBasicsIndex].practice;if([...form.elements.subject.options].some(option=>option.value==='乐理'))form.elements.subject.value='乐理';form.elements.minutes.value=5}
+
 render();window.LouiePracticeReady=true;

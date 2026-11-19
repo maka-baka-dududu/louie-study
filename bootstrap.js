@@ -26,8 +26,8 @@
   const extensions=[
     ['algorithm-problems.js','LouieAlgorithmProblemsReady'],
     ['algorithms-ui.js','LouieAlgorithmsReady'],
-    ['personal-ui.js?v=divination-readings','LouiePersonalReady'],
-    ['practice-ui.js','LouiePracticeReady'],
+    ['personal-ui.js?v=guitar-basics','LouiePersonalReady'],
+    ['practice-ui.js?v=guitar-basics','LouiePracticeReady'],
     ['language-ui.js?v=sentence-categories','LouieLanguageReady'],
     ['studio-ui.js?v=travel-direct-2','LouieStudioReady'],
     ['profile-files-ui.js','LouieProfileFilesReady'],
