@@ -227,7 +227,7 @@ async function switchTravelPlan(id) {
   if (!window.LouiePublicSite) {
     tripSaving=true;
     try { await travelCommit(null,{...collection,activeId:id}); }
-    catch(error) {toast('切换未保存：'+error.message);refreshTripPlanner();return;}
+    catch(error) {tripSaving=false;toast('切换未保存：'+error.message);refreshTripPlanner();return;}
     finally {tripSaving=false;}
   }
   tripActiveId=id;
