@@ -832,6 +832,20 @@
           "story": "",
           "photoIds": [],
           "updatedAt": "2026-11-19T07:15:22.706Z"
+        },
+        {
+          "id": "c973bcf2-137b-49ca-b1b4-3bb61c1ed00f",
+          "place": "Surabaya · 印度尼西亚",
+          "lat": -7.2492,
+          "lng": 112.7508,
+          "date": "2026-11-19",
+          "endDate": "",
+          "markerStyle": "auto",
+          "status": "visited",
+          "title": "泗水的bromo，一定要来一次，第二次就没必要了",
+          "story": "",
+          "photoIds": [],
+          "updatedAt": "2026-11-19T07:15:49.167Z"
         }
       ],
       "routes": [],
