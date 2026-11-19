@@ -371,6 +371,18 @@
       "title": "在富士山下🗻",
       "story": "",
       "photos": []
+    },
+    {
+      "id": "864a7465-b9b0-46f9-9f53-19a7c86bac52",
+      "place": "东京",
+      "lat": 35.684,
+      "lng": 139.7355,
+      "status": "visited",
+      "date": "2023-09-02",
+      "markerStyle": "auto",
+      "title": "东京之旅，可惜的是涉谷电梯没有坐上",
+      "story": "",
+      "photos": []
     }
   ]
 }

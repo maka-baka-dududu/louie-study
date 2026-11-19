@@ -635,6 +635,20 @@
           "story": "",
           "photoIds": [],
           "updatedAt": "2026-11-19T06:31:39.722Z"
+        },
+        {
+          "id": "864a7465-b9b0-46f9-9f53-19a7c86bac52",
+          "place": "东京",
+          "lat": 35.684,
+          "lng": 139.7355,
+          "date": "2023-09-02",
+          "endDate": "",
+          "markerStyle": "auto",
+          "status": "visited",
+          "title": "东京之旅，可惜的是涉谷电梯没有坐上",
+          "story": "",
+          "photoIds": [],
+          "updatedAt": "2026-11-19T06:32:28.647Z"
         }
       ],
       "routes": [],
