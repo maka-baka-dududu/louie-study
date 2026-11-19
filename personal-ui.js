@@ -170,41 +170,96 @@ plan=async function(){
 };
 render();window.LouieScheduleReady=true;
 
-// The guide uses the existing project tasks and library for practice and notes.
+// Curated readings are also filed in the owner's project library.
+const divinationResources = [
+  {
+    "id": "divination-source-shuogua",
+    "subject": "八卦",
+    "title": "八卦基础｜《说卦传》",
+    "url": "https://zh.wikisource.org/zh-hans/周易/說卦",
+    "reading": [
+      "先读第七、八章，认卦名、卦性与物象。",
+      "再读第五章，单独记后天方位。",
+      "画八个卦，遮住名称逐个辨认。"
+    ],
+    "note": "先认卦画，再记物象与方位；先天卦数和后天方位分开记。",
+    "reference": "维基文库 · 原典转录"
+  },
+  {
+    "id": "divination-source-zengshan",
+    "subject": "六爻",
+    "title": "六爻入门｜《增删卜易》卷一",
+    "url": "https://zh.wikisource.org/zh-hans/增刪卜易",
+    "reading": [
+      "先读八卦、卦象图与八宫图。",
+      "再读浑天甲子、六亲歌、世应与动变。",
+      "最后读用神章，先练装卦，再读案例。"
+    ],
+    "note": "按卷一第1–8章循序读。此电子本含后人增订说明，遇疑义对照古籍版本，不把增订说明当原作者正文。",
+    "reference": "维基文库 · 原典转录，含增订说明"
+  },
+  {
+    "id": "divination-source-meihua",
+    "subject": "梅花易数",
+    "title": "梅花入门｜《梅花易数》卷一",
+    "url": "https://zh.wikisource.org/zh-hans/梅花易數/卷一",
+    "reading": [
+      "读周易卦数、卦以八除、爻以六除。",
+      "读年月日时起例，明确各数如何取得。",
+      "复算观梅占：34取兑、43取离、初爻动。"
+    ],
+    "note": "卦数取余：除8余0按8；动爻除6余0按第6爻。初学先把同一个例子的数、卦和动爻算清楚。",
+    "reference": "维基文库 · 原典转录"
+  },
+  {
+    "id": "divination-source-liuren",
+    "subject": "小六壬",
+    "title": "小六壬古籍对读｜《选择要略》中",
+    "url": "https://zh.wikisource.org/zh-hans/選擇要略/中",
+    "reading": [
+      "在原文中查找“六壬赤口”，只读这一小段。",
+      "对照六个名称与逐日循环顺序。",
+      "记下本篇正月初一起留连，不混用别的起日法。"
+    ],
+    "note": "这是古籍对读材料，不是完整的现代月日时教程。本篇正月初一起留连；不同传法的起点与计数约定要分别记录。",
+    "reference": "维基文库 · 古籍对读"
+  }
+];
 const divinationTopics = [
   {
     name: '六爻',
     introduction: '先认识六个爻位：从下往上依次记初、二、三、四、五、上。下三爻组成下卦，上三爻组成上卦。接着练习区分本卦和变卦，再学纳甲、世应和六亲。',
     example: '从下往上记「阳、阴、阴、阳、阳、阳」，下卦为震，上卦为乾。先画出来，再上下对照。',
     exercise: '从下往上画六个爻，标出初爻、上爻以及上下卦',
-    source: ['《周易·说卦》','https://ctext.org/book-of-changes/shuo-gua/zh']
+    source: ['《增删卜易》卷一','https://zh.wikisource.org/zh-hans/增刪卜易']
   },
   {
     name: '小六壬',
     introduction: '先把大安、留连、速喜、赤口、小吉、空亡排成一圈。学习起课时，先注明参考的是哪一套规则，再写月、日、时各从哪里起数。',
     example: '只练六宫顺序：从大安起，按「起点算第一」数到第三位，是速喜。这一步只用于熟悉顺序。',
-    exercise: '默写六宫顺序，练习从不同位置起数并标注计数规则'
+    exercise: '默写六宫顺序，练习从不同位置起数并标注计数规则',
+    source: ['《选择要略》中·六壬赤口','https://zh.wikisource.org/zh-hans/選擇要略/中']
   },
   {
     name: '梅花易数',
     introduction: '先熟悉《梅花易数》中的卦数顺序。学会分别取上卦、下卦和动爻，再读书中的「观梅占」例子。',
     example: '观梅占原例中，年、月、日数合为 34，除以 8 余 2 取兑为上卦。加时数后为 43，除以 8 余 3 取离为下卦，除以 6 余 1 为初爻动。',
     exercise: '手算观梅占原例，写出上下卦、三个余数和动爻',
-    source: ['《梅花易数》卷一','https://ctext.org/wiki.pl?chapter=957339&if=gb&remap=gb']
+    source: ['《梅花易数》卷一','https://zh.wikisource.org/zh-hans/梅花易數/卷一']
   },
   {
     name: '八卦',
     introduction: '先把八个卦画和天、泽、火、雷、风、水、山、地对上。这里按《梅花易数》卷一的卦数排列。学方位时再区分先天与后天。',
     example: '震和艮都是一阳两阴。震的阳爻在最下面，艮的阳爻在最上面。',
     exercise: '画出八卦，默写每卦对应的自然物象',
-    source: ['《周易·说卦》','https://ctext.org/book-of-changes/shuo-gua/zh']
+    source: ['《说卦传》','https://zh.wikisource.org/zh-hans/周易/說卦']
   }
 ];
 const divinationTrigrams = [
   ['☰','乾','天'], ['☱','兑','泽'], ['☲','离','火'], ['☳','震','雷'],
   ['☴','巽','风'], ['☵','坎','水'], ['☶','艮','山'], ['☷','坤','地']
 ];
-let divinationTopicIndex = 0;
+let divinationTopicIndex = 3;
 
 function selectDivinationTopic(index) {
   if (!divinationTopics[index]) return;
@@ -226,21 +281,25 @@ function addDivinationExercise() {
 
 function divinationView() {
   const topic = divinationTopics[divinationTopicIndex];
+  const resource = divinationResources.find(item=>item.subject===topic.name);
   const trigrams = divinationTopicIndex === 3
     ? `<div class="divination-trigrams">${divinationTrigrams.map(([symbol,name,image],index)=>
       `<div class="divination-trigram"><b>${symbol}</b><span>${name} · ${image}</span><small>${index+1}</small></div>`).join('')}</div>`
     : '';
-  return `<div class="pagehead"><h1>入门与练习</h1></div>
+  return `<div class="pagehead"><div><h1>入门与练习</h1><p class="muted">先学八卦，再选一门。每次读一小段、做一项练习。</p></div></div>
     <div class="actions divination-topics" aria-label="入门主题">
-      ${divinationTopics.map(({name},index)=>`<button id="divinationTopic${index}" aria-pressed="${index===divinationTopicIndex}" onclick="selectDivinationTopic(${index})">${name}</button>`).join('')}
+      ${[3,0,2,1].map(index=>`<button id="divinationTopic${index}" aria-pressed="${index===divinationTopicIndex}" onclick="selectDivinationTopic(${index})">${divinationTopics[index].name}</button>`).join('')}
     </div>
     <section class="card divination-guide">
       <h2>${topic.name}</h2>
       <p>${topic.introduction}</p>
+      <h3>${esc(resource.title)}</h3>
+      <ol class="divination-reading">${resource.reading.map(line=>`<li>${esc(line)}</li>`).join('')}</ol>
+      <p class="muted">${esc(resource.note)}</p>
       ${trigrams}
       <div class="divination-example"><strong>例子</strong><br>${topic.example}</div>
       <p><strong>练习</strong> · ${topic.exercise}</p>
-      ${topic.source?`<a href="${topic.source[1]}" target="_blank" rel="noopener noreferrer">读原文 ${topic.source[0]} ↗</a>`:''}
+      <p><a href="${resource.url}" target="_blank" rel="noopener noreferrer">读原文 ↗</a> <small class="muted">${esc(resource.reference)}</small></p>
       <div class="actions">
         <button class="primary" onclick="addDivinationExercise()">安排这项练习</button>
         <button data-page="library">打开项目资料</button>
