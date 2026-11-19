@@ -359,6 +359,18 @@
       "title": "我来这里转车",
       "story": "",
       "photos": []
+    },
+    {
+      "id": "c0e4cdbe-1398-4f57-9d25-3e3bafb666e3",
+      "place": "Fuji · 日本",
+      "lat": 35.16667,
+      "lng": 138.68333,
+      "status": "visited",
+      "date": "2023-09-01",
+      "markerStyle": "auto",
+      "title": "在富士山下🗻",
+      "story": "",
+      "photos": []
     }
   ]
 }

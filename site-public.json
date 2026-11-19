@@ -621,6 +621,20 @@
           "story": "",
           "photoIds": [],
           "updatedAt": "2026-11-18T07:28:02.191Z"
+        },
+        {
+          "id": "c0e4cdbe-1398-4f57-9d25-3e3bafb666e3",
+          "place": "Fuji · 日本",
+          "lat": 35.16667,
+          "lng": 138.68333,
+          "date": "2023-09-01",
+          "endDate": "",
+          "markerStyle": "auto",
+          "status": "visited",
+          "title": "在富士山下🗻",
+          "story": "",
+          "photoIds": [],
+          "updatedAt": "2026-11-19T06:31:39.722Z"
         }
       ],
       "routes": [],
