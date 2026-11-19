@@ -144,6 +144,23 @@
         "fileName": "27考研数学武忠祥《高数基础篇》【公众号：研料库，料最全】.pdf",
         "size": 158734400,
         "mime": "application/pdf"
+      },
+      {
+        "trackId": "exam",
+        "title": "王道数据结构",
+        "subject": "数据结构",
+        "tags": "",
+        "total": 0,
+        "unit": "页",
+        "note": "",
+        "id": "6ce7b75f-f0a6-42b8-a2ff-9a622e55cf0a",
+        "current": 0,
+        "status": "待学习",
+        "created": "2026-11-19",
+        "fileId": "60b98d6a-ab5c-49b1-bae6-76cd6590656d",
+        "fileName": "2027数据结构_高清带书签版.pdf",
+        "size": 211935102,
+        "mime": "application/pdf"
       }
     ],
     "progress": [],
@@ -2727,6 +2744,77 @@
         }
       ],
       "size": 158734400,
+      "mime": "application/pdf"
+    },
+    "60b98d6a-ab5c-49b1-bae6-76cd6590656d": {
+      "parts": [
+        {
+          "url": "site-files/e7c46999fe2bb2719951e5de0d7fd04de05f0cbb.part",
+          "size": 16777216,
+          "sha256": "b7d212803cfcbe00655039ac7bc6ea2ce83c3a3d2b44a22d34b8a58b54ca4cb6"
+        },
+        {
+          "url": "site-files/79cfecc4514636c96d70570ae43be7dcba1cb747.part",
+          "size": 16777216,
+          "sha256": "7b19c3cc2567128208cc7ae2b7a5fd188c63fad8d8e9b678dcbc3843a980b564"
+        },
+        {
+          "url": "site-files/91847b90e41bc579ba08d431d9e7bf0af8c1b6cc.part",
+          "size": 16777216,
+          "sha256": "ef79bad9adcef6fb0369911be9e02a21ef55cafe4d9b2dd8b32ab3c48f600525"
+        },
+        {
+          "url": "site-files/3c0ddd7a1a8e09d5bf8fc63721328d490698e2ff.part",
+          "size": 16777216,
+          "sha256": "153f7e5c9a07b9ae8037de0655b2694426ec1245abd1e55c9707bfd08d1c9a9b"
+        },
+        {
+          "url": "site-files/89dc1cb2158514a7a198585e35092377bbdb0950.part",
+          "size": 16777216,
+          "sha256": "357a335b3ff6a0d232cb7afd301c18d9d5abc3be85619c649ffbf03b15f7b8d9"
+        },
+        {
+          "url": "site-files/415852656147080d617b49d338fce5c560f3c4f9.part",
+          "size": 16777216,
+          "sha256": "19262a9bbf1ca59038992afd8db97cf2c067724c86877c6f1dde14ab9ef47c79"
+        },
+        {
+          "url": "site-files/13ddc5a2ed2352c2600df3e4f7e87d929bfbd9fe.part",
+          "size": 16777216,
+          "sha256": "3a4192f8f034093911982a6d1cecfc116cfb9b4878db9a277915ae6f9b009b2e"
+        },
+        {
+          "url": "site-files/02917d85e6d09ba6aac18e1dfd40db09eef66543.part",
+          "size": 16777216,
+          "sha256": "ffdc6ca667098d9eaeed21b9c7d23811cd86fa521e5606fb288f8c7f9eabd075"
+        },
+        {
+          "url": "site-files/998cd9baad27bf0ca60ba0b290fead7428a328a2.part",
+          "size": 16777216,
+          "sha256": "f3e79554a173eda970ef665243fa7d4dcf8410c68367a5f73277a6ea845eecde"
+        },
+        {
+          "url": "site-files/e5db8a7e4bca32e38c8ad5ccd208f760a8d0df9a.part",
+          "size": 16777216,
+          "sha256": "40a99cf002586a75f5cff562eeaa922534ad8519bf7dc4bef58ba7573bc2d523"
+        },
+        {
+          "url": "site-files/658ce1e4be5b4b0fe64b8dfe77d5470c8fccf069.part",
+          "size": 16777216,
+          "sha256": "30db8fc83f79adc50b3ac8be0c474daec3274b1caa35cf69a15ca2f68f0ec370"
+        },
+        {
+          "url": "site-files/9f0d09d9ce2043e5922e2ac25ea4ee335b879486.part",
+          "size": 16777216,
+          "sha256": "76d3bd6c13d07df3ffca9384b8528a2bd5edb09754e036d3b0dd620f4f8044ac"
+        },
+        {
+          "url": "site-files/51ebde85b4bcaeba11a57c18c7e08cbcdeb39b08.part",
+          "size": 10608510,
+          "sha256": "f27d96774229032eff4acc73d7a970ae0a0ad14afc6102f58ee1a19d831ce9a2"
+        }
+      ],
+      "size": 211935102,
       "mime": "application/pdf"
     }
   }
