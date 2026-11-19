@@ -32,7 +32,7 @@
     ['studio-ui.js?v=travel-direct-2','LouieStudioReady'],
     ['profile-files-ui.js','LouieProfileFilesReady'],
     ['travel-model.js?v=admin-footprints','LouieTravelModel'],
-    ['travel-plan.js?v=public-map','LouieTravelPlanReady'],
+    ['travel-plan.js?v=multiple-plans','LouieTravelPlanReady'],
     ['travel-ui.js?v=travel-navigation','LouieTravelReady']
   ];
 

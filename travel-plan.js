@@ -132,7 +132,7 @@ const tripRestDays = new Set([33,39,50,56]);
 function defaultTravelPlan() {
   let index = 0;
   return {
-    title: '亚欧非大环线', start: '2027-06-05',
+    templateKey: 'original', title: '亚欧非大环线', start: '2027-06-05',
     budget: [15000, 9000, 7000, 5000, 4000],
     stages: tripTemplateStages.map(stage => stage.title),
     days: tripTemplateStages.flatMap((stage, group) => stage.days.map(([title, activity, lodging]) => {
@@ -152,10 +152,10 @@ function validTravelPlan(plan) {
   const str = (value, max) => typeof value === 'string' && value.length <= max;
   const point = p => p && str(p.name, 80) && p.name.trim() && Number.isFinite(p.lat) && Math.abs(p.lat) <= 90 &&
     Number.isFinite(p.lng) && Math.abs(p.lng) <= 180;
-  return !!(plan && str(plan.title, 80) && plan.title.trim() && window.LouieTravelModel.date(plan.start) &&
+  return !!(plan && str(plan.title, 80) && plan.title.trim() && (plan.start === '' || window.LouieTravelModel.date(plan.start)) &&
     Array.isArray(plan.budget) && plan.budget.length === tripBudgetLabels.length &&
     plan.budget.every(n => Number.isInteger(n) && n >= 0 && n <= 1000000) &&
-    Array.isArray(plan.stages) && plan.stages.length === tripTemplateStages.length &&
+    Array.isArray(plan.stages) && plan.stages.length >= 1 && plan.stages.length <= 12 &&
     plan.stages.every(name => str(name, 80) && name.trim()) &&
     Array.isArray(plan.days) && plan.days.length <= 180 && plan.days.every(d =>
       d && window.LouieTravelModel.id(d.id) && Number.isInteger(d.group) && d.group >= 0 && d.group < plan.stages.length &&
@@ -165,12 +165,100 @@ function validTravelPlan(plan) {
     plan.days.every((d, i) => !i || plan.days[i - 1].group <= d.group));
 }
 
+Object.assign(tripCoordinates, {
+  乌鲁木齐:[43.83,87.62,'中国'], 伊宁:[43.91,81.28,'中国'], 阿拉木图:[43.24,76.95,'哈萨克斯坦'],
+  塔什干:[41.30,69.24,'乌兹别克斯坦'], 撒马尔罕:[39.65,66.96,'乌兹别克斯坦'],
+  布哈拉:[39.77,64.42,'乌兹别克斯坦'], 巴统:[41.65,41.64,'格鲁吉亚'],
+  索非亚:[42.70,23.32,'保加利亚'], 贝尔格莱德:[44.82,20.46,'塞尔维亚'],
+  萨拉热窝:[43.86,18.41,'波黑'], 雅典:[37.98,23.73,'希腊']
+});
+
+function xinjiangTravelPlan() {
+  const sections = [
+    ['新疆与中亚', ['乌鲁木齐','伊宁','阿拉木图','阿拉木图','塔什干','撒马尔罕','撒马尔罕','布哈拉']],
+    ['高加索', ['第比利斯','第比利斯','卡兹别克','第比利斯','巴统']],
+    ['土耳其', ['伊斯坦布尔','伊斯坦布尔','伊斯坦布尔']],
+    ['巴尔干', ['索非亚','索非亚','贝尔格莱德','贝尔格莱德','萨拉热窝','萨拉热窝','雅典','雅典']],
+    ['埃及', ['开罗','吉萨','开罗','卢克索','卢克索','开罗']],
+    ['海湾与返疆', ['马斯喀特','马斯喀特','迪拜','迪拜','乌鲁木齐']]
+  ];
+  let previous = '';
+  let number = 0;
+  return {templateKey:'xinjiang', title:'新疆出发 · 亚欧非环线（不去西欧）', start:'',
+    budget:[0,0,0,0,0], stages:sections.map(([name])=>name),
+    days:sections.flatMap(([,cities],group)=>cities.map(city=>{
+      const moving = previous && previous !== city;
+      const names = moving ? [previous,city] : [city];
+      const day = {id:'xinjiang-day-'+(++number), group, title:moving?previous+' → '+city:city,
+        mode:moving?'rest':'visit', lodging:city,
+        activity:moving?'转场预留日；交通方式、口岸或联程、签证和所需时间待核实，可拆成多天。':'市区游览或休息，景点和停留时长按兴趣调整。',
+        points:names.map(name=>({name,lat:tripCoordinates[name][0],lng:tripCoordinates[name][1]}))};
+      previous=city;
+      return day;
+    }))};
+}
+
 const tripDefault = defaultTravelPlan();
-let tripGroup = 'all', tripMode = 'all', tripSelected = '', tripSaving = false;
-const getTravelPlan = () => window.LouiePublicSite ? tripDefault : db.travelPlan ?? tripDefault;
+let tripGroup = 'all', tripMode = 'all', tripSelected = '', tripSaving = false, tripActiveId = '';
+function validTravelPlans(value) {
+  if (value?.version !== 2) return validTravelPlan(value);
+  return Array.isArray(value.plans) && value.plans.length >= 1 && value.plans.length <= 20 &&
+    value.plans.every(plan=>window.LouieTravelModel.id(plan.id) && validTravelPlan(plan)) &&
+    new Set(value.plans.map(plan=>plan.id)).size === value.plans.length &&
+    value.plans.some(plan=>plan.id===value.activeId);
+}
+function getTravelPlans() {
+  if (db.travelPlan?.version === 2) return db.travelPlan;
+  return {version:2, activeId:'original-plan', plans:[
+    {...(db.travelPlan ?? tripDefault),id:'original-plan'},
+    {...xinjiangTravelPlan(),id:'xinjiang-plan'}
+  ]};
+}
+const getTravelPlan = () => {
+  const collection = getTravelPlans();
+  return collection.plans.find(plan=>plan.id===(tripActiveId || collection.activeId)) ?? collection.plans[0];
+};
 const tripMoney = n => '¥' + n.toLocaleString('zh-CN');
 
+async function switchTravelPlan(id) {
+  if (tripSaving) return;
+  const collection = getTravelPlans();
+  if (!collection.plans.some(plan=>plan.id===id)) return;
+  if (!window.LouiePublicSite) {
+    tripSaving=true;
+    try { await travelCommit(null,{...collection,activeId:id}); }
+    catch(error) {toast('切换未保存：'+error.message);refreshTripPlanner();return;}
+    finally {tripSaving=false;}
+  }
+  tripActiveId=id;
+  tripGroup='all';tripMode='all';tripSelected='';
+  refreshTripPlanner({focus:true});
+  $('#tripList').scrollTop=0;
+}
+function openNewTravelPlan() {
+  if (window.LouiePublicSite || tripSaving) return;
+  if (getTravelPlans().plans.length>=20) return toast('最多保存 20 份旅行计划。');
+  show(`<h2>新建旅行计划</h2><form id="newTripForm" class="trip-form">
+    <label>计划名称<input name="title" required maxlength="80" placeholder="给这条路线起个名字"></label>
+    <label>从哪里开始<select name="source"><option value="blank">空白计划</option>
+      <option value="copy">复制当前计划</option><option value="xinjiang">新疆出发 · 不去西欧</option></select></label>
+    <button type="submit" class="primary">创建计划</button></form>`);
+  $('#newTripForm').onsubmit=async event=>{
+    event.preventDefault();
+    const form=event.currentTarget,fields=new FormData(form),source=fields.get('source');
+    const plan=source==='copy'?JSON.parse(JSON.stringify(getTravelPlan())):source==='xinjiang'?xinjiangTravelPlan():
+      {templateKey:'custom',start:'',budget:[0,0,0,0,0],stages:['路线安排'],days:[]};
+    const id=uid();
+    const next={...plan,id,title:fields.get('title').trim()};
+    const collection=getTravelPlans();
+    await saveTripCollection({...collection,activeId:id,plans:[...collection.plans,next]},form.querySelector('[type=submit]'),()=>{
+      tripActiveId=id;tripGroup='all';tripMode='all';tripSelected='';
+    });
+  };
+}
+
 function tripDate(start, offset) {
+  if (!start) return '日期待定';
   const date = new Date(start + 'T00:00:00Z');
   date.setUTCDate(date.getUTCDate() + offset);
   return (date.getUTCMonth() + 1) + ' 月 ' + date.getUTCDate() + ' 日';
@@ -221,7 +309,7 @@ function showFullTripMap() {
     <h2>全程地图</h2><p class="muted">${esc(plan.title)} · ${plan.days.length} 天 · 路线示意</p>
     ${stops.length ? `<canvas id="tripFullCanvas" role="img" aria-label="${esc(plan.title)}全程二维路线"></canvas>
       <div class="trip-full-legend" aria-label="路线分段">
-        ${stages.map(stage => `<div><i style="--stage-color:${tripMapColors[stage.group]}"></i><span>
+        ${stages.map(stage => `<div><i style="--stage-color:${tripMapColors[stage.group % tripMapColors.length]}"></i><span>
           <strong>${esc(stage.name)}</strong><small>${esc(stage.highlights.join(' · '))}</small>
         </span></div>`).join('')}
       </div>` : '<p class="muted">行程还没有地图地点。</p>'}
@@ -356,6 +444,9 @@ function sendTripMap(focus = false) {
 function renderTravelPlan() {
   $('#view').innerHTML = `
     <article class="trip-plan" id="tripPlanner">
+      <div class="trip-plan-switcher"><label for="tripPlanSelect">旅行计划</label>
+        <select id="tripPlanSelect" aria-label="选择旅行计划"></select>
+        ${window.LouiePublicSite ? '' : '<button type="button" id="tripNew">＋ 新建计划</button>'}</div>
       <header class="trip-header">
         <div><h1 id="tripTitle"></h1><p id="tripSubtitle" class="muted"></p></div>
         ${window.LouiePublicSite ? '' : `<div class="trip-actions"><button type="button" id="tripSettings">计划与预算</button>
@@ -386,19 +477,11 @@ function renderTravelPlan() {
           <div id="tripList" class="trip-list"></div>
         </section>
       </div>
-      <details class="trip-card trip-booking">
-        <summary>预订提示与资料</summary>
-        <ul>
-          <li>先核广州往返、海湾短途、开罗到第比利斯与伊斯坦布尔到维也纳的含行李总价。</li>
-          <li>先订首晚、瓦迪拉姆营地和接送，以及 7 月阿姆斯特丹、巴黎、巴塞罗那合预算的可取消房。</li>
-          <li>申根住宿证明覆盖整个停留期。买不可退款的票前，复核各国入境规定和领事提醒。</li>
-        </ul>
-        <p class="trip-links"><a href="https://xhslink.com/o/2WTjkhTMUdn" target="_blank" rel="noopener noreferrer">路线原帖</a>
-        <a href="https://home-affairs.ec.europa.eu/document/download/99f6ef02-bd70-4c1e-bc35-b780bea8c9da_en" target="_blank" rel="noopener noreferrer">申根材料清单</a>
-        <a href="https://cs.mfa.gov.cn/aqtx/" target="_blank" rel="noopener noreferrer">领事提醒</a></p>
-      </details>
+      <details class="trip-card trip-booking"><summary>路线说明与资料</summary><div id="tripBooking"></div></details>
     </article>`;
+  $('#tripPlanSelect').onchange = event => switchTravelPlan(event.target.value);
   if (!window.LouiePublicSite) {
+    $('#tripNew').onclick = openNewTravelPlan;
     $('#tripSettings').onclick = openTripSettings;
     $('#tripAdd').onclick = () => openTripDay();
   }
@@ -437,12 +520,25 @@ function refreshTripPlanner({focus = false} = {}) {
   const active = days.find(d => d.id === tripSelected);
   const budget = plan.budget.reduce((sum, value) => sum + value, 0);
   const stages = tripStageSummary(plan);
-  const dateRange = plan.start.slice(0,4) + ' 年 ' + tripDate(plan.start,0) +
+  const dateRange = !plan.start ? '日期待定' : plan.start.slice(0,4) + ' 年 ' + tripDate(plan.start,0) +
     (plan.days.length > 1 ? '–' + tripDate(plan.start,plan.days.length-1) : '');
+  $('#tripPlanSelect').innerHTML = getTravelPlans().plans.map(item=>
+    `<option value="${esc(item.id)}" ${item.id===plan.id?'selected':''}>${esc(item.title)}</option>`).join('');
+  $('#tripPlanSelect').disabled=tripSaving;
+  const xinjiang=plan.templateKey==='xinjiang';
+  $('#tripBooking').innerHTML=xinjiang?`<p>路线草案：新疆 → 中亚 → 高加索 → 土耳其 → 巴尔干 → 埃及 → 海湾 → 新疆，避开西欧。每天可编辑、增减或调整。</p>
+    <p>转场均为待核实的连接示意，不代表已有直达交通；出发日期、预算、签证、口岸和航班尚未确定。</p>
+    <p class="trip-links"><a href="https://kazakhstan.travel/en/regions/almaty" target="_blank" rel="noopener noreferrer">阿拉木图官方旅游资料</a>
+      <a href="https://georgia.travel/cities-towns/tbilisi" target="_blank" rel="noopener noreferrer">第比利斯官方旅游资料</a>
+      <a href="https://cs.mfa.gov.cn/aqtx/" target="_blank" rel="noopener noreferrer">领事提醒</a></p>`:
+    plan.templateKey==='custom'?'<p>自定义路线。交通、签证和预订信息可记录在每天的安排里。</p>':
+    `<p>保留原亚欧非路线。预订前核对各段交通、住宿和入境要求。</p><p class="trip-links">
+      <a href="https://xhslink.com/o/2WTjkhTMUdn" target="_blank" rel="noopener noreferrer">原路线参考</a>
+      <a href="https://cs.mfa.gov.cn/aqtx/" target="_blank" rel="noopener noreferrer">领事提醒</a></p>`;
   $('#tripTitle').textContent = plan.title;
   const countryCount = tripCountryCount(plan);
-  $('#tripSubtitle').textContent = ['暂定 ' + dateRange, plan.days.length + ' 天', stages.length + ' 段',
-    ...(countryCount ? [countryCount + ' 个国家（境外）'] : []), '预算 ' + tripMoney(budget)].join(' · ');
+  $('#tripSubtitle').textContent = [plan.start ? '暂定 ' + dateRange : '日期待定', plan.days.length + ' 天', stages.length + ' 段',
+    ...(countryCount ? [countryCount + ' 个国家（境外）'] : []), budget ? '预算 ' + tripMoney(budget) : '预算待定'].join(' · ');
   $('#tripScope').textContent = tripGroup === 'all' ? '全程路线' : plan.stages[tripGroup];
   updateTripOverview(plan,stages);
   $('#tripModes').innerHTML = [['all', {label: '全部'}], ...Object.entries(tripModes)].map(([key, mode]) =>
@@ -479,34 +575,33 @@ function selectTripDay(id, fromList = false) {
 }
 
 async function saveTripPlan(next, button, applySelection) {
+  if (!validTravelPlan(next)) return toast('请检查标题、日期、地点或预算填写。');
+  const collection=getTravelPlans(),id=getTravelPlan().id;
+  return saveTripCollection({...collection,activeId:id,plans:collection.plans.map(plan=>plan.id===id?{...next,id}:plan)},button,applySelection);
+}
+async function saveTripCollection(next, button, applySelection) {
   if (tripSaving) return;
-  if (!validTravelPlan(next)) { toast('请检查标题、日期、地点或预算填写。'); return; }
-  tripSaving = true;
-  button.disabled = true;
+  if (!validTravelPlans(next)) return toast('旅行计划格式有误，原记录未修改。');
+  tripSaving=true;button.disabled=true;
   try {
-    await travelCommit(null, next);
+    await travelCommit(null,next);
     applySelection?.();
     closeModal();
-    refreshTripPlanner({focus: true});
     toast('旅行计划已保存');
-  } catch (error) {
-    toast('计划未保存：' + error.message);
-  } finally {
-    tripSaving = false;
-    button.disabled = false;
-  }
+  } catch(error) {toast('计划未保存：'+error.message);}
+  finally {tripSaving=false;button.disabled=false;refreshTripPlanner({focus:true});}
 }
 
 function openTripSettings() {
   const plan = getTravelPlan();
   show(`<h2>计划与预算</h2><form id="tripSettingsForm" class="trip-form">
     <label>计划名称<input name="title" required maxlength="80" value="${esc(plan.title)}"></label>
-    <label>出发日期<input type="date" name="start" required max="9998-12-31" value="${plan.start}"></label>
+    <label>出发日期<input type="date" name="start" max="9998-12-31" value="${plan.start}"></label>
     <details><summary>修改分段名称</summary>${plan.stages.map((name, i) =>
       `<label>第 ${i + 1} 段<input name="stage${i}" maxlength="80" required value="${esc(name)}"></label>`).join('')}</details>
     <div class="formgrid">${tripBudgetLabels.map((label, i) =>
       `<label>${label}（元）<input type="number" name="money${i}" value="${plan.budget[i]}" required min="0" max="1000000"></label>`).join('')}</div>
-    <p class="muted">修改保存在当前设备，并随整站备份导出。</p>
+    <p class="muted">留空日期表示尚未确定出发时间。</p>
     <button type="submit" class="primary">保存计划设置</button>
   </form>`);
   $('#tripSettingsForm').onsubmit = e => {
