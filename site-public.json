@@ -161,6 +161,91 @@
         "fileName": "2027数据结构_高清带书签版.pdf",
         "size": 211935102,
         "mime": "application/pdf"
+      },
+      {
+        "trackId": "exam",
+        "title": "王道计算机组成原理",
+        "subject": "计算机组成原理",
+        "tags": "",
+        "total": 0,
+        "unit": "页",
+        "note": "",
+        "id": "3522f0a0-1ee1-4868-8b99-0bdf8bdfdae2",
+        "current": 0,
+        "status": "待学习",
+        "created": "2026-11-19",
+        "fileId": "5d1eaf1d-7774-42f2-90e9-aeae89829ce2",
+        "fileName": "王道2027计算机组成原理_高清带书签版.pdf",
+        "size": 209114241,
+        "mime": "application/pdf"
+      },
+      {
+        "trackId": "exam",
+        "title": "王道操作系统",
+        "subject": "操作系统",
+        "tags": "",
+        "total": 0,
+        "unit": "页",
+        "note": "",
+        "id": "0a768ae0-f4f4-414d-b306-16f52001a51e",
+        "current": 0,
+        "status": "待学习",
+        "created": "2026-11-19",
+        "fileId": "6c3ccc2d-580c-46b5-8f27-504b25d85062",
+        "fileName": "王道2027操作系统-高清带书签.pdf",
+        "size": 235036111,
+        "mime": "application/pdf"
+      },
+      {
+        "trackId": "exam",
+        "title": "王道计算机网络",
+        "subject": "计算机网络",
+        "tags": "",
+        "total": 0,
+        "unit": "页",
+        "note": "",
+        "id": "a429f06d-823a-495a-800c-caf58c18a315",
+        "current": 0,
+        "status": "待学习",
+        "created": "2026-11-19",
+        "fileId": "a1182865-53a1-4634-aa63-0d13e0d117ed",
+        "fileName": "王道2027计算机组成原理_高清带书签版.pdf",
+        "size": 209114241,
+        "mime": "application/pdf"
+      },
+      {
+        "trackId": "exam",
+        "title": "数学二历年真题卷",
+        "subject": "数学二",
+        "tags": "",
+        "total": 0,
+        "unit": "页",
+        "note": "",
+        "id": "277ecbd0-bc0b-4195-95d9-406a7f713fa3",
+        "current": 0,
+        "status": "待学习",
+        "created": "2026-11-19",
+        "fileId": "3d67294a-af8e-4aa6-bcd3-08319876d7c3",
+        "fileName": "2010年考研数学（二）真题.pdf",
+        "size": 620909,
+        "mime": "application/pdf"
+      },
+      {
+        "trackId": "exam",
+        "title": "数学二历年真题卷解析",
+        "subject": "数学二",
+        "tags": "",
+        "total": 0,
+        "unit": "页",
+        "note": "",
+        "id": "3c756399-9ae8-46c6-b5fe-92913b513469",
+        "current": 0,
+        "status": "待学习",
+        "created": "2026-11-19",
+        "fileId": "30beb030-c62a-42ad-980f-373a997fe2d3",
+        "fileName": "数学二解析2010.pdf",
+        "size": 4439439,
+        "mime": "application/pdf"
       }
     ],
     "progress": [],
@@ -2815,6 +2900,237 @@
         }
       ],
       "size": 211935102,
+      "mime": "application/pdf"
+    },
+    "5d1eaf1d-7774-42f2-90e9-aeae89829ce2": {
+      "parts": [
+        {
+          "url": "site-files/9b56d7e751647b63389e4270e464cb7a653ee0c1.part",
+          "size": 16777216,
+          "sha256": "dfa6623230e99193da9370dfed521346e6ece6a366dcfd57989a05270b356c18"
+        },
+        {
+          "url": "site-files/3278508bbee57076e9046f7aa1667cf5d7295ba3.part",
+          "size": 16777216,
+          "sha256": "04303640b9f3ad568f99cb5bcd740b1079f530dd094032d9ad24abc1b6ba3762"
+        },
+        {
+          "url": "site-files/6d4fb4b8753aa344276955f835c0a64627176d73.part",
+          "size": 16777216,
+          "sha256": "2cd743fd0fe5e5152d09de61eb28918c4dd9e940ec718083e6a2410dbf83815d"
+        },
+        {
+          "url": "site-files/3e84ddd6d319dcd60ca1efc7e9872eb0428fdd76.part",
+          "size": 16777216,
+          "sha256": "9efa5e42cf500d1f3eb84926e3f00b84b20573b5dd6e5e2576f398d2adf6e9f9"
+        },
+        {
+          "url": "site-files/6163aca6ebcf0e5d3da22953ac64027f1ce777d5.part",
+          "size": 16777216,
+          "sha256": "b7a405d5af859da84842d377d50cec1a3c79a3d696894b79921fa59e4e1a78e5"
+        },
+        {
+          "url": "site-files/110d9f767ad12b4ff0214d65888b8bf52d413ac7.part",
+          "size": 16777216,
+          "sha256": "99c17d2481b8a25eaa29c8f08af32bd32a931a86fea6ffd3a64fc119228003b8"
+        },
+        {
+          "url": "site-files/5369c15d421108f6b00d686eac6864db504d35ad.part",
+          "size": 16777216,
+          "sha256": "d985da904def6a910448f06a5ba828d9864e124957d4078e33db6b23353f46a1"
+        },
+        {
+          "url": "site-files/b5e6fdf7b7571fe9a7e6171b7dee76bef8271618.part",
+          "size": 16777216,
+          "sha256": "1d1882a83d1e147fe1e0c9bb4b91591d25368323eeb4ba4b7071b8c357db0661"
+        },
+        {
+          "url": "site-files/bdf5a5fda8e1beeee4f7c52f8392eb2eebd9d82f.part",
+          "size": 16777216,
+          "sha256": "f96722a2fda7e568b7b500169e607976fd03bdefc8a18814065426d4490b61d2"
+        },
+        {
+          "url": "site-files/a2b26bf457259895e790577c7a0357a5acaeb35b.part",
+          "size": 16777216,
+          "sha256": "cb3a0473befa2f9199f660e87a9294f6e4a42ca8d1ab88b46d9814df313a4c8e"
+        },
+        {
+          "url": "site-files/d2f89e9b07fa0cd5012bd7aa75a5330368080bd4.part",
+          "size": 16777216,
+          "sha256": "eae702b9c23d7f120d78d79a421f4da90022a67bd23d013c875962bccc0cfe32"
+        },
+        {
+          "url": "site-files/3940feccce1a2ecc3bc8c9b6bf538558ef0c79cf.part",
+          "size": 16777216,
+          "sha256": "f7fe97feb14231f51c2080672a5aa2a47218562b800e6f9d46fca56522fc404d"
+        },
+        {
+          "url": "site-files/6e666abdb9e5c0c56d96eb0b1b0264ca82fb7e5d.part",
+          "size": 7787649,
+          "sha256": "5e7324b14e2a5385fa54758e0bd8db140769384da03d44315cb963c87a235bca"
+        }
+      ],
+      "size": 209114241,
+      "mime": "application/pdf"
+    },
+    "6c3ccc2d-580c-46b5-8f27-504b25d85062": {
+      "parts": [
+        {
+          "url": "site-files/b4aaad9422013ded091ac69c4dceec4fd601408e.part",
+          "size": 16777216,
+          "sha256": "c4aed70a1a8580499994b6d44a68c6daaea3f9cfb7d7ce168503fb036ceb82f2"
+        },
+        {
+          "url": "site-files/8333d453784c7a4dcb8d7bf26acd3281e621bacf.part",
+          "size": 16777216,
+          "sha256": "843157124529b3e0be5f678216e6acb7e8f4c85a0b6efa63cccb6e353a94b08c"
+        },
+        {
+          "url": "site-files/59b05aaf73801a3d949dd81cc01d119d8bdde89c.part",
+          "size": 16777216,
+          "sha256": "3896f104c5b2dec67f01c355ff02b14c7006869eb670b54f86c7e2d86759f14e"
+        },
+        {
+          "url": "site-files/6deb727ad6b7d49c284b9218bfb09a436adb6f51.part",
+          "size": 16777216,
+          "sha256": "79d56c547f692fa8fbb6f357fb7838076ef6437f476027bb689f9ee7c95de8cc"
+        },
+        {
+          "url": "site-files/1e9c8f7a1b8efb187cae172a40a042bc5c889cea.part",
+          "size": 16777216,
+          "sha256": "c21ae695ec574ef906d7bdda6c51a42bb798a37ad22f28986cd272445ee9d299"
+        },
+        {
+          "url": "site-files/287a203c02dd2980d7463b0acc698b5b2edef956.part",
+          "size": 16777216,
+          "sha256": "f467cfb71f2770ef5466bcef6466bc5d39b5da0da1b257e64130a0d239ee5cff"
+        },
+        {
+          "url": "site-files/68fd298dca6742ed2c9061d2d48df2493f3e9d60.part",
+          "size": 16777216,
+          "sha256": "6aeadf23e130aa9e6ecfd9d0dd90f9230e61b3cde8cef66dc5ce50662cf8ee4e"
+        },
+        {
+          "url": "site-files/c972c27b50884908969beb331541fbd8781fe6e7.part",
+          "size": 16777216,
+          "sha256": "6006dce511001f5b9b2be1814c7ecc325150ea62b178ad78f513d42dc40b0e23"
+        },
+        {
+          "url": "site-files/18bb314e2dbfb7737ea100978a89d646e9ec9260.part",
+          "size": 16777216,
+          "sha256": "63a1bb1d47df859cafb390961821f21897afc4f5112829511a5f1e03bcd5e24a"
+        },
+        {
+          "url": "site-files/6ab8e4136f9ef1135b45a440c3ca427995140614.part",
+          "size": 16777216,
+          "sha256": "c7f8f854994a7f972ab3befc55546187f1e7f496ef34ac19f1ea49f911311005"
+        },
+        {
+          "url": "site-files/ce0d09d7e8b0f13c47e717b509d26c24dad1ea9f.part",
+          "size": 16777216,
+          "sha256": "f43e295164e17f7263265f048adf2f7f04d474e1b5ecca24688a4e521b9bad15"
+        },
+        {
+          "url": "site-files/00b882b2301372c6a4e4a92afebf5fbea58e5ca6.part",
+          "size": 16777216,
+          "sha256": "55e96bd486347a0eb726e40ae1e4c68caed88cf09f3f95cc10cec87b9dab692f"
+        },
+        {
+          "url": "site-files/f21f03c119caa176770004e42699855589803127.part",
+          "size": 16777216,
+          "sha256": "37066e1c8339ad25684949517e5a4686e9105d777a9ed689d79ee84a08c78ef2"
+        },
+        {
+          "url": "site-files/36f13e2dcd685fd1e2cfd99b4852c2d3ab9eea36.part",
+          "size": 16777216,
+          "sha256": "a5a87490a4d79a5a0731a6971e3f3664f9ff7292036dddbde1815c3e13c4e5e0"
+        },
+        {
+          "url": "site-files/24cd9317491e384ab7bc1283498eff2ed8948b41.part",
+          "size": 155087,
+          "sha256": "5e57a5eaab207708c2b99c3809b236b5bcff628aaec5b0d5a656607520d620c8"
+        }
+      ],
+      "size": 235036111,
+      "mime": "application/pdf"
+    },
+    "a1182865-53a1-4634-aa63-0d13e0d117ed": {
+      "parts": [
+        {
+          "url": "site-files/9b56d7e751647b63389e4270e464cb7a653ee0c1.part",
+          "size": 16777216,
+          "sha256": "dfa6623230e99193da9370dfed521346e6ece6a366dcfd57989a05270b356c18"
+        },
+        {
+          "url": "site-files/3278508bbee57076e9046f7aa1667cf5d7295ba3.part",
+          "size": 16777216,
+          "sha256": "04303640b9f3ad568f99cb5bcd740b1079f530dd094032d9ad24abc1b6ba3762"
+        },
+        {
+          "url": "site-files/6d4fb4b8753aa344276955f835c0a64627176d73.part",
+          "size": 16777216,
+          "sha256": "2cd743fd0fe5e5152d09de61eb28918c4dd9e940ec718083e6a2410dbf83815d"
+        },
+        {
+          "url": "site-files/3e84ddd6d319dcd60ca1efc7e9872eb0428fdd76.part",
+          "size": 16777216,
+          "sha256": "9efa5e42cf500d1f3eb84926e3f00b84b20573b5dd6e5e2576f398d2adf6e9f9"
+        },
+        {
+          "url": "site-files/6163aca6ebcf0e5d3da22953ac64027f1ce777d5.part",
+          "size": 16777216,
+          "sha256": "b7a405d5af859da84842d377d50cec1a3c79a3d696894b79921fa59e4e1a78e5"
+        },
+        {
+          "url": "site-files/110d9f767ad12b4ff0214d65888b8bf52d413ac7.part",
+          "size": 16777216,
+          "sha256": "99c17d2481b8a25eaa29c8f08af32bd32a931a86fea6ffd3a64fc119228003b8"
+        },
+        {
+          "url": "site-files/5369c15d421108f6b00d686eac6864db504d35ad.part",
+          "size": 16777216,
+          "sha256": "d985da904def6a910448f06a5ba828d9864e124957d4078e33db6b23353f46a1"
+        },
+        {
+          "url": "site-files/b5e6fdf7b7571fe9a7e6171b7dee76bef8271618.part",
+          "size": 16777216,
+          "sha256": "1d1882a83d1e147fe1e0c9bb4b91591d25368323eeb4ba4b7071b8c357db0661"
+        },
+        {
+          "url": "site-files/bdf5a5fda8e1beeee4f7c52f8392eb2eebd9d82f.part",
+          "size": 16777216,
+          "sha256": "f96722a2fda7e568b7b500169e607976fd03bdefc8a18814065426d4490b61d2"
+        },
+        {
+          "url": "site-files/a2b26bf457259895e790577c7a0357a5acaeb35b.part",
+          "size": 16777216,
+          "sha256": "cb3a0473befa2f9199f660e87a9294f6e4a42ca8d1ab88b46d9814df313a4c8e"
+        },
+        {
+          "url": "site-files/d2f89e9b07fa0cd5012bd7aa75a5330368080bd4.part",
+          "size": 16777216,
+          "sha256": "eae702b9c23d7f120d78d79a421f4da90022a67bd23d013c875962bccc0cfe32"
+        },
+        {
+          "url": "site-files/3940feccce1a2ecc3bc8c9b6bf538558ef0c79cf.part",
+          "size": 16777216,
+          "sha256": "f7fe97feb14231f51c2080672a5aa2a47218562b800e6f9d46fca56522fc404d"
+        },
+        {
+          "url": "site-files/6e666abdb9e5c0c56d96eb0b1b0264ca82fb7e5d.part",
+          "size": 7787649,
+          "sha256": "5e7324b14e2a5385fa54758e0bd8db140769384da03d44315cb963c87a235bca"
+        }
+      ],
+      "size": 209114241,
+      "mime": "application/pdf"
+    },
+    "3d67294a-af8e-4aa6-bcd3-08319876d7c3": {
+      "url": "site-files/9289a3a746fb7dd14c081e224c18625b27ed6a02.pdf",
+      "mime": "application/pdf"
+    },
+    "30beb030-c62a-42ad-980f-373a997fe2d3": {
+      "url": "site-files/75778c40469f2673a7442fe2278862463922bc15.pdf",
       "mime": "application/pdf"
     }
   }
