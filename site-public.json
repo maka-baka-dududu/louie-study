@@ -127,6 +127,23 @@
         "status": "待学习",
         "created": "2026-11-19",
         "note": "英文选读。配合本站第7课，理解“指型不变、整体升高”，并用转换例子核对实际和弦。 核验：2026-11-19。"
+      },
+      {
+        "trackId": "exam",
+        "title": "数学二武忠祥教材",
+        "subject": "数学二",
+        "tags": "",
+        "total": 0,
+        "unit": "页",
+        "note": "",
+        "id": "0ed4f2f7-d2e6-4228-b006-a420e773cd46",
+        "current": 0,
+        "status": "待学习",
+        "created": "2026-11-19",
+        "fileId": "9534a96e-351d-493b-b7ae-5454e46aa7b9",
+        "fileName": "27考研数学武忠祥《高数基础篇》【公众号：研料库，料最全】.pdf",
+        "size": 158734400,
+        "mime": "application/pdf"
       }
     ],
     "progress": [],
@@ -2655,5 +2672,62 @@
       ]
     }
   },
-  "files": {}
+  "files": {
+    "9534a96e-351d-493b-b7ae-5454e46aa7b9": {
+      "parts": [
+        {
+          "url": "site-files/3a5ba0299f4b8ae40116c7b99188eff947edf4be.part",
+          "size": 16777216,
+          "sha256": "340d886e91c905bff38d37249154aa2be6c849a857e6c19ef56553d0b16d6117"
+        },
+        {
+          "url": "site-files/d0370d77aaccbd26895316d8a763bbc1e889b52d.part",
+          "size": 16777216,
+          "sha256": "5dff95fcb6f9fdd90fb2199d433e660fbb68a4c940badebd2b3fe085b7dabf02"
+        },
+        {
+          "url": "site-files/9dc39877633bb088d7ca53bcdfe0b114290c4347.part",
+          "size": 16777216,
+          "sha256": "5efaae868e8f242003c1365b0577edb6c0e19f0ff805f111e6e5f85a90a3e91a"
+        },
+        {
+          "url": "site-files/48b4cdb9c37ee1678d10b3057f9dabbac1937cf3.part",
+          "size": 16777216,
+          "sha256": "efbe0c1b9c596fd1391f11df03256db252a03943e7fbe5fa7a57852d08a6f20b"
+        },
+        {
+          "url": "site-files/3a5a5e7e1a7252bc5bc984f50e94f73455eeb1e9.part",
+          "size": 16777216,
+          "sha256": "5854553c93135e23048e55f897284063e4fa8338ece918c3003f04f726d5d47b"
+        },
+        {
+          "url": "site-files/291db0c2c66ece1bcaf8f9354dd272deffb3d24a.part",
+          "size": 16777216,
+          "sha256": "6173a6b4bdece0b19a04285d9a88e2887adb49264ba5e3cf04efc200db242eff"
+        },
+        {
+          "url": "site-files/990f6fd5f6da2f32ac19c761fb6c687248b61957.part",
+          "size": 16777216,
+          "sha256": "3275e219afbc0f968c44315233cee11a1733a49e678f671eb982c3cd3e076fda"
+        },
+        {
+          "url": "site-files/5b72b4eeb416063a9d7d7e725be2b2f182d77ae8.part",
+          "size": 16777216,
+          "sha256": "39ac6bbd17b0c59eb5bb59bd0bf00eb758eff8fa5f8b3f33a37a21be7d43b599"
+        },
+        {
+          "url": "site-files/1488293c63b098347ec5f3973cb0151199f5be6c.part",
+          "size": 16777216,
+          "sha256": "d7f8dbbf1dc1dc8019452265b085b4deb3d3fb66cfdf4a2d5a250a3597f054f2"
+        },
+        {
+          "url": "site-files/5a28b3935b1d6a2795e099f11e2a1d5472117fac.part",
+          "size": 7739456,
+          "sha256": "e44047a98819917dc0e8da7ad05f33838efa715363fccf95b4bffb0b0210fb4f"
+        }
+      ],
+      "size": 158734400,
+      "mime": "application/pdf"
+    }
+  }
 }
