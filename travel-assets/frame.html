@@ -90,8 +90,8 @@ header.site-header{display:grid;grid-template-columns:1fr auto 1fr}.site-header 
 <div class="modal-backdrop" id="noteEditor"><section class="modal" role="dialog" aria-modal="true" aria-labelledby="noteEditorHeading"><div class="modal-head"><h2 id="noteEditorHeading">写下此刻</h2><button class="close" data-close="noteEditor" aria-label="关闭">×</button></div><form id="noteForm"><div class="field"><label for="noteTitle">标题 *</label><input id="noteTitle" required maxlength="140" placeholder="今天，想记住什么？"></div><div class="row"><div class="field"><label for="noteDate">日期 *</label><input id="noteDate" type="date" required></div><div class="field"><label for="noteCategory">放在哪一格</label><select id="noteCategory"><option>日常</option><option>灵感</option><option>学习</option><option>其他</option></select></div></div><div class="field"><label for="noteContent">正文</label><textarea id="noteContent" maxlength="50000" rows="9" placeholder="这里没有固定格式。写日记、整理想法、收藏一句话，都可以。"></textarea></div><div class="field"><label for="noteTags">标签</label><input id="noteTags" maxlength="200" placeholder="用逗号分隔，例如：周末，咖啡"></div><div class="field"><label class="upload" for="notePhotos">＋ 添加生活照片<span class="help"> · 最多 12 张</span></label><input id="notePhotos" type="file" accept="image/jpeg,image/png,image/webp" multiple hidden><div id="notePhotoPreview" class="photo-preview"></div></div><div id="noteError" class="note-error" role="alert"></div><div class="actions"><button class="primary" id="saveNote">保存这篇记录 ↗</button></div></form></section></div>
 <div class="modal-backdrop" id="noteDetail"><article class="modal" role="dialog" aria-modal="true" aria-labelledby="noteDetailTitle"><div class="modal-head"><span class="eyebrow" style="margin:0">A PAGE OF MY LIFE</span><button class="close" data-close="noteDetail" aria-label="关闭">×</button></div><div id="noteDetailBody"></div><div class="actions"><button class="text-btn danger" id="deleteNote">删除记录</button><button class="primary" id="editNote">编辑记录</button></div></article></div>
 <div class="modal-backdrop" id="editor"><section class="modal" role="dialog" aria-modal="true" aria-labelledby="editorTitle"><div class="modal-head"><h2 id="editorTitle">留下一段回忆</h2><button class="close" data-close="editor" aria-label="关闭">×</button></div><form id="entryForm"><div class="field"><label for="place">地点名称 *</label><input id="place" required maxlength="100" placeholder="例如：南京、巴黎，或某片不知名的海" autocomplete="off"><div class="entry-place-level"><label for="entryPlaceLevel">地点层级</label><select id="entryPlaceLevel">
-<option value="">不限</option><option value="province">省级</option><option value="city">市级</option><option value="district">区县级</option></select></div><div class="suggestions" id="suggestions"></div>
-<div class="help">可直接记录四川省、成都市或锦江区。</div></div><div class="row"><div class="field"><label for="lat">纬度 *</label><input id="lat" type="number" min="-90" max="90" step="any" required placeholder="-90 ～ 90"></div><div class="field"><label for="lng">经度 *</label><input id="lng" type="number" min="-180" max="180" step="any" required placeholder="-180 ～ 180"></div></div><button type="button" class="text-btn" id="pickOnGlobe" hidden>地图选点</button><div class="row"><div class="field"><label for="date">旅行日期 *</label><input id="date" type="date" required></div><div class="row marker-entry-fields"><div class="field"><label for="endDate">离开日期（可选）</label><input id="endDate" type="date"><div class="help">填写后计算停留天数，含抵达与离开当天。</div></div><div class="field" hidden><label for="markerStyle">地图标记</label><select id="markerStyle"><option value="auto">智能徽章</option><option value="pin">图钉</option><option value="flag">旗帜</option><option value="heart">爱心</option><option value="star">星星</option></select></div></div><div class="field"><label for="status">这枚足迹是</label><select id="status"><option value="visited">已经去过</option><option value="wish">想去的地方</option></select></div></div><div class="field" id="visitCountField"><label for="visitCount">到访次数</label><select id="visitCount"><option value="auto">按记录自动统计</option><option value="1">1 次</option><option value="2">2 次</option><option value="3">3 次</option><option value="4">4 次</option><option value="5">5 次</option><option value="6">6 次</option><option value="7">7 次</option><option value="8">8 次</option><option value="9">9 次</option><option value="10+">10 次以上</option><option value="countless">无数次</option></select></div><div class="field"><label for="title">给这段旅程起个名字</label><input id="title" maxlength="140" placeholder="例如：在海边，浪费一个下午"></div><div class="field"><label for="story">想记住的事</label><textarea id="story" maxlength="20000" placeholder="那天的天气、遇见的人，或一顿舍不得忘记的晚餐…"></textarea></div><div class="field"><label>旅途照片</label><label class="upload" for="photos">＋ 选择照片，或拖到这里<br><span class="help">支持 JPG、PNG、WebP；每篇最多 12 张，保存时适度压缩</span></label><input id="photos" type="file" accept="image/jpeg,image/png,image/webp" multiple hidden><div class="photo-preview" id="photoPreview"></div></div><div class="note-error" id="formError" role="alert"></div><div class="actions"><button type="button" class="text-btn" data-close="editor">先不写了</button><button type="submit" class="primary" id="saveBtn">收藏这段回忆 ↗</button></div></form></section></div>
+<option value="">不限</option><option value="province">省级</option><option value="city">城市／市级</option><option value="global-city">全球城市／城镇</option><option value="district">区县级</option></select></div><div id="entryCountryField" hidden><label for="entryCountry">国家／地区</label><select id="entryCountry"><option value="">全部国家／地区</option></select></div><div class="suggestions" id="suggestions"></div>
+<div class="help">国内可选省、市、区县；国外城市支持中文、英文或当地名称，也可手动填写地点和坐标。</div></div><div class="row"><div class="field"><label for="lat">纬度 *</label><input id="lat" type="number" min="-90" max="90" step="any" required placeholder="-90 ～ 90"></div><div class="field"><label for="lng">经度 *</label><input id="lng" type="number" min="-180" max="180" step="any" required placeholder="-180 ～ 180"></div></div><button type="button" class="text-btn" id="pickOnGlobe" hidden>地图选点</button><div class="row"><div class="field"><label for="date">旅行日期 *</label><input id="date" type="date" required></div><div class="row marker-entry-fields"><div class="field"><label for="endDate">离开日期（可选）</label><input id="endDate" type="date"><div class="help">填写后计算停留天数，含抵达与离开当天。</div></div><div class="field" hidden><label for="markerStyle">地图标记</label><select id="markerStyle"><option value="auto">智能徽章</option><option value="pin">图钉</option><option value="flag">旗帜</option><option value="heart">爱心</option><option value="star">星星</option></select></div></div><div class="field"><label for="status">这枚足迹是</label><select id="status"><option value="visited">已经去过</option><option value="wish">想去的地方</option></select></div></div><div class="field" id="visitCountField"><label for="visitCount">到访次数</label><select id="visitCount"><option value="auto">按记录自动统计</option><option value="1">1 次</option><option value="2">2 次</option><option value="3">3 次</option><option value="4">4 次</option><option value="5">5 次</option><option value="6">6 次</option><option value="7">7 次</option><option value="8">8 次</option><option value="9">9 次</option><option value="10+">10 次以上</option><option value="countless">无数次</option></select></div><div class="field"><label for="title">给这段旅程起个名字</label><input id="title" maxlength="140" placeholder="例如：在海边，浪费一个下午"></div><div class="field"><label for="story">想记住的事</label><textarea id="story" maxlength="20000" placeholder="那天的天气、遇见的人，或一顿舍不得忘记的晚餐…"></textarea></div><div class="field"><label>旅途照片</label><label class="upload" for="photos">＋ 选择照片，或拖到这里<br><span class="help">支持 JPG、PNG、WebP；每篇最多 12 张，保存时适度压缩</span></label><input id="photos" type="file" accept="image/jpeg,image/png,image/webp" multiple hidden><div class="photo-preview" id="photoPreview"></div></div><div class="note-error" id="formError" role="alert"></div><div class="actions"><button type="button" class="text-btn" data-close="editor">先不写了</button><button type="submit" class="primary" id="saveBtn">收藏这段回忆 ↗</button></div></form></section></div>
 <div class="modal-backdrop" id="detail"><section class="modal" role="dialog" aria-modal="true" aria-labelledby="detailHeading"><div class="modal-head"><span class="eyebrow" style="margin:0">A MOMENT TO REMEMBER</span><button class="close" data-close="detail" aria-label="关闭">×</button></div><div id="detailBody"></div><div class="actions"><button class="text-btn danger" id="deleteBtn">删除这枚足迹</button><button class="primary" id="editBtn">编辑回忆</button></div></section></div><div class="modal-backdrop lightbox" id="lightbox" role="dialog" aria-label="照片大图" aria-modal="true"><button class="close" data-close="lightbox" aria-label="关闭大图">×</button><img id="largePhoto" alt="旅行照片大图"></div><div class="toast" id="toast" role="status"></div>
 <script>(async()=>{
 const louieNonce=location.hash.slice(1),louieOrigin=new URL(location.href).origin,louieRequests=new Map();let louieRequestId=0;
@@ -224,7 +224,7 @@ function updateVisitCountField(){
 $('#status').addEventListener('change',updateVisitCountField);
 let entryAdminId;
 function editorValues(){return{adminId:entryAdminId,place:$('#place').value,lat:$('#lat').value,lng:$('#lng').value,date:$('#date').value,endDate:$('#endDate').value,markerStyle:$('#markerStyle').value||'auto',visitCount:$('#visitCount').value,status:$('#status').value,title:$('#title').value,story:$('#story').value}}
-function showEditor(e=null,coords=null,restore=false){if(louieReadOnly)return;editing=e?.id||null;if(!restore){$('#entryForm').reset();entryPlaceSearch++;entryAdminId=e?.adminId;pendingPhotos=e?[...e.photos]:[];$('#date').value=e?.date||new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);for(const k of ['place','lat','lng','status','title','story','endDate','markerStyle'])$('#'+k).value=e?.[k]??(k==='status'?'visited':k==='markerStyle'?'auto':'');
+function showEditor(e=null,coords=null,restore=false){if(louieReadOnly)return;editing=e?.id||null;if(!restore){$('#entryForm').reset();syncEntryCountry();entryPlaceSearch++;entryAdminId=e?.adminId;pendingPhotos=e?[...e.photos]:[];$('#date').value=e?.date||new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);for(const k of ['place','lat','lng','status','title','story','endDate','markerStyle'])$('#'+k).value=e?.[k]??(k==='status'?'visited':k==='markerStyle'?'auto':'');
   $('#visitCount').value = e ? (entries.filter(item => tripKey(item) === tripKey(e))
     .sort((a,b) => b.date.localeCompare(a.date)).find(item => item.visitCount && item.visitCount !== 'auto')?.visitCount ?? 'auto') : 'auto';
 }updateVisitCountField();if(coords){entryAdminId=undefined;$('#lat').value=coords.lat.toFixed(4);$('#lng').value=coords.lng.toFixed(4)}$('#editorTitle').textContent=editing?'编辑这段回忆':'留下一段回忆';$('#formError').textContent='';$('#suggestions').innerHTML='';renderPhotos();openModal('editor')}
@@ -634,43 +634,72 @@ $('#adminDiary').onclick = () => {
 const entryLevels = {province:'省级',city:'市级',district:'区县级'};
 const originalPlaceInput = $('#place').oninput;
 let adminPlaceIndex, entryPlaceSearch = 0;
+function syncEntryCountry() {
+  $('#entryCountryField').hidden=$('#entryPlaceLevel').value!=='global-city';
+}
+function entryWorldMatches(query,country,limit=12) {
+  const name=foldPlace(query.trim()),terms=name.split(/\s+/).filter(Boolean);
+  const exact=[],partial=[];
+  for(let i=0;i<WORLD_PLACES.length;i++) {
+    const row=WORLD_PLACES[i];
+    if(country && row[4]!==country) continue;
+    if(terms.length && !terms.every(term=>globalSearchKeys[i].includes(term))) continue;
+    (foldPlace(row[1]).split('|').includes(name)?exact:partial).push(row);
+    if(!terms.length && partial.length>=limit) break;
+  }
+  return [...exact,...partial].slice(0,limit).map(row=>({...globalPlaceRow(row),place:row[0]+' · '+globalCountry(row[4])}));
+}
+let entryCountriesReady=false;
 async function searchEntryPlace() {
-  const query = $('#place').value.trim();
-  const level = $('#entryPlaceLevel').value;
-  const request = ++entryPlaceSearch;
-  const suggestions = $('#suggestions');
-  if (!level && !/[\u3400-\u9fff]/u.test(query)) return originalPlaceInput();
-  suggestions.textContent = '正在查找行政区…';
+  const query=$('#place').value.trim(),level=$('#entryPlaceLevel').value;
+  const country=level==='global-city'?$('#entryCountry').value:'';
+  const request=++entryPlaceSearch,suggestions=$('#suggestions');
+  syncEntryCountry();
+  const current=()=>request===entryPlaceSearch && $('#editor').classList.contains('open');
+  suggestions.textContent='正在查找地点…';
   try {
-    adminPlaceIndex ??= mapAsset('admin-places.json').catch(error => {adminPlaceIndex=undefined;throw error});
-    const areas = await adminPlaceIndex;
-    if (request !== entryPlaceSearch || !$('#editor').classList.contains('open')) return;
-    const name = foldChinese(query).replace(/[\s·]+/g,'');
-    const results = areas.filter(area => (!level || area.level===level) &&
+    const needsAdmin=level!=='global-city' && (level || /[\u3400-\u9fff]/u.test(query));
+    const needsWorld=['','city','global-city'].includes(level);
+    const results=await Promise.allSettled([
+      needsAdmin?(adminPlaceIndex??=mapAsset('admin-places.json').catch(error=>{adminPlaceIndex=undefined;throw error})):Promise.resolve([]),
+      needsWorld?loadGlobalPlaces():Promise.resolve()
+    ]);
+    if(!current())return;
+    if(needsWorld && results[1].status==='fulfilled' && !entryCountriesReady) {
+      const countries=[...new Set(WORLD_PLACES.map(row=>row[4]))].sort((a,b)=>globalCountry(a).localeCompare(globalCountry(b),'zh-CN'));
+      $('#entryCountry').innerHTML='<option value="">全部国家／地区</option>'+countries.map(code=>'<option value="'+esc(code)+'">'+esc(globalCountry(code))+'</option>').join('');
+      $('#entryCountry').value=country;entryCountriesReady=true;
+    }
+    const name=foldChinese(query).replace(/[\s·]+/g,'');
+    const areas=results[0].status==='fulfilled'?results[0].value:[];
+    const domestic=areas.filter(area=>(!level || area.level===level) &&
       (!name || foldChinese(area.path.join('')).includes(name) || area.id===name))
-      .sort((a,b) => Number(foldChinese(b.name).startsWith(name))-Number(foldChinese(a.name).startsWith(name)) ||
-        a.path.length-b.path.length).slice(0,12);
-    if (!level && !results.length) return originalPlaceInput();
+      .sort((a,b)=>Number(foldChinese(b.name).startsWith(name))-Number(foldChinese(a.name).startsWith(name)) || a.path.length-b.path.length).slice(0,8);
+    const world=needsWorld && results[1].status==='fulfilled'?entryWorldMatches(query,country):[];
     suggestions.replaceChildren();
-    if (!results.length) suggestions.textContent = '该层级没有匹配的地点。';
-    for (const area of results) {
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.textContent = adminPath(area)+' · '+entryLevels[area.level];
-      button.onclick = () => {
-        $('#entryPlaceLevel').value = area.level;
-        fillFootprintPlace({...adminEntryLocation(area),adminId:area.id});
-      };
+    for(const area of domestic) {
+      const button=document.createElement('button');button.type='button';
+      button.textContent=adminPath(area)+' · '+entryLevels[area.level];
+      button.onclick=()=>{$('#entryPlaceLevel').value=area.level;syncEntryCountry();fillFootprintPlace({...adminEntryLocation(area),adminId:area.id})};
       suggestions.append(button);
     }
-  } catch (error) {
-    if (request !== entryPlaceSearch) return;
-    if (level) suggestions.textContent = error.message;
-    else originalPlaceInput();
-  }
+    const domesticPlaces=new Set(domestic.map(area=>foldPlace(area.name.replace(/市$/,''))));
+    for(const place of world) {
+      if(['CN','HK','MO','TW'].includes(place.country) && domesticPlaces.has(foldPlace(place.name.replace(/市$/,''))))continue;
+      const button=document.createElement('button');button.type='button';
+      button.textContent=place.place+' · 城市／城镇';
+      button.onclick=()=>{$('#entryPlaceLevel').value='global-city';$('#entryCountry').value=place.country;syncEntryCountry();fillFootprintPlace(place)};
+      suggestions.append(button);
+    }
+    if(!suggestions.childElementCount) {
+      const failed=results.some(result=>result.status==='rejected');
+      suggestions.textContent=failed?'部分地点资料加载失败，请重试；也可手动填写地点和坐标。':'没有匹配地点，可换英文或当地名称，或手动填写坐标。';
+    }
+  } catch(error) {if(current())suggestions.textContent='地点查询失败：'+error.message;}
 }
-$('#place').oninput = () => {entryAdminId=undefined;void searchEntryPlace();};
-$('#entryPlaceLevel').onchange = () => {void searchEntryPlace();};
+$('#place').oninput=()=>{entryAdminId=undefined;void searchEntryPlace()};
+$('#entryPlaceLevel').onchange=()=>{void searchEntryPlace()};
+$('#entryCountry').onchange=()=>{void searchEntryPlace()};
 for (const key of ['lat','lng']) $('#'+key).addEventListener('input', () => {entryAdminId=undefined;});
 const originalPopulateRoutePlaces=populateRoutePlaces;populateRoutePlaces=function(){originalPopulateRoutePlaces();const local=adminRecords.map(a=>({value:adminPath(a),place:adminPath(a),lat:a.center[1],lng:a.center[0]}));routePlaceOptions.push(...local);$('#routePlaces').innerHTML+=local.map(p=>'<option value="'+esc(p.value)+'"></option>').join('')};
 for (const id of ['routeFrom','routeTo']) {
