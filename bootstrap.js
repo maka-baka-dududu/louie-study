@@ -33,7 +33,7 @@
     ['profile-files-ui.js','LouieProfileFilesReady'],
     ['travel-model.js?v=admin-footprints','LouieTravelModel'],
     ['travel-plan.js?v=multiple-plans','LouieTravelPlanReady'],
-    ['travel-ui.js?v=city-country','LouieTravelReady']
+    ['travel-ui.js?v=penida-search','LouieTravelReady']
   ];
 
   function loadExtension(src,flag){
