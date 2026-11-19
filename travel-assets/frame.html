@@ -250,7 +250,7 @@ function setLand(ps){polygons=ps;landPoints=[];for(let lat=-57;lat<83;lat+=1.7){
 function project(lng,lat){return mapProject(lng,lat)}
 function inverse(x,y){return mapInverse(x,y)}
 function pathLine(points,color,width){return mapLine(points,color,width)}
-function draw(){if(!W||!H)return;ctx.clearRect(0,0,W,H);R=Math.min(W*.39,H*.365)*zoom;drawBaseMap();drawSceneLight();drawMapGrid();drawPhysicalDetail();drawAdminMap();if(!louiePlanMode)drawGeographicNames();drawGlobalMapPlaces();enhanceMap();$('#mapScaleLabel').textContent=(louiePlanMode?'':({country:'国家',province:'省级',city:'市级',district:'区县'}[mapLabelLevel()])+' · ')+zoom.toFixed(1)+'×';drawRoutes();drawTripMarkers()}
+function draw(){if(!W||!H)return;ctx.clearRect(0,0,W,H);R=Math.min(W*.39,H*.365)*zoom;drawBaseMap();drawSceneLight();drawMapGrid();drawPhysicalDetail();drawAdminMap();if(!louiePlanMode)drawGeographicNames();drawGlobalMapPlaces();enhanceMap();$('#mapScaleLabel').textContent=(louiePlanMode?'':({country:'国家',province:'国家 · 区域',city:'国家 · 城市',district:'国家 · 地点'}[mapLabelLevel()])+' · ')+zoom.toFixed(1)+'×';drawRoutes();drawTripMarkers()}
 function resize(){const box=canvas.getBoundingClientRect();W=box.width;H=box.height;const d=Math.min(devicePixelRatio||1,2);canvas.width=W*d;canvas.height=H*d;ctx.setTransform(d,0,0,d,0,0);draw()}new ResizeObserver(resize).observe(canvas);function focusPlace(e){lon=+e.lng;tilt=Math.max(-65,Math.min(65,+e.lat));draw()}function stopPin(){pinning=false;$('#pinTip').style.display='none';canvas.style.cursor='grab'}function startPin(){navigate('travel');view(false);$('#travelGlobeView').classList.add('active');$('#travelListView').classList.remove('active');pinning=true;$('#pinTip').style.display='block';canvas.style.cursor='crosshair';canvas.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'center'})}$('#pinMode').onclick=()=>{draft=null;startPin()};$('#cancelPin').onclick=stopPin;$('#pickOnGlobe').onclick=()=>{draft={...editorValues(),editing,photos:[...pendingPhotos]};closeModal('editor');startPin()};function addAt(c){stopPin();if(draft){entryAdminId=undefined;for(const k of ['place','lat','lng','date','status','title','story','endDate','markerStyle','visitCount'])$('#'+k).value=draft[k];editing=draft.editing;pendingPhotos=draft.photos;showEditor(editing?{id:editing}:null,c,true);draft=null}else{showEditor(null,c);const nearby=cities.map(city=>({city,d:Math.hypot((city[3]-c.lng)*Math.cos(c.lat*rad),city[2]-c.lat)})).sort((a,b)=>a.d-b.d)[0];if(nearby?.d<.8)$('#place').value=nearby.city[0].split(' ')[0];else{const f=countryAt(c.lng,c.lat);if(f)$('#place').value=countryName(f)}}}
 canvas.ondblclick=e=>{if(louieReadOnly||mapMultiTouch||$('.modal-backdrop.open'))return;const b=canvas.getBoundingClientRect(),c=inverse(e.clientX-b.left,e.clientY-b.top);if(c)addAt(c)};canvas.onwheel=e=>{e.preventDefault();zoom=Math.max(.65,Math.min(1.5,zoom-e.deltaY*.0008));draw()};canvas.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();lon=((lon+(e.key==='ArrowLeft'?-10:e.key==='ArrowRight'?10:0)+540)%360)-180;tilt=Math.max(-80,Math.min(80,tilt+(e.key==='ArrowUp'?10:e.key==='ArrowDown'?-10:0)));draw()}});$('#zoomIn').onclick=()=>{zoom=Math.min(1.5,zoom+.1);draw()};$('#zoomOut').onclick=()=>{zoom=Math.max(.65,zoom-.1);draw()};$('#home').onclick=()=>{lon=105;tilt=23;zoom=1;draw()};
 if(localMode)$('#storageStatus').textContent='本机保存 · 建议定期导出备份';
@@ -379,7 +379,66 @@ function drawPhysicalDetail() {
   ctx.restore();
 }
 function drawMapGrid(){if(louiePlanMode&&zoom>=4.5)return;if(mapMode==='globe'){ctx.save();ctx.beginPath();ctx.arc(W/2,H/2+12,R,0,Math.PI*2);ctx.clip()}const step=zoom>=2?15:30;for(let lat=-60;lat<=75;lat+=step){const pts=[];for(let lng=-180;lng<=180;lng+=3)pts.push([lng,lat]);mapLine(pts,'#779fa52c',.6)}for(let lng=-180;lng<180;lng+=step){const pts=[];for(let lat=-89;lat<=89;lat+=3)pts.push([lng,lat]);mapLine(pts,'#779fa52c',.6)}if(mapMode==='globe')ctx.restore()}
-function drawGeographicNames(){if(!showMapNames||!texturePixels||mapLabelLevel()!=='country')return;ctx.save();const used=[];const label=(name,p,size,color,spacing=0)=>{if(p.z<(mapMode==='globe'?.2:0)||p.x<25||p.x>W-25||p.y<70||p.y>H-50)return false;ctx.font=size+'px -apple-system,"PingFang SC",sans-serif';const width=ctx.measureText(name).width+8,box={x:p.x-width/2-5,y:p.y-size/2-4,w:width+10,h:size+9};if(used.some(r=>box.x<r.x+r.w&&box.x+box.w>r.x&&box.y<r.y+r.h&&box.y+box.h>r.y))return false;used.push(box);ctx.textAlign='center';ctx.textBaseline='middle';ctx.strokeStyle='#f5f8e9db';ctx.lineWidth=3;ctx.lineJoin='round';ctx.strokeText(name,p.x,p.y);ctx.fillStyle=color;ctx.fillText(name,p.x,p.y);return true};const labels=[...WORLD_LABELS].sort((a,b)=>b.area-a.area);for(const c of labels){if(c.area<60/(zoom*zoom)&&zoom<4)continue;label(countryNames[c.id]||({'Somaliland':'索马里兰','Kosovo':'科索沃','Northern Cyprus':'北塞浦路斯'}[c.name])||c.name,project(c.lng,c.lat),c.area>500?12:10,'#385d48')}ctx.restore()}
+// Small-country anchors use the existing bundled GeoNames places, not remote requests.
+var countryLabelExtras=[{"id":"SGP","name":"新加坡","lng":103.8501,"lat":1.2897,"area":0,"small":true},{"id":"MDV","name":"马尔代夫","lng":73.5092,"lat":4.1752,"area":0,"small":true},{"id":"MLT","name":"马耳他","lng":14.4156,"lat":35.9506,"area":0,"small":true},{"id":"MUS","name":"毛里求斯","lng":57.4989,"lat":-20.1619,"area":0,"small":true},{"id":"SYC","name":"塞舌尔","lng":55.455,"lat":-4.62,"area":0,"small":true},{"id":"BRB","name":"巴巴多斯","lng":-59.6202,"lat":13.1073,"area":0,"small":true},{"id":"ATG","name":"安提瓜和巴布达","lng":-61.8433,"lat":17.121,"area":0,"small":true},{"id":"GRD","name":"格林纳达","lng":-61.7523,"lat":12.0529,"area":0,"small":true},{"id":"KNA","name":"圣基茨和尼维斯","lng":-62.725,"lat":17.2955,"area":0,"small":true},{"id":"VCT","name":"圣文森特和格林纳丁斯","lng":-61.2274,"lat":13.1553,"area":0,"small":true},{"id":"CPV","name":"佛得角","lng":-23.5125,"lat":14.9315,"area":0,"small":true},{"id":"STP","name":"圣多美和普林西比","lng":6.7299,"lat":0.3376,"area":0,"small":true},{"id":"TON","name":"汤加","lng":-175.2011,"lat":-21.1368,"area":0,"small":true},{"id":"WSM","name":"萨摩亚","lng":-171.7667,"lat":-13.8333,"area":0,"small":true},{"id":"KIR","name":"基里巴斯","lng":172.977,"lat":1.3278,"area":0,"small":true},{"id":"FSM","name":"密克罗尼西亚","lng":151.8414,"lat":7.4465,"area":0,"small":true},{"id":"PLW","name":"帕劳","lng":134.4733,"lat":7.3398,"area":0,"small":true},{"id":"MHL","name":"马绍尔群岛","lng":171.3803,"lat":7.0897,"area":0,"small":true},{"id":"NRU","name":"瑙鲁","lng":166.9125,"lat":-0.5254,"area":0,"small":true},{"id":"TUV","name":"图瓦卢","lng":179.1942,"lat":-8.5243,"area":0,"small":true}];
+var countryLabelBoxes=[],countryFocusCache=null;
+function countryLabelCandidates(country) {
+  // Malaysia has substantial territory on both sides of the South China Sea.
+  const anchors=country.id==='MYS'?[[102,4.3],[country.lng,country.lat]]:[[country.lng,country.lat]];
+  return anchors.map(([lng,lat])=>project(lng,lat)).filter(point=>
+    point.z>(mapMode==='globe'?.15:0) && point.x>12 && point.x<W-12 && point.y>45 && point.y<H-35)
+    .sort((a,b)=>Math.hypot(a.x-W/2,a.y-H/2)-Math.hypot(b.x-W/2,b.y-H/2));
+}
+function drawGeographicNames(){
+  countryLabelBoxes=[];
+  if(!showMapNames||!texturePixels)return;
+  ctx.save();
+  const drawn=new Set();
+  function label(country,point,offsets){
+    const name=countryNames[country.id]||country.name;
+    const size=country.small?11:country.area>500?12:11;
+    ctx.font=(country.small?'600 ':'500 ')+size+'px -apple-system,"PingFang SC",sans-serif';
+    const width=ctx.measureText(name).width+12;
+    for(const [dx,dy] of offsets){
+      const x=point.x+dx,y=point.y+dy;
+      const box={x:x-width/2,y:y-size/2-4,w:width,h:size+8};
+      if(box.x<8||box.x+box.w>W-8||box.y<42||box.y+box.h>H-28)continue;
+      if(countryLabelBoxes.some(other=>box.x<other.x+other.w+3&&box.x+box.w+3>other.x&&box.y<other.y+other.h+3&&box.y+box.h+3>other.y))continue;
+      countryLabelBoxes.push(box);drawn.add(country.id);
+      if(country.small && (dx||dy)){
+        ctx.beginPath();ctx.moveTo(point.x,point.y);ctx.lineTo(x,y);
+        ctx.strokeStyle='#527b88aa';ctx.lineWidth=.8;ctx.stroke();
+        ctx.beginPath();ctx.arc(point.x,point.y,2,0,Math.PI*2);ctx.fillStyle='#355866';ctx.fill();
+      }
+      ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';
+      ctx.strokeStyle='#f5f8e9eb';ctx.lineWidth=3.5;ctx.strokeText(name,x,y);
+      ctx.fillStyle=country.small?'#254e61':'#385d48';ctx.fillText(name,x,y);return true;
+    }
+    return false;
+  }
+  const existing=new Set(WORLD_LABELS.map(country=>country.id));
+  const labels=[...WORLD_LABELS,...countryLabelExtras.filter(country=>!existing.has(country.id))]
+    .filter(country=>country.small?zoom>=(country.id==='SGP'?1.2:2):country.area>=24/(zoom*zoom)||zoom>=3)
+    .map(country=>({country,points:countryLabelCandidates(country)})).filter(item=>item.points.length)
+    .sort((a,b)=>Number(b.country.small)-Number(a.country.small)||b.country.area-a.country.area);
+  for(const {country,points} of labels){
+    for(const point of points){
+      if(label(country,point,country.small?[[28,14],[-28,14],[28,-14],[-28,-14],[0,0]]:[[0,0],[0,-17],[0,17]]))break;
+    }
+  }
+  // Keep an on-screen country label when its central anchor has left a close-up view.
+  if(zoom>=6&&!drag){
+    const key=lon.toFixed(3)+','+tilt.toFixed(3);
+    if(countryFocusCache?.key!==key)countryFocusCache={key,country:countryAt(lon,tilt)};
+    const country=countryFocusCache.country;
+    const nearSmall=countryLabelExtras.some(item=>Math.abs(item.lat-tilt)<.35&&Math.abs(item.lng-lon)<.35);
+    if(country&&!drawn.has(country.id)&&!nearSmall){
+      label({id:country.id,name:countryName(country),area:100},
+        {x:W/2,y:Math.max(70,H*.22)},[[0,0]]);
+    }
+  }
+  ctx.restore();
+}
 function ringContains(lng,lat,ring){const shifted=[];let last=null;for(const pt of ring){let x=pt[0];if(last!==null){while(x-last>180)x-=360;while(x-last< -180)x+=360}shifted.push([x,pt[1]]);last=x}let min=Math.min(...shifted.map(p=>p[0])),max=Math.max(...shifted.map(p=>p[0]));if(Math.abs(shifted.at(-1)[0]-shifted[0][0])>350)shifted.push([shifted.at(-1)[0],-90],[shifted[0][0],-90]);const center=(min+max)/2;let x=lng;while(x-center>180)x-=360;while(x-center< -180)x+=360;return inside(x,lat,shifted)}
 function countryAt(lng,lat){for(const f of geoCountries)for(const p of f.polys)if(ringContains(lng,lat,p[0])&&!p.slice(1).some(h=>ringContains(lng,lat,h)))return f;return null}
 function queueMapDraw(){if(drawQueued)return;drawQueued=true;requestAnimationFrame(()=>{drawQueued=false;draw()})}
@@ -771,7 +830,7 @@ function drawGlobalMapPlaces() {
   const stageAreas = louiePlanMode ? plannedLabelAreas() : [];
   const hasChinaDetail = !louiePlanMode && displayedAdminBoundaries(mapLabelLevel())
     .some(area=>area.level!=='province');
-  const used = [...stageAreas];
+  const used = [...stageAreas,...(!louiePlanMode?(countryLabelBoxes||[]):[])];
   const limit = louiePlanMode ? 28 : 62;
   const margin = louiePlanMode ? 18 : 42;
   let drawn = 0;
