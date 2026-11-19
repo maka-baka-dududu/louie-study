@@ -818,6 +818,20 @@
           "story": "",
           "photoIds": [],
           "updatedAt": "2026-11-19T07:04:45.487Z"
+        },
+        {
+          "id": "82116c46-e2de-47be-8e66-5376335dcd5f",
+          "place": "Denpasar · 印度尼西亚",
+          "lat": -8.65,
+          "lng": 115.2167,
+          "date": "2026-11-19",
+          "endDate": "",
+          "markerStyle": "auto",
+          "status": "visited",
+          "title": "落地巴厘岛，我真爱了，我还会再来的",
+          "story": "",
+          "photoIds": [],
+          "updatedAt": "2026-11-19T07:15:22.706Z"
         }
       ],
       "routes": [],
