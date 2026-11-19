@@ -419,7 +419,7 @@ function updateTripOverview(plan, stages) {
     return `<button type="button" class="trip-stage-button" data-group="${group}" aria-pressed="${tripGroup === group}">
       <span class="trip-stage-days">${dayRange} <span>${days.length} 天</span></span>
       <strong>${esc(name)}</strong>
-      <small>${tripDate(plan.start,start)}${start === end ? '' : '–' + tripDate(plan.start,end)}</small>
+      <small>${tripDate(plan.start,start)}${!plan.start || start === end ? '' : '–' + tripDate(plan.start,end)}</small>
       ${stops.length ? `<span class="trip-stage-stops" title="${esc(stops.join(' → '))}">
         ${esc(highlights.join(' · '))}${stops.length > highlights.length ? ' 等 ' + stops.length + ' 站' : ''}
       </span>` : ''}
