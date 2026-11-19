@@ -706,6 +706,20 @@
           "story": "",
           "photoIds": [],
           "updatedAt": "2026-11-19T06:32:28.647Z"
+        },
+        {
+          "id": "5b59f982-b18c-4745-96ae-817d8f793809",
+          "place": "大阪",
+          "lat": 34.6993,
+          "lng": 135.4658,
+          "date": "2023-09-03",
+          "endDate": "",
+          "markerStyle": "auto",
+          "status": "visited",
+          "title": "大坂之旅，适合购物，比东京便宜且没那么压抑，还去了环球影城，挺好玩的",
+          "story": "",
+          "photoIds": [],
+          "updatedAt": "2026-11-19T06:34:54.127Z"
         }
       ],
       "routes": [],
