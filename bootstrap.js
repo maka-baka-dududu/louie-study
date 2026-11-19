@@ -13,7 +13,7 @@
     window.LouieAppReady=false;
     return new Promise((resolve,reject)=>{
       let startupError='';
-      const script=document.createElement('script');script.src='app.js?v=large-files-250';
+      const script=document.createElement('script');script.src='app.js?v=excerpts-1';
       const onError=event=>{if(event.filename&&new URL(event.filename,location.href).pathname.endsWith('/app.js'))startupError=event.message};
       window.addEventListener('error',onError);
       const timeout=setTimeout(()=>finish(Error('页面程序加载超时，请检查启动窗口。')),10000);
@@ -26,11 +26,11 @@
   const extensions=[
     ['algorithm-problems.js','LouieAlgorithmProblemsReady'],
     ['algorithms-ui.js','LouieAlgorithmsReady'],
-    ['personal-ui.js?v=chord-memory','LouiePersonalReady'],
+    ['personal-ui.js?v=excerpts-1','LouiePersonalReady'],
     ['practice-ui.js?v=chord-memory','LouiePracticeReady'],
     ['language-ui.js?v=sentence-categories','LouieLanguageReady'],
     ['studio-ui.js?v=travel-direct-2','LouieStudioReady'],
-    ['profile-files-ui.js?v=large-files-250','LouieProfileFilesReady'],
+    ['profile-files-ui.js?v=excerpts-1','LouieProfileFilesReady'],
     ['travel-model.js?v=admin-footprints','LouieTravelModel'],
     ['travel-plan.js?v=multiple-plans','LouieTravelPlanReady'],
     ['travel-ui.js?v=penida-search','LouieTravelReady']

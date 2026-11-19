@@ -16,7 +16,9 @@ const divinationProject = {
   goal:'读原典，练习识卦和排卦，记录不同流派的规则。'
 };
 function normalizePersonal(){db.personal??={profile:{name:'Louie',intro:'',about:'',links:[]},tracks:trackTemplates.map(t=>({...t,subjects:[...t.subjects],goal:'',milestones:[]})),activeTrack:'exam'};db.personal.profile.links??=[];db.personal.activeTrack??='exam';
+  db.personal.excerpts??=[];
   const tracks=db.personal.tracks;
+  if(tracks.length<30&&!tracks.some(t=>t.id==='excerpts'))tracks.push({id:'excerpts',name:'摘录与感悟',icon:'「',kind:'life',subjects:['古诗文','好句子','感悟'],goal:'留下喜欢的文字和自己的思考。',milestones:[]});
   if(tracks.length<30&&!tracks.some(track=>track.id===divinationProject.id)){
     tracks.push({...divinationProject,subjects:[...divinationProject.subjects],milestones:[]});
   }
@@ -323,3 +325,21 @@ function examSettingsView() {
       </form>
     </section>`;
 }
+
+
+// Text collections live inside personal data, included in backups and public sync.
+let excerptCategory='全部',excerptQuery='';
+const excerptCategories=['古诗文','好句子','感悟'];
+const projectNavBeforeExcerpts=projectNavItems;
+projectNavItems=function(){return navigationProject==='excerpts'?['track']:projectNavBeforeExcerpts()};
+const trackBeforeExcerpts=trackView;
+trackView=function(){return personalTrackId==='excerpts'?excerptsView():trackBeforeExcerpts()};
+function excerptMatches(){const q=excerptQuery.trim().toLowerCase();return db.personal.excerpts.filter(x=>(excerptCategory==='全部'||x.category===excerptCategory)&&(!q||[x.title,x.content,x.author,x.source,x.note].join(' ').toLowerCase().includes(q))).slice().sort((a,b)=>b.date.localeCompare(a.date)||b.createdAt.localeCompare(a.createdAt))}
+function excerptsView(){return `<div class="pagehead"><h1>摘录与感悟</h1><button class="primary" onclick="excerptForm()">＋ 记一则</button></div><div class="actions" style="margin-bottom:20px"><select aria-label="摘录分类" onchange="excerptCategory=this.value;drawExcerpts()">${opts(['全部',...excerptCategories],excerptCategory)}</select><input type="search" aria-label="搜索摘录" placeholder="搜索文字、作者、出处…" maxlength="100" value="${esc(excerptQuery)}" oninput="excerptQuery=this.value;drawExcerpts()"></div><section id="excerptList">${excerptList()}</section>`}
+function excerptList(){return excerptMatches().map(x=>`<article class="card"><div class="actions" style="justify-content:space-between"><span class="muted">${esc(x.category)} · ${esc(x.date)}</span><div class="actions"><button onclick="excerptForm('${x.id}')">编辑</button><button onclick="removeExcerpt('${x.id}')">删除</button></div></div>${x.title?`<h2>${esc(x.title)}</h2>`:''}<p style="white-space:pre-wrap;line-height:1.9;overflow-wrap:anywhere">${esc(x.content)}</p>${x.author||x.source?`<p class="muted">${esc([x.author,x.source].filter(Boolean).join(' · '))}</p>`:''}${x.note?`<div style="white-space:pre-wrap;border-top:1px solid var(--line,#ddd);padding-top:14px;line-height:1.8;overflow-wrap:anywhere">${esc(x.note)}</div>`:''}</article>`).join('')||'<p class="empty">记一首诗、一句话，或此刻的感悟。</p>'}
+function drawExcerpts(){const list=$('#excerptList');if(list)list.innerHTML=excerptList()}
+function excerptForm(id){const old=id?db.personal.excerpts.find(x=>x.id===id):null;if(id&&!old)return;const x=old||{category:excerptCategories.includes(excerptCategory)?excerptCategory:'古诗文',title:'',content:'',author:'',source:'',note:'',date:today()};show(`<h2>${id?'编辑摘录':'记一则'}</h2><form id="excerptForm"><div class="formgrid"><label>分类<select name="category">${opts(excerptCategories,x.category)}</select></label><label>日期<input type="date" name="date" value="${esc(x.date)}" required></label></div><label>标题（选填）<input name="title" maxlength="120" value="${esc(x.title)}"></label><label>正文<textarea name="content" rows="8" maxlength="20000" required placeholder="诗文、好句子，或者你的感悟…">${esc(x.content)}</textarea></label><div class="formgrid"><label>作者（选填）<input name="author" maxlength="100" value="${esc(x.author)}"></label><label>出处（选填）<input name="source" maxlength="300" value="${esc(x.source)}"></label></div><label>我的理解（选填）<textarea name="note" rows="3" maxlength="6000">${esc(x.note)}</textarea></label><p id="excerptError" role="status"></p><button class="primary">保存</button></form>`);const draftId=old?.id||uid();let writing=false;$('#excerptForm').onsubmit=async e=>{e.preventDefault();if(writing)return;const f=new FormData(e.target),next={id:draftId,createdAt:old?.createdAt||new Date().toISOString()};for(const k of ['category','title','content','author','source','note','date'])next[k]=String(f.get(k)||'').trim();if(!validExcerpt(next)){$('#excerptError').textContent='请填写有效的分类、日期和正文。';return}if(!old&&db.personal.excerpts.length>=5000){$('#excerptError').textContent='摘录已达5000则，请先整理。';return}writing=true;const button=e.target.querySelector('button');button.disabled=true;try{const i=db.personal.excerpts.findIndex(x=>x.id===next.id);if(i<0)db.personal.excerpts.push(next);else db.personal.excerpts[i]=next;if(await save()){closeModal();render()}else $('#excerptError').textContent='保存未完成，请重试。'}finally{writing=false;button.disabled=false}}}
+async function removeExcerpt(id){const i=db.personal.excerpts.findIndex(x=>x.id===id);if(i<0||!confirm('删除这则摘录？'))return;const removed=db.personal.excerpts.splice(i,1)[0];if(await save())render();else db.personal.excerpts.splice(i,0,removed)}
+function validExcerpt(x){const t=(v,n)=>typeof v==='string'&&v.length<=n;return x&&t(x.id,100)&&/^[a-zA-Z0-9-]+$/.test(x.id)&&excerptCategories.includes(x.category)&&t(x.title,120)&&t(x.content,20000)&&x.content.trim().length>0&&t(x.author,100)&&t(x.source,300)&&t(x.note,6000)&&scheduleDate(x.date)&&t(x.createdAt,40)&&Number.isFinite(Date.parse(x.createdAt))}
+const validBeforeExcerpts=validData;
+validData=function(d){return validBeforeExcerpts(d)&&(d.personal?.excerpts===undefined||(Array.isArray(d.personal.excerpts)&&d.personal.excerpts.length<=5000&&new Set(d.personal.excerpts.map(x=>x?.id)).size===d.personal.excerpts.length&&d.personal.excerpts.every(validExcerpt)))};
