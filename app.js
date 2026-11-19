@@ -3,7 +3,7 @@ const KEY='louie-study-pages:'+new URL('.',location.href).pathname;
 const subjects=['数据结构','计算机组成原理','操作系统','计算机网络','数学二','英语二','政治'];
 const chapters=[['数据结构',['复杂度与递归','线性表','栈与队列','串与模式匹配','树与二叉树','图与遍历','查找与散列表','排序']],['计算机组成原理',['计算机系统概述','数据表示与运算','存储系统与Cache','指令系统','CPU与流水线','总线','输入输出系统']],['操作系统',['操作系统概述','进程与线程','同步互斥与信号量','调度与死锁','内存管理','虚拟内存与页面置换','文件系统','设备与I/O']],['计算机网络',['网络体系结构','物理层','数据链路层','网络层与IP','传输层与TCP','应用层']]];
 const blank=()=>({version:1,settings:{school:'南京理工大学（可更换）',major:'计算机专硕 · 22408',date:'',budget:240,focus:25},tasks:[],errors:[],mastery:{},sessions:[],mocks:[],attempts:[]});
-let db=blank(),storageOK=true;try{if(window.LouieLocal?.data){db=window.LouieLocal.data}else if(!window.LouieLocal){const raw=localStorage.getItem(KEY);if(raw)db=JSON.parse(raw)}}catch(e){storageOK=false}
+let db=blank(),storageOK=true;try{if(window.LouiePublicSite&&window.LouiePublished?.data){db=structuredClone(window.LouiePublished.data)}else if(window.LouieLocal?.data){db=window.LouieLocal.data}else if(!window.LouieLocal){const raw=localStorage.getItem(KEY);if(raw)db=JSON.parse(raw)}}catch(e){storageOK=false}
 let page='today',filter='全部',timer=null,endAt=0,remaining=0,focusTask=null;
 const $=s=>document.querySelector(s),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
@@ -161,10 +161,28 @@ async function diskRequest(url,options={}){const response=await fetch(url,{...op
 function persistCandidate(data){if(!localDisk){localStorage.setItem(KEY,JSON.stringify(data));return Promise.resolve()}const snapshot=JSON.stringify(data);diskPending++;paintSaveStatus();const write=diskQueue.catch(()=>{}).then(async()=>{const response=await diskRequest('/api/state',{method:'PUT',headers:{'Content-Type':'application/json'},body:'{"revision":'+localDisk.revision+',"data":'+snapshot+'}'});const result=await response.json();localDisk.revision=result.revision;diskError=''});diskQueue=write;write.then(()=>{diskPending--;paintSaveStatus()},error=>{diskPending--;diskError=error.message;paintSaveStatus()});return write}
 save=function(){if(!localDisk){try{localStorage.setItem(KEY,JSON.stringify(db));storageOK=true;return Promise.resolve(true)}catch(e){storageOK=false;toast('浏览器记录未保存，请先导出。');return Promise.resolve(false)}}return persistCandidate(db).then(()=>true,error=>{toast('未写入本地：'+error.message);return false})};
 const browserFileOp=fileOp;
-fileOp=async function(mode,key,value){if(!localDisk)return browserFileOp(mode,key,value);if(mode==='put'){await diskRequest('/api/files/'+encodeURIComponent(key),{method:'PUT',body:value});return key}if(mode==='delete'){await diskRequest('/api/files/'+encodeURIComponent(key),{method:'DELETE'});return}const response=await diskRequest('/api/files/'+encodeURIComponent(key));const raw=await response.blob(),metadata=db.materials.find(m=>m.fileId===key);return new Blob([raw],{type:metadata?.mime||'application/octet-stream'})};
+fileOp=async function(mode,key,value){
+if(window.LouiePublicSite&&mode==='get'&&window.LouiePublished?.files?.[key]){
+  const file=window.LouiePublished.files[key];
+  if(!/^site-files\/[a-f0-9]{40}\.[a-z0-9]{1,8}$/.test(file.url))throw Error('附件链接无效。');
+  const response=await fetch(file.url);
+  if(!response.ok)throw Error('附件暂时无法读取。');
+  return new Blob([await response.arrayBuffer()],{type:file.mime});
+}
+if(!localDisk)return browserFileOp(mode,key,value);if(mode==='put'){await diskRequest('/api/files/'+encodeURIComponent(key),{method:'PUT',body:value});return key}if(mode==='delete'){await diskRequest('/api/files/'+encodeURIComponent(key),{method:'DELETE'});return}const response=await diskRequest('/api/files/'+encodeURIComponent(key));const raw=await response.blob(),metadata=db.materials.find(m=>m.fileId===key);return new Blob([raw],{type:metadata?.mime||'application/octet-stream'})};
 window.addEventListener('beforeunload',event=>{if(diskPending||diskError){event.preventDefault();event.returnValue=''}});
 const baseLocalRender=render;
-render=function(){baseLocalRender();applyTheme();paintSaveStatus()};
+render=function(){baseLocalRender();applyTheme();paintSaveStatus();if(page==='settings'&&localDisk)void refreshPublishStatus()};
+async function refreshPublishStatus(){
+  const node=$('#autoPublishStatus');
+  if(!node)return;
+  try{
+    const response=await diskRequest('/api/publish/status');
+    const status=await response.json();
+    node.textContent=!status.enabled?'自动发布待启用':status.error?'自动发布待重试 · '+status.error:
+      status.pending?'正在自动发布…':status.publishedAt?'已自动提交到 GitHub，网页部署稍后完成。':'自动发布已启用';
+  }catch(_){node.textContent='自动发布服务需要重启后启用。'}
+}
 
 todayView=function(){const tasks=db.tasks.filter(t=>t.date===today()&&(window.LouieProjectScope?.matches(t)??true)),sessions=db.sessions.map((s,i)=>({s,i})).filter(x=>x.s.date===today()&&(window.LouieProjectScope?.matches(x.s)??true)).reverse(),minutes=sessions.reduce((a,x)=>a+x.s.minutes,0),done=tasks.filter(t=>t.done).length;return `<div class="pagehead"><div><h1>今日学习</h1><p class="muted">${today()} <span class="day-summary">${done}/${tasks.length} 项完成 · ${minutes} 分钟</span></p></div><div class="actions"><button onclick="plan()">安排今日任务</button><button class="primary" onclick="taskForm()">＋ 添加任务</button></div></div><div class="today-layout"><section class="card today-tasks"><h2>今日任务</h2>${tasks.length?tasks.map(t=>`<div class="row"><div><label class="check"><input type="checkbox" ${t.done?'checked':''} onchange="toggleTask('${t.id}')"><span class="${t.done?'done':''}">${esc(t.title)}</span></label><small>${esc(subjectLabel(t.subject))} · ${t.minutes} 分钟</small></div><div class="actions"><button onclick="startFocus('${t.id}')" ${t.done?'disabled':''}>开始</button><button onclick="removeTask('${t.id}')" aria-label="删除任务">×</button></div></div>`).join(''):'<p class="empty">今天还没有任务。</p>'}</section><section class="card today-focus"><h2>专注计时</h2><div class="focus-number">${timer?'进行中':db.settings.focus}<small>${timer?'':'分钟'}</small></div><div class="actions"><button class="primary" onclick="startFocus()">${timer?'继续计时':'开始专注'}</button><button onclick="openFocusSettings()">调整时长</button><button onclick="sessionForm()">记录学习</button></div></section></div><section class="card"><h2>今日记录</h2>${sessions.length?sessions.map(({s,i})=>`<div class="row"><div><b>${esc(subjectLabel(s.subject))}</b><span class="muted"> · ${s.minutes} 分钟</span>${s.note?`<p class="session-note">${esc(s.note)}</p>`:''}</div><div class="actions"><button onclick="sessionForm(${i})">编辑</button><button onclick="deleteSession(${i})">删除</button></div></div>`).join(''):'<p class="empty">完成一段学习后，记录在这里。</p>'}</section>`};
 knowledgeView=function(){return `<div class="pagehead"><div><h1>专业课</h1></div></div>${chapters.map(([s,cs])=>mapSection(s,cs,s)).join('')}`};
@@ -180,7 +198,7 @@ mocksView=function(){return fullMocksView().replace('<h1>把一次模考，变�
 infoCategory='公告';
 const fullInfoView=resourcesView;
 resourcesView=function(){return fullInfoView().replace('<span class="eyebrow">ADMISSIONS / VERIFIED SOURCES</span>','').replace('<p class="muted">只保留会影响报名、考试和择校的重要信息。</p>','').replace('<br><small>定期查询由本机Codex执行，需电脑开机、联网并保持应用运行；网页自身不会在关闭后抓取信息。刷新仅载入已核验内容，不代表已重新联网核验。</small>','').replace(/<div class="note">当前资料范围：[\s\S]*?<\/div>/,`<p class="muted">资料范围：南理工计算机学院相关专硕 / 全国统考</p>`).replace('<section class="card"><h2>最近核验记录</h2>','<section class="card"><details><summary>核验记录</summary>').replace('<small>不能访问原文或不能确认统计口径的信息标为待核实，不用搜索摘要填造录取分数。</small></section>','</details></section>')};
-settingsView=function(){return `<div class="pagehead"><h1>设置</h1></div>${themePicker()}<section class="card"><h2>数据管理</h2>${localDisk?`<details><summary>文件位置</summary><label>学习记录<span class="local-path">${esc(localDisk.dataPath)}</span></label><label>资料附件<span class="local-path">${esc(localDisk.filesPath)}</span></label></details>`:'<p>学习记录和附件保存在当前浏览器。换设备前可导出完整备份。</p>'}<details><summary>导入与备份</summary><div class="actions" style="margin-top:18px"><button onclick="exportData()">导出完整备份</button><button onclick="document.querySelector('#importFile').click()">导入旧记录 / 备份</button><input id="importFile" type="file" accept="application/json,.json" hidden onchange="importData(this.files[0]);this.value=''"></div><p class="muted">导入会替换当前学习记录。</p></details></section>`};
+settingsView=function(){return `<div class="pagehead"><h1>设置</h1></div>${themePicker()}<section class="card"><h2>数据管理</h2>${localDisk?`<p id="autoPublishStatus" role="status"></p>`:''}${localDisk?`<details><summary>文件位置</summary><label>学习记录<span class="local-path">${esc(localDisk.dataPath)}</span></label><label>资料附件<span class="local-path">${esc(localDisk.filesPath)}</span></label></details>`:'<p>学习记录和附件保存在当前浏览器。换设备前可导出完整备份。</p>'}<details><summary>导入与备份</summary><div class="actions" style="margin-top:18px"><button onclick="exportData()">导出完整备份</button><button onclick="document.querySelector('#importFile').click()">导入旧记录 / 备份</button><input id="importFile" type="file" accept="application/json,.json" hidden onchange="importData(this.files[0]);this.value=''"></div><p class="muted">导入会替换当前学习记录。</p></details></section>`};
 const previousDiskDelete=deleteMaterial;
 deleteMaterial=async function(id){if(!localDisk)return previousDiskDelete(id);if(!confirm('删除这份资料？'))return;const original=db.materials,m=original.find(x=>x.id===id);db.materials=original.filter(x=>x.id!==id);try{await persistCandidate(db)}catch(e){db.materials=original;toast('资料未删除：'+e.message);render();return}closeModal();render();if(m.fileId)fileOp('delete',m.fileId).catch(()=>toast('资料已移出列表，原附件仍保留在本地。'))};
 const themes=[

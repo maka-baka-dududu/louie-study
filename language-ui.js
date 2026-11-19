@@ -536,16 +536,19 @@ function englishWordView() {
   </section>`;
 }
 
+const sentenceCategories = ['商务','生活','考试','口语','其他'];
+let sentenceCategory = 'all';
 let sentenceDateFilter = 'all', sentenceQuery = '', sentenceLimit = 30;
 
 function sentenceList() {
   const query = sentenceQuery.trim().toLowerCase();
   const records = languageRecords().sentences.filter(item =>
     (sentenceDateFilter === 'all' || item.date === sentenceDateFilter) &&
+    (sentenceCategory === 'all' || (item.category || '其他') === sentenceCategory) &&
     (!query || [item.text,item.translation,item.note].some(value => value.toLowerCase().includes(query)))
   ).sort((a,b) => b.date.localeCompare(a.date) || b.created - a.created);
   return records.slice(0,sentenceLimit).map(item => `<article class="card sentence-card">
-    <time datetime="${item.date}">${item.date}</time><h2>${esc(item.text)}</h2>
+    <time datetime="${item.date}">${item.date} · ${esc(item.category || '其他')}</time><h2>${esc(item.text)}</h2>
     ${item.translation ? `<p>${esc(item.translation)}</p>` : ''}
     ${item.note ? `<p class="muted">${esc(item.note)}</p>` : ''}
     <button type="button" onclick="sentenceForm('${item.id}')">编辑</button>
@@ -557,6 +560,10 @@ function englishSentencesView() {
   const dates = new Set([today(),...languageRecords().sentences.map(item => item.date)]);
   return `<div class="pagehead"><h1>每日句子</h1><button class="primary" onclick="sentenceForm()">＋ 记一句</button></div>
     <div class="language-toolbar sentence-filters">
+      <select aria-label="按分类查看句子" onchange="sentenceCategory=this.value;sentenceLimit=30;document.querySelector('#sentenceList').innerHTML=sentenceList()">
+        <option value="all">全部分类</option>
+        ${sentenceCategories.map(category=>`<option value="${category}" ${sentenceCategory===category?'selected':''}>${category}</option>`).join('')}
+      </select>
       <select aria-label="按日期查看句子" onchange="filterSentences(this.value)">
         <option value="all">全部日期</option>
         ${[...dates].sort().reverse().map(date=>`<option value="${date}" ${date===sentenceDateFilter?'selected':''}>${date===today()?'今天 · ':''}${date}</option>`).join('')}
@@ -590,6 +597,7 @@ function sentenceForm(id) {
   if (id && !existing) return;
   const item = existing || {id:uid(), date:today(), text:'', translation:'', note:'', created:Date.now()};
   show(`<h2>${existing?'编辑句子':'记一句'}</h2><form id="sentenceEditor">
+    <label>分类<select name="category">${sentenceCategories.map(category=>`<option value="${category}" ${(item.category || '其他')===category?'selected':''}>${category}</option>`).join('')}</select></label>
     <label>学习日期<input name="date" type="date" required value="${item.date}"></label>
     <label>英语原句<textarea name="text" required maxlength="1000">${esc(item.text)}</textarea></label>
     <label>中文释义（可选）<input name="translation" maxlength="600" value="${esc(item.translation)}"></label>
@@ -601,9 +609,9 @@ function sentenceForm(id) {
     event.preventDefault();
     if (languageWriting) return;
     const fields = new FormData(event.target);
-    const next = {...item, date:fields.get('date'), text:String(fields.get('text') || '').trim(),
+    const next = {...item, category:fields.get('category'), date:fields.get('date'), text:String(fields.get('text') || '').trim(),
       translation:String(fields.get('translation') || '').trim(), note:String(fields.get('note') || '').trim()};
-    if (!scheduleDate(next.date) || !next.text) return toast('请填写日期和英语原句。');
+    if (!sentenceCategories.includes(next.category) || !scheduleDate(next.date) || !next.text) return toast('请填写日期和英语原句。');
     const index = records.findIndex(record => record.id === item.id);
     if (index < 0 && records.length >= 10000) return toast('句子数量已达上限，请先整理或备份。');
     const previous = records[index];
@@ -616,6 +624,7 @@ function sentenceForm(id) {
         else records[index] = previous;
         return;
       }
+      sentenceCategory = next.category;
       sentenceDateFilter = next.date;
       sentenceQuery = '';
       sentenceLimit = 30;
@@ -676,7 +685,7 @@ validData = function (data) {
       (item.lastCorrect === undefined || (item.lastCorrect === null ? item.level === 0 :
         item.level > 0 && scheduleDate(item.lastCorrect) && item.lastCorrect < item.due)));
   }) && state.sentences.every(item => item && /^[a-zA-Z0-9-]{1,100}$/.test(item.id) &&
-    scheduleDate(item.date) && text(item.text,1000) && item.text.trim().length > 0 && text(item.translation,600) &&
+    (item.category === undefined || sentenceCategories.includes(item.category)) && scheduleDate(item.date) && text(item.text,1000) && item.text.trim().length > 0 && text(item.translation,600) &&
     text(item.note,1000) && Number.isFinite(item.created)) &&
     new Set(state.sentences.map(item => item.id)).size === state.sentences.length;
 };

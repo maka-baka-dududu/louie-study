@@ -23,64 +23,6 @@ function readPublicFootprints() {
   }).catch(error => { publicFootprintsRequest = null; throw error; });
 }
 
-function openTravelPublication() {
-  if (publicTravel || !localDisk) return;
-  const entries = db.travel.entries;
-  let previous = [];
-  let includeDetails = false;
-  try {
-    previous = JSON.parse(localStorage.getItem('louie-public-footprint-selection') || '[]');
-    includeDetails = localStorage.getItem('louie-public-footprint-details') === 'true';
-  } catch (_) {}
-  const selected = new Set(Array.isArray(previous) ? previous : []);
-  show(`<h2>发布公开足迹</h2>
-    <p>网站会显示勾选足迹的地点、坐标、日期、状态、图标和手动设置的到访次数。本次发布会替换公开足迹列表。</p>
-    <form id="travelPublishForm">
-      <div class="actions"><button type="button" id="travelPublishAll">全选</button><button type="button" id="travelPublishNone">清空选择</button></div>
-      <div class="travel-publish-list">${entries.length ? entries.map(entry => `<label class="check">
-        <input type="checkbox" name="footprint" value="${esc(entry.id)}" ${selected.has(entry.id) ? 'checked' : ''}>
-        <span>${esc(entry.place)} <small class="muted">${esc(entry.date)} · ${entry.status === 'visited' ? '去过' : '想去'} · ${entry.photoIds.length} 张照片</small></span></label>`).join('') :
-        '<p class="muted">本地暂无足迹。可以先在旅行星球新增，或导入旧记录。</p>'}</div>
-      <label class="check"><input type="checkbox" name="includeDetails" ${includeDetails ? 'checked' : ''}>同时公开勾选足迹的标题、正文和照片</label>
-      <button class="primary" id="travelPublishSubmit">发布到网站</button>
-      <p role="status" id="travelPublishStatus"></p>
-    </form>`);
-  const form = $('#travelPublishForm');
-  for (const [button, checked] of [['#travelPublishAll',true],['#travelPublishNone',false]]) {
-    $(button).onclick = () => form.querySelectorAll('[name="footprint"]').forEach(box => { box.checked = checked; });
-  }
-  form.onsubmit = async event => {
-    event.preventDefault();
-    const submit = $('#travelPublishSubmit'), status = $('#travelPublishStatus');
-    const data = new FormData(form);
-    const ids = data.getAll('footprint');
-    const publishDetails = data.has('includeDetails');
-    if (publishDetails && !localDisk.travelDetailsPublish) {
-      status.textContent = '当前运行的是旧版学习站服务。请关闭原启动窗口，重新打开「启动学习站.command」，再发布正文和照片。';
-      return;
-    }
-    if (!ids.length && !confirm('清除网站上的全部公开足迹？')) return;
-    submit.disabled = true;
-    status.textContent = '正在提交到 GitHub…';
-    try {
-      await travelQueue.catch(() => {});
-      await diskQueue;
-      if (diskError) throw Error('本地有未保存的记录，请保存后重试。');
-      const response = await diskRequest('/api/travel/publish', {
-        method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ids,includeDetails:publishDetails})
-      });
-      const result = await response.json();
-      try {
-        localStorage.setItem('louie-public-footprint-selection',JSON.stringify(ids));
-        localStorage.setItem('louie-public-footprint-details',String(publishDetails));
-      } catch (_) {}
-      const description = result.details ? `足迹与正文（含 ${result.photoCount} 张照片）` : '足迹基本信息';
-      status.textContent = result.changed ? `已提交 ${result.count} 枚${description}，部署完成后可见。` : `网站上的${description}与这次提交一致。`;
-    } catch (error) {
-      status.textContent = error.message;
-    } finally { submit.disabled = false; }
-  };
-}
 function normalizeTravel() {
   db.travel ??= Travel.blank();
   const tracks = db.personal.tracks;
@@ -202,7 +144,6 @@ render = function () {
           <button type="button" onclick="this.closest('details').open=false;chooseTravelImport()">导入旧记录</button>
           <button type="button" onclick="this.closest('details').open=false;exportTravelBackup()">导出旅行备份</button>
           <button type="button" onclick="this.closest('details').open=false;travelTrashForm()">已删除记录</button>
-          ${localDisk ? `<button type="button" onclick="this.closest('details').open=false;openTravelPublication()">发布公开足迹</button>` : ''}
         </div>
       </details>
       <input id="travelImportFile" type="file" accept="application/json,.json" hidden onchange="importTravelBackup(this.files[0]);this.value=''">

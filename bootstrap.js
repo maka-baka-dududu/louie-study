@@ -13,7 +13,7 @@
     window.LouieAppReady=false;
     return new Promise((resolve,reject)=>{
       let startupError='';
-      const script=document.createElement('script');script.src='app.js?v=focus-settings';
+      const script=document.createElement('script');script.src='app.js?v=auto-publish';
       const onError=event=>{if(event.filename&&new URL(event.filename,location.href).pathname.endsWith('/app.js'))startupError=event.message};
       window.addEventListener('error',onError);
       const timeout=setTimeout(()=>finish(Error('页面程序加载超时，请检查启动窗口。')),10000);
@@ -28,7 +28,7 @@
     ['algorithms-ui.js','LouieAlgorithmsReady'],
     ['personal-ui.js?v=edit-project-label','LouiePersonalReady'],
     ['practice-ui.js','LouiePracticeReady'],
-    ['language-ui.js?v=word-tasks','LouieLanguageReady'],
+    ['language-ui.js?v=sentence-categories','LouieLanguageReady'],
     ['studio-ui.js?v=travel-direct-2','LouieStudioReady'],
     ['profile-files-ui.js','LouieProfileFilesReady'],
     ['travel-model.js?v=admin-footprints','LouieTravelModel'],
@@ -66,5 +66,12 @@
 
   window.LouiePublicSite=true;
   window.LouieLocal=null;
-  try{await loadApp()}catch(error){showError(error.message)}
+  try{
+    const response=await fetch('site-public.json',{cache:'no-cache'});
+    if(!response.ok)throw Error('网站内容暂时无法读取，请刷新后重试。');
+    const snapshot=await response.json();
+    if(snapshot.version!==1)throw Error('网站内容格式有误。');
+    window.LouiePublished=snapshot;
+    await loadApp();
+  }catch(error){showError(error.message)}
 })();
