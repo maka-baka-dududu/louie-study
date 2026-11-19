@@ -720,6 +720,20 @@
           "story": "",
           "photoIds": [],
           "updatedAt": "2026-11-19T06:34:54.127Z"
+        },
+        {
+          "id": "727cea8d-d33b-40b3-a5bd-1ddb8494d3d0",
+          "place": "京都",
+          "lat": 35.0237,
+          "lng": 135.7007,
+          "date": "2023-09-04",
+          "endDate": "",
+          "markerStyle": "auto",
+          "status": "visited",
+          "title": "京都之旅，一切都很符合京都的印象，日本的传统的感觉吧，，",
+          "story": "",
+          "photoIds": [],
+          "updatedAt": "2026-11-19T06:35:32.360Z"
         }
       ],
       "routes": [],
