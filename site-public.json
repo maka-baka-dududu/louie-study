@@ -790,6 +790,20 @@
           "story": "",
           "photoIds": [],
           "updatedAt": "2026-11-19T06:35:32.360Z"
+        },
+        {
+          "id": "4c282d86-0ab3-43af-a808-7f1520022419",
+          "place": "新加坡",
+          "lat": 0.9328,
+          "lng": 104.2035,
+          "date": "2013-07-10",
+          "endDate": "",
+          "markerStyle": "auto",
+          "status": "visited",
+          "title": "第一次出国，算研学吧，去了五天一万块，坑死了",
+          "story": "",
+          "photoIds": [],
+          "updatedAt": "2026-11-19T07:03:38.796Z"
         }
       ],
       "routes": [],
