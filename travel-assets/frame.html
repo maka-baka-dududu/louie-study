@@ -192,7 +192,7 @@ function enhanceMap() {
 }
 
 var chineseFoldMap={"風":"风","蘭":"兰","凱":"凯","盤":"盘","圍":"围","鷄":"鸡","鰂":"鲗","窩":"窝","綏":"绥","漢":"汉","運":"运","輋":"𪨶","魯":"鲁","臨":"临","雙":"双","鴨":"鸭","魚":"鱼","紹":"绍","漣":"涟","鶴":"鹤","聖":"圣","臺":"台","饒":"饶","頭":"头","東":"东","寶":"宝","鼇":"鳌","徑":"径","順":"顺","慶":"庆","爾":"尔","縣":"县","長":"长","銀":"银","廈":"厦","瑪":"玛","連":"连","雞":"鸡","薩":"萨","崗":"岗","環":"环","溫":"温","莊":"庄","無":"无","鐘":"钟","關":"关","開":"开","錫":"锡","鹽":"盐","鮀":"𬶍","寧":"宁","濟":"济","碼":"码","灣":"湾","節":"节","懷":"怀","崙":"仑","鶯":"莺","銅":"铜","澤":"泽","義":"义","萬":"万","黃":"黄","陽":"阳","蘇":"苏","譚":"谭","亞":"亚","関":"关","馬":"马","島":"岛","網":"网","遼":"辽","烏":"乌","欽":"钦","調":"调","後":"后","湧":"涌","迴":"回","棗":"枣","恆":"恒","藍":"蓝","壽":"寿","鰲":"鳌","鄒":"邹","霧":"雾","鑼":"锣","揚":"扬","涼":"凉","橋":"桥","氹":"凼","員":"员","樂":"乐","崑":"昆","綿":"绵","樹":"树","禮":"礼","貴":"贵","師":"师","維":"维","鐵":"铁","紅":"红","華":"华","埨":"𫭢","岡":"冈","冊":"册","勻":"匀","來":"来","鷹":"鹰","瓊":"琼","壢":"坜","裡":"里","隨":"随","頂":"顶","頓":"顿","舊":"旧","堅":"坚","觀":"观","區":"区","於":"于","鬥":"斗","煙":"烟","鎮":"镇","洩":"泄","齊":"齐","賓":"宾","硤":"硖","賀":"贺","衛":"卫","鄭":"郑","蓮":"莲","廣":"广","瀝":"沥","龍":"龙","內":"内","園":"园","鳳":"凤","灑":"洒","垵":"埯","掃":"扫","隴":"陇","晉":"晋","濱":"滨","篢":"𬕂","畢":"毕","門":"门","貝":"贝","錦":"锦","營":"营","雲":"云","張":"张","別":"别","荊":"荆","貢":"贡","婁":"娄","砲":"炮","豐":"丰","贛":"赣","萊":"莱","鄉":"乡","麗":"丽","離":"离","遠":"远","啟":"启","蕪":"芜","濰":"潍","滄":"沧","達":"达","嶺":"岭","興":"兴","瀘":"泸","鄲":"郸","瀋":"沈","乾":"干","撫":"抚","峽":"峡"};function foldChinese(s){return s.replace(/[\u3400-\u9fff]/g,c=>chineseFoldMap[c]||c)}
-var markerMetric='smart';var globeScene='space';var creationPlace=null;var WORLD_PLACES=null;
+var markerMetric='smart';var globeScene='space';var creationPlace=null;var WORLD_PLACES=null;var globalPlaceMarkers=[];
 var adminRecords=[],adminById=new Map(),selectedAdmin=null;
 let terrainEnabled=true,reliefExaggeration=14,showSeafloor=false,terrainActive=false,terrainCanvas=null,reliefGL=null,glAttempted=false,reliefImage=null,reliefPixels=null,reliefImageReady=false,fallbackStyle='';
 let routeItems=[],routeEditing=null,routeSelected=null,routeTrack=[],routePlaceOptions=[],routeMarkers=[],timelineEvents=[],routeCurveCache=new Map(),playbackRouteId=null;
@@ -526,7 +526,10 @@ function endMapGesture(event, tapped = false) {
       nearestDistance = distance;
     }
   }
-  if (nearest) showDetail(nearest.e);
+  if (nearest) return showDetail(nearest.e);
+  const city=globalPlaceAtPixel(x,y);
+  if(city)selectMapCity(city.place);
+
 }
 
 canvas.onpointerup = event => endMapGesture(event,true);
@@ -676,8 +679,17 @@ function adminEntryLocation(area) {
   const [lng,lat] = area.level === 'province' && area.centroid ? area.centroid : area.center;
   return {place:adminPath(area),lat,lng};
 }
+function setEntryPlaceCountry(code) {
+  if(!code)return;
+  const select=$('#entryCountry');
+  if(![...select.options].some(option=>option.value===code)){
+    const option=document.createElement('option');option.value=code;option.textContent=globalCountry(code);select.append(option);
+  }
+  $('#entryPlaceLevel').value='global-city';select.value=code;syncEntryCountry();
+}
 function fillFootprintPlace(place) {
   entryPlaceSearch++;
+  if(place.country)setEntryPlaceCountry(place.country);
   entryAdminId = place.adminId;
   for (const key of ['place','lat','lng']) $('#'+key).value = place[key];
   $('#suggestions').replaceChildren();
@@ -768,7 +780,31 @@ for (const id of ['routeFrom','routeTo']) {
     }).catch(() => {});
   });
 }
-const originalAddAt=addAt;addAt=function(c){originalAddAt(c);const a=adminAt(c.lng,c.lat);if(a)$('#place').value=adminPath(a)};
+function globalPlaceAtPixel(x,y){
+  return (globalPlaceMarkers||[]).filter(marker=>Math.hypot(marker.x-x,marker.y-y)<=12 ||
+    x>=marker.box.x&&x<=marker.box.x+marker.box.w&&y>=marker.box.y&&y<=marker.box.y+marker.box.h)
+    .sort((a,b)=>Math.hypot(a.x-x,a.y-y)-Math.hypot(b.x-x,b.y-y))[0]||null;
+}
+function selectMapCity(place){
+  creationPlace=place;
+  if(louieReadOnly){toast(place.place);return;}
+  closeGlobeDrawers();closeCreateMenu();showEditor();fillFootprintPlace(place);
+}
+const originalAddAt=addAt;
+addAt=function(c){
+  const restoring=!!draft;
+  originalAddAt(c);
+  if(restoring)return;
+  const area=adminAt(c.lng,c.lat);
+  if(area){fillFootprintPlace({...c,place:adminPath(area),adminId:area.id});return;}
+  const projected=project(c.lng,c.lat),selected=globalPlaceAtPixel(projected.x,projected.y);
+  if(selected){fillFootprintPlace(selected.place);return;}
+  const country=countryAt(c.lng,c.lat);
+  if(country){
+    const current=$('#place').value.trim(),name=countryName(country);
+    $('#place').value=current&&current!==name&&!current.includes(name)?current+' · '+name:name;
+  }
+};
 draw();
 
 // Global place database is embedded; search and maps require no external requests.
@@ -777,7 +813,7 @@ draw();
 var globalPlaces=[],globalSelected=null,globalIndex=new Map(),globalDetailSpan=2;
 var regionNames=typeof Intl!=='undefined'&&Intl.DisplayNames?new Intl.DisplayNames(['zh-CN'],{type:'region'}):null;
 function globalCountry(code){if(code==='CN')return '中国';if(code==='HK')return '香港';if(code==='MO')return '澳門';if(code==='TW')return '臺灣';try{return regionNames?.of(code)||code}catch(e){return code}}
-function globalPlaceRow(r){return{place:r[0]+' · '+globalCountry(r[4])+(r[5]?' · '+r[5]:''),name:r[0],lat:r[2],lng:r[3],country:r[4],aliases:r[1]}}
+function globalPlaceRow(r){return{place:r[0]+' · '+globalCountry(r[4]),name:r[0],lat:r[2],lng:r[3],country:r[4],aliases:r[1]}}
 function foldPlace(s){return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[\u3400-\u9fff]/g,c=>chineseFoldMap[c]||c)}
 let globalSearchKeys = [];
 function indexPlaces(records, index) {
@@ -824,6 +860,7 @@ async function searchGlobal(){const q=foldPlace($('#globalQuery').value.trim());
 function selectGlobalPlace(i){const p=globalPlaces[i];if(!p)return;creationPlace=p;globalSelected=p;$('#globalSelected').textContent=p.place;$('#globalDetail').hidden=false;globalDetailSpan=2;lon=p.lng;tilt=p.lat;zoom=18;surfaceCacheKey='';draw();drawGlobalDetail()}
 function drawGlobalDetail(){if(!globalSelected)return;const el=$('#globalMap'),c=el.getContext('2d'),box=el.getBoundingClientRect(),w=Math.max(300,box.width),h=360,d=Math.min(devicePixelRatio||1,2);el.width=w*d;el.height=h*d;c.setTransform(d,0,0,d,0,0);c.fillStyle='#e4f0ed';c.fillRect(0,0,w,h);const p=globalSelected,span=globalDetailSpan,ratio=Math.max(.2,Math.cos(p.lat*rad));const pos=(lng,lat)=>({x:w/2+(((lng-p.lng+540)%360)-180)*ratio/span*w/2,y:h/2-(lat-p.lat)/span*w/2});c.save();c.fillStyle='#f1f4df';c.strokeStyle='#9db8a0';c.lineWidth=1;for(const f of WORLD_GEO.features){const polys=f.geometry.type==='Polygon'?[f.geometry.coordinates]:f.geometry.type==='MultiPolygon'?f.geometry.coordinates:[];for(const poly of polys){const ring=poly[0];if(!ring?.length)continue;let previous=null,jump=false;c.beginPath();for(let i=0;i<ring.length;i++){const q=pos(ring[i][0],ring[i][1]);if(previous&&Math.abs(q.x-previous.x)>w/span*100){jump=true;break}if(i)c.lineTo(q.x,q.y);else c.moveTo(q.x,q.y);previous=q}if(!jump){c.closePath();c.fill();c.stroke()}}}c.restore();c.save();c.strokeStyle='#c4d9d0';c.lineWidth=.6;const step=span<.5?.1:span<2?.5:span<8?2:10;for(let a=Math.floor((p.lng-span/ratio)/step)*step;a<p.lng+span/ratio;a+=step){const x=pos(a,p.lat).x;c.beginPath();c.moveTo(x,0);c.lineTo(x,h);c.stroke()}for(let a=Math.floor((p.lat-span)/step)*step;a<p.lat+span;a+=step){const y=pos(p.lng,a).y;c.beginPath();c.moveTo(0,y);c.lineTo(w,y);c.stroke()}c.restore();const labels=[];for(const r of nearbyGlobal(p.lng,p.lat,span/ratio*1.4)){const q=pos(r[3],r[2]);if(q.x<8||q.x>w-8||q.y<8||q.y>h-8)continue;c.beginPath();c.arc(q.x,q.y,2.5,0,Math.PI*2);c.fillStyle='#729d7d';c.fill();if(labels.length<35&&!labels.some(t=>Math.abs(t.x-q.x)<95&&Math.abs(t.y-q.y)<20)){labels.push(q);c.font='11px sans-serif';c.fillStyle='#486657';c.fillText(r[0],q.x+6,q.y-6)}}c.beginPath();c.arc(w/2,h/2,7,0,Math.PI*2);c.fillStyle='#cc895a';c.fill();c.strokeStyle='white';c.lineWidth=3;c.stroke();c.font='bold 13px sans-serif';c.fillStyle='#365947';c.fillText(p.name,w/2+12,h/2+17);c.font='11px sans-serif';c.fillStyle='#668475';c.fillText('离线地点分布图 · '+p.lat.toFixed(4)+', '+p.lng.toFixed(4)+' · 非街道地图',12,h-14)}
 function drawGlobalMapPlaces() {
+  globalPlaceMarkers=[];
   const placeIndex = compactIndex;
   if (zoom < 4.5 || !showMapNames || drag || !placeIndex.size) return;
   const span = Math.min(40, 120 / zoom / Math.max(.25,Math.cos(tilt*rad)));
@@ -845,6 +882,7 @@ function drawGlobalMapPlaces() {
     const box = {x:p.x-5,y:p.y-18,w:width,h:22};
     if (used.some(q=>box.x<q.x+q.w&&box.x+box.w>q.x&&box.y<q.y+q.h&&box.y+box.h>q.y)) continue;
     used.push(box);
+    globalPlaceMarkers.push({x:p.x,y:p.y,box,place:globalPlaceRow(row)});
     ctx.fillStyle = '#355466';
     ctx.beginPath();
     ctx.arc(p.x,p.y,1.9,0,Math.PI*2);
@@ -858,7 +896,7 @@ function drawGlobalMapPlaces() {
   ctx.restore();
 }
 function globalRouteEndpoint(side){if(!globalSelected)return;const p=globalSelected;openRoute();$('#route'+side).value=p.place;$('#route'+side+'Lat').value=p.lat;$('#route'+side+'Lng').value=p.lng}
-$('#globalSearch').onclick=searchGlobal;$('#globalQuery').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();searchGlobal()}};$('#globalDiary').onclick=()=>{if(!globalSelected)return;showEditor();$('#place').value=globalSelected.place;$('#lat').value=globalSelected.lat;$('#lng').value=globalSelected.lng};$('#globalFrom').onclick=()=>globalRouteEndpoint('From');$('#globalTo').onclick=()=>globalRouteEndpoint('To');$('#globalDetailIn').onclick=()=>{globalDetailSpan=Math.max(.05,globalDetailSpan/2);drawGlobalDetail()};$('#globalDetailOut').onclick=()=>{globalDetailSpan=Math.min(30,globalDetailSpan*2);drawGlobalDetail()};
+$('#globalSearch').onclick=searchGlobal;$('#globalQuery').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();searchGlobal()}};$('#globalDiary').onclick=()=>{if(!globalSelected)return;showEditor();fillFootprintPlace(globalSelected)};$('#globalFrom').onclick=()=>globalRouteEndpoint('From');$('#globalTo').onclick=()=>globalRouteEndpoint('To');$('#globalDetailIn').onclick=()=>{globalDetailSpan=Math.max(.05,globalDetailSpan/2);drawGlobalDetail()};$('#globalDetailOut').onclick=()=>{globalDetailSpan=Math.min(30,globalDetailSpan*2);drawGlobalDetail()};
 window.addEventListener('resize',drawGlobalDetail);
 
 function switchFinder(mode){if(mode==='china'){
