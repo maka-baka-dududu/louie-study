@@ -804,6 +804,20 @@
           "story": "",
           "photoIds": [],
           "updatedAt": "2026-11-19T07:03:38.796Z"
+        },
+        {
+          "id": "762df063-1731-4879-86c5-29db4a9b6f97",
+          "place": "新加坡",
+          "lat": 1.1477,
+          "lng": 104.5431,
+          "date": "2025-08-11",
+          "endDate": "",
+          "markerStyle": "auto",
+          "status": "visited",
+          "title": "第二次去，中转吧，故地重游，感觉挺不错",
+          "story": "",
+          "photoIds": [],
+          "updatedAt": "2026-11-19T07:04:45.487Z"
         }
       ],
       "routes": [],
