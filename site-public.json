@@ -15,7 +15,64 @@
     "sessions": [],
     "mocks": [],
     "attempts": [],
-    "materials": [],
+    "materials": [
+      {
+        "id": "divination-source-shuogua",
+        "subject": "八卦",
+        "title": "八卦基础｜《说卦传》",
+        "url": "https://zh.wikisource.org/zh-hans/周易/說卦",
+        "trackId": "divination",
+        "tags": "入门 原典",
+        "total": 0,
+        "current": 0,
+        "unit": "章",
+        "status": "待学习",
+        "created": "2026-11-19",
+        "note": "先读第七、八章，认卦名、卦性与物象。\n再读第五章，单独记后天方位。\n画八个卦，遮住名称逐个辨认。\n先认卦画，再记物象与方位；先天卦数和后天方位分开记。\n来源：维基文库 · 原典转录；核验日期：2026-11-19。"
+      },
+      {
+        "id": "divination-source-zengshan",
+        "subject": "六爻",
+        "title": "六爻入门｜《增删卜易》卷一",
+        "url": "https://zh.wikisource.org/zh-hans/增刪卜易",
+        "trackId": "divination",
+        "tags": "入门 原典",
+        "total": 0,
+        "current": 0,
+        "unit": "章",
+        "status": "待学习",
+        "created": "2026-11-19",
+        "note": "先读八卦、卦象图与八宫图。\n再读浑天甲子、六亲歌、世应与动变。\n最后读用神章，先练装卦，再读案例。\n按卷一第1–8章循序读。此电子本含后人增订说明，遇疑义对照古籍版本，不把增订说明当原作者正文。\n来源：维基文库 · 原典转录，含增订说明；核验日期：2026-11-19。"
+      },
+      {
+        "id": "divination-source-meihua",
+        "subject": "梅花易数",
+        "title": "梅花入门｜《梅花易数》卷一",
+        "url": "https://zh.wikisource.org/zh-hans/梅花易數/卷一",
+        "trackId": "divination",
+        "tags": "入门 原典",
+        "total": 0,
+        "current": 0,
+        "unit": "章",
+        "status": "待学习",
+        "created": "2026-11-19",
+        "note": "读周易卦数、卦以八除、爻以六除。\n读年月日时起例，明确各数如何取得。\n复算观梅占：34取兑、43取离、初爻动。\n卦数取余：除8余0按8；动爻除6余0按第6爻。初学先把同一个例子的数、卦和动爻算清楚。\n来源：维基文库 · 原典转录；核验日期：2026-11-19。"
+      },
+      {
+        "id": "divination-source-liuren",
+        "subject": "小六壬",
+        "title": "小六壬古籍对读｜《选择要略》中",
+        "url": "https://zh.wikisource.org/zh-hans/選擇要略/中",
+        "trackId": "divination",
+        "tags": "入门 原典",
+        "total": 0,
+        "current": 0,
+        "unit": "章",
+        "status": "待学习",
+        "created": "2026-11-19",
+        "note": "在原文中查找“六壬赤口”，只读这一小段。\n对照六个名称与逐日循环顺序。\n记下本篇正月初一起留连，不混用别的起日法。\n这是古籍对读材料，不是完整的现代月日时教程。本篇正月初一起留连；不同传法的起点与计数约定要分别记录。\n来源：维基文库 · 古籍对读；核验日期：2026-11-19。"
+      }
+    ],
     "progress": [],
     "infoChecks": {},
     "appearance": {
@@ -174,7 +231,7 @@
           "milestones": []
         }
       ],
-      "activeTrack": "travel"
+      "activeTrack": "divination"
     },
     "practice": {
       "version": 1,
