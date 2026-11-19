@@ -174,7 +174,7 @@
           "milestones": []
         }
       ],
-      "activeTrack": "english"
+      "activeTrack": "travel"
     },
     "practice": {
       "version": 1,
@@ -650,6 +650,1768 @@
           "translation": "我已经向老板申请批准了",
           "note": "",
           "created": 1795050542789
+        }
+      ]
+    },
+    "travelPlan": {
+      "version": 2,
+      "activeId": "xinjiang-plan",
+      "plans": [
+        {
+          "templateKey": "original",
+          "title": "亚欧非大环线",
+          "start": "2027-06-05",
+          "budget": [
+            15000,
+            9000,
+            7000,
+            5000,
+            4000
+          ],
+          "stages": [
+            "海湾四国",
+            "约旦与埃及",
+            "格鲁吉亚与土耳其",
+            "奥地利、斯洛伐克、匈牙利、波兰与捷克",
+            "荷兰、比利时、卢森堡与法国",
+            "西班牙与返程"
+          ],
+          "days": [
+            {
+              "id": "day-1",
+              "group": 0,
+              "title": "广州 → 迪拜",
+              "activity": "抵达后入住，第一晚提前订。",
+              "lodging": "迪拜 Bur Dubai 地铁站附近",
+              "mode": "flight",
+              "points": [
+                {
+                  "name": "广州",
+                  "lat": 23.13,
+                  "lng": 113.26
+                },
+                {
+                  "name": "迪拜",
+                  "lat": 25.2,
+                  "lng": 55.27
+                }
+              ]
+            },
+            {
+              "id": "day-2",
+              "group": 0,
+              "title": "迪拜",
+              "activity": "早上逛 Al Fahidi 老城、乘渡船去集市。午后室内休息，傍晚去市中心。",
+              "lodging": "迪拜",
+              "mode": "visit",
+              "points": [
+                {
+                  "name": "迪拜",
+                  "lat": 25.2,
+                  "lng": 55.27
+                }
+              ]
+            },
+            {
+              "id": "day-3",
+              "group": 0,
+              "title": "迪拜 → 阿布扎比",
+              "activity": "城际巴士转场，下午晚些看谢赫扎耶德大清真寺。",
+              "lodging": "阿布扎比",
+              "mode": "road",
+              "points": [
+                {
+                  "name": "迪拜",
+                  "lat": 25.2,
+                  "lng": 55.27
+                },
+                {
+                  "name": "阿布扎比",
+                  "lat": 24.45,
+                  "lng": 54.38
+                }
+              ]
+            },
+            {
+              "id": "day-4",
+              "group": 0,
+              "title": "阿布扎比 → 马斯喀特",
+              "activity": "飞马斯喀特，傍晚走穆特拉海滨和集市。",
+              "lodging": "马斯喀特穆特拉",
+              "mode": "flight",
+              "points": [
+                {
+                  "name": "阿布扎比",
+                  "lat": 24.45,
+                  "lng": 54.38
+                },
+                {
+                  "name": "马斯喀特",
+                  "lat": 23.59,
+                  "lng": 58.41
+                }
+              ]
+            },
+            {
+              "id": "day-5",
+              "group": 0,
+              "title": "马斯喀特",
+              "activity": "上午看苏丹卡布斯大清真寺，傍晚逛老城和海滨。",
+              "lodging": "马斯喀特",
+              "mode": "visit",
+              "points": [
+                {
+                  "name": "马斯喀特",
+                  "lat": 23.59,
+                  "lng": 58.41
+                }
+              ]
+            },
+            {
+              "id": "day-6",
+              "group": 0,
+              "title": "瓦迪沙卜一日游",
+              "activity": "视天气和体力拼团出行。太热就改去山区或留在市区。",
+              "lodging": "马斯喀特",
+              "mode": "road",
+              "points": [
+                {
+                  "name": "马斯喀特",
+                  "lat": 23.59,
+                  "lng": 58.41
+                },
+                {
+                  "name": "瓦迪沙卜",
+                  "lat": 22.84,
+                  "lng": 59.25
+                },
+                {
+                  "name": "马斯喀特",
+                  "lat": 23.59,
+                  "lng": 58.41
+                }
+              ]
+            },
+            {
+              "id": "day-7",
+              "group": 0,
+              "title": "马斯喀特 → 多哈",
+              "activity": "飞多哈，晚上逛瓦其夫集市。",
+              "lodging": "多哈集市或地铁附近",
+              "mode": "flight",
+              "points": [
+                {
+                  "name": "马斯喀特",
+                  "lat": 23.59,
+                  "lng": 58.41
+                },
+                {
+                  "name": "多哈",
+                  "lat": 25.29,
+                  "lng": 51.53
+                }
+              ]
+            },
+            {
+              "id": "day-8",
+              "group": 0,
+              "title": "多哈",
+              "activity": "伊斯兰艺术博物馆和海滨步道。",
+              "lodging": "多哈",
+              "mode": "visit",
+              "points": [
+                {
+                  "name": "多哈",
+                  "lat": 25.29,
+                  "lng": 51.53
+                }
+              ]
+            },
+            {
+              "id": "day-9",
+              "group": 0,
+              "title": "多哈 → 利雅得",
+              "activity": "飞利雅得，傍晚看马斯马克堡和老城。",
+              "lodging": "利雅得",
+              "mode": "flight",
+              "points": [
+                {
+                  "name": "多哈",
+                  "lat": 25.29,
+                  "lng": 51.53
+                },
+                {
+                  "name": "利雅得",
+                  "lat": 24.71,
+                  "lng": 46.68
+                }
+              ]
+            },
+            {
+              "id": "day-10",
+              "group": 0,
+              "title": "利雅得",
+              "activity": "半天去德拉伊耶，半天休息、补给。",
+              "lodging": "利雅得",
+              "mode": "visit",
+              "points": [
+                {
+                  "name": "利雅得",
+                  "lat": 24.71,
+                  "lng": 46.68
+                },
+                {
+                  "name": "德拉伊耶",
+                  "lat": 24.73,
+                  "lng": 46.58
+                },
+                {
+                  "name": "利雅得",
+                  "lat": 24.71,
+                  "lng": 46.68
+                }
+              ]
+            },
+            {
+              "id": "day-11",
+              "group": 1,
+              "title": "利雅得 → 安曼",
+              "activity": "飞安曼。航班合适的话下午去城堡山。",
+              "lodging": "安曼市中心或 Jabal Amman",
+              "mode": "flight",
+              "points": [
+                {
+                  "name": "利雅得",
+                  "lat": 24.71,
+                  "lng": 46.68
+                },
+                {
+                  "name": "安曼",
+                  "lat": 31.95,
+                  "lng": 35.93
+                }
+              ]
+            },
+            {
+              "id": "day-12",
+              "group": 1,
+              "title": "安曼 → 死海 → 佩特拉",
+              "activity": "拼车或约接送，中途停死海。",
+              "lodging": "瓦迪穆萨，靠佩特拉入口",
+              "mode": "road",
+              "points": [
+                {
+                  "name": "安曼",
+                  "lat": 31.95,
+                  "lng": 35.93
+                },
+                {
+                  "name": "死海",
+                  "lat": 31.72,
+                  "lng": 35.58
+                },
+                {
+                  "name": "佩特拉",
+                  "lat": 30.33,
+                  "lng": 35.44
+                }
+              ]
+            },
+            {
+              "id": "day-13",
+              "group": 1,
+              "title": "佩特拉",
+              "activity": "开门就进，走蛇道和宝库。天气和体力允许再上修道院。",
+              "lodging": "瓦迪穆萨",
+              "mode": "visit",
+              "points": [
+                {
+                  "name": "佩特拉",
+                  "lat": 30.33,
+                  "lng": 35.44
+                }
+              ]
+            },
+            {
+              "id": "day-14",
+              "group": 1,
+              "title": "佩特拉 → 瓦迪拉姆",
+              "activity": "坐吉普车进沙漠。确认接送、吉普车、晚餐和早餐是否包含在团费里。",
+              "lodging": "瓦迪拉姆营地",
+              "mode": "road",
+              "points": [
+                {
+                  "name": "佩特拉",
+                  "lat": 30.33,
+                  "lng": 35.44
+                },
+                {
+                  "name": "瓦迪拉姆",
+                  "lat": 29.57,
+                  "lng": 35.42
+                }
+              ]
+            },
+            {
+              "id": "day-15",
+              "group": 1,
+              "title": "瓦迪拉姆 → 安曼",
+              "activity": "白天回安曼，给次日国际航班留余量。",
+              "lodging": "安曼",
+              "mode": "road",
+              "points": [
+                {
+                  "name": "瓦迪拉姆",
+                  "lat": 29.57,
+                  "lng": 35.42
+                },
+                {
+                  "name": "安曼",
+                  "lat": 31.95,
+                  "lng": 35.93
+                }
+              ]
+            },
+            {
+              "id": "day-16",
+              "group": 1,
+              "title": "安曼 → 开罗",
+              "activity": "飞开罗，入住后吃饭休息。",
+              "lodging": "开罗 Downtown 或吉萨",
+              "mode": "flight",
+              "points": [
+                {
+                  "name": "安曼",
+                  "lat": 31.95,
+                  "lng": 35.93
+                },
+                {
+                  "name": "开罗",
+                  "lat": 30.04,
+                  "lng": 31.24
+                }
+              ]
+            },
+            {
+              "id": "day-17",
+              "group": 1,
+              "title": "吉萨",
+              "activity": "早上看金字塔和狮身人面像，下午看大埃及博物馆。",
+              "lodging": "开罗",
+              "mode": "visit",
+              "points": [
+                {
+                  "name": "开罗",
+                  "lat": 30.04,
+                  "lng": 31.24
+                },
+                {
+                  "name": "吉萨",
+                  "lat": 29.98,
+                  "lng": 31.13
+                },
+                {
+                  "name": "开罗",
+                  "lat": 30.04,
+                  "lng": 31.24
+                }
+              ]
+            },
+            {
+              "id": "day-18",
+              "group": 1,
+              "title": "开罗 → 卢克索",
+              "activity": "按班次比飞机和火车，到得早就去卡纳克神庙。",
+              "lodging": "卢克索东岸",
+              "mode": "rail",
+              "points": [
+                {
+                  "name": "开罗",
+                  "lat": 30.04,
+                  "lng": 31.24
+                },
+                {
+                  "name": "卢克索",
+                  "lat": 25.69,
+                  "lng": 32.64
+                }
+              ]
+            },
+            {
+              "id": "day-19",
+              "group": 1,
+              "title": "卢克索 → 开罗",
+              "activity": "早上逛帝王谷和哈特谢普苏特神庙，下午或晚上回开罗。",
+              "lodging": "开罗",
+              "mode": "rail",
+              "points": [
+                {
+                  "name": "卢克索",
+                  "lat": 25.69,
+                  "lng": 32.64
+                },
+                {
+                  "name": "开罗",
+                  "lat": 30.04,
+                  "lng": 31.24
+                }
+              ]
+            },
+            {
+              "id": "day-20",
+              "group": 1,
+              "title": "亚历山大一日游",
+              "activity": "从开罗往返，逛图书馆和海滨。如卢克索回程推迟，将这天留作转场。",
+              "lodging": "开罗",
+              "mode": "road",
+              "points": [
+                {
+                  "name": "开罗",
+                  "lat": 30.04,
+                  "lng": 31.24
+                },
+                {
+                  "name": "亚历山大",
+                  "lat": 31.2,
+                  "lng": 29.92
+                },
+                {
+                  "name": "开罗",
+                  "lat": 30.04,
+                  "lng": 31.24
+                }
+              ]
+            },
+            {
+              "id": "day-21",
+              "group": 2,
+              "title": "开罗 → 第比利斯",
+              "activity": "优先看联程，整天留给飞行和转机。",
+              "lodging": "第比利斯自由广场附近",
+              "mode": "flight",
+              "points": [
+                {
+                  "name": "开罗",
+                  "lat": 30.04,
+                  "lng": 31.24
+                },
+                {
+                  "name": "第比利斯",
+                  "lat": 41.72,
+                  "lng": 44.79
+                }
+              ]
+            },
+            {
+              "id": "day-22",
+              "group": 2,
+              "title": "卡兹别克",
+              "activity": "拼车往返，去圣三一教堂看山景。天气不好就和明天对调。",
+              "lodging": "第比利斯",
+              "mode": "road",
+              "points": [
+                {
+                  "name": "第比利斯",
+                  "lat": 41.72,
+                  "lng": 44.79
+                },
+                {
+                  "name": "卡兹别克",
+                  "lat": 42.66,
+                  "lng": 44.64
+                },
+                {
+                  "name": "第比利斯",
+                  "lat": 41.72,
+                  "lng": 44.79
+                }
+              ]
+            },
+            {
+              "id": "day-23",
+              "group": 2,
+              "title": "西格纳吉",
+              "activity": "当天往返。想休息可留在第比利斯逛老城、坐缆车。",
+              "lodging": "第比利斯",
+              "mode": "road",
+              "points": [
+                {
+                  "name": "第比利斯",
+                  "lat": 41.72,
+                  "lng": 44.79
+                },
+                {
+                  "name": "西格纳吉",
+                  "lat": 41.62,
+                  "lng": 45.92
+                },
+                {
+                  "name": "第比利斯",
+                  "lat": 41.72,
+                  "lng": 44.79
+                }
+              ]
+            },
+            {
+              "id": "day-24",
+              "group": 2,
+              "title": "第比利斯 → 伊斯坦布尔",
+              "activity": "飞伊斯坦布尔，傍晚沿海边散步。",
+              "lodging": "伊斯坦布尔 Sirkeci",
+              "mode": "flight",
+              "points": [
+                {
+                  "name": "第比利斯",
+                  "lat": 41.72,
+                  "lng": 44.79
+                },
+                {
+                  "name": "伊斯坦布尔",
+                  "lat": 41.01,
+                  "lng": 28.98
+                }
+              ]
+            },
+            {
+              "id": "day-25",
+              "group": 2,
+              "title": "伊斯坦布尔",
+              "activity": "上午看圣索菲亚大教堂和蓝色清真寺，下午坐公共渡轮去卡德柯伊。",
+              "lodging": "伊斯坦布尔",
+              "mode": "visit",
+              "points": [
+                {
+                  "name": "伊斯坦布尔",
+                  "lat": 41.01,
+                  "lng": 28.98
+                }
+              ]
+            },
+            {
+              "id": "day-26",
+              "group": 2,
+              "title": "伊斯坦布尔 → 维也纳",
+              "activity": "飞维也纳进入申根区，视到达时间散步逛老城。",
+              "lodging": "维也纳中央站或地铁沿线",
+              "mode": "flight",
+              "points": [
+                {
+                  "name": "伊斯坦布尔",
+                  "lat": 41.01,
+                  "lng": 28.98
+                },
+                {
+                  "name": "维也纳",
+                  "lat": 48.21,
+                  "lng": 16.37
+                }
+              ]
+            },
+            {
+              "id": "day-27",
+              "group": 3,
+              "title": "维也纳",
+              "activity": "美泉宫和老城各半天。也可用博物馆替换美泉宫。",
+              "lodging": "维也纳",
+              "mode": "visit",
+              "points": [
+                {
+                  "name": "维也纳",
+                  "lat": 48.21,
+                  "lng": 16.37
+                }
+              ]
+            },
+            {
+              "id": "day-28",
+              "group": 3,
+              "title": "维也纳 → 萨尔茨堡",
+              "activity": "上午坐火车，下午逛老城和米拉贝尔花园。",
+              "lodging": "萨尔茨堡",
+              "mode": "rail",
+              "points": [
+                {
+                  "name": "维也纳",
+                  "lat": 48.21,
+                  "lng": 16.37
+                },
+                {
+                  "name": "萨尔茨堡",
+                  "lat": 47.8,
+                  "lng": 13.05
+                }
+              ]
+            },
+            {
+              "id": "day-29",
+              "group": 3,
+              "title": "哈尔施塔特一日游",
+              "activity": "从萨尔茨堡往返，提前查好巴士或火车接渡轮的末班回程。",
+              "lodging": "萨尔茨堡",
+              "mode": "rail",
+              "points": [
+                {
+                  "name": "萨尔茨堡",
+                  "lat": 47.8,
+                  "lng": 13.05
+                },
+                {
+                  "name": "哈尔施塔特",
+                  "lat": 47.56,
+                  "lng": 13.65
+                },
+                {
+                  "name": "萨尔茨堡",
+                  "lat": 47.8,
+                  "lng": 13.05
+                }
+              ]
+            },
+            {
+              "id": "day-30",
+              "group": 3,
+              "title": "萨尔茨堡 → 布拉迪斯拉发",
+              "activity": "铁路转场，下午逛老城和城堡。",
+              "lodging": "布拉迪斯拉发",
+              "mode": "rail",
+              "points": [
+                {
+                  "name": "萨尔茨堡",
+                  "lat": 47.8,
+                  "lng": 13.05
+                },
+                {
+                  "name": "维也纳",
+                  "lat": 48.21,
+                  "lng": 16.37
+                },
+                {
+                  "name": "布拉迪斯拉发",
+                  "lat": 48.15,
+                  "lng": 17.11
+                }
+              ]
+            },
+            {
+              "id": "day-31",
+              "group": 3,
+              "title": "布拉迪斯拉发 → 布达佩斯",
+              "activity": "坐火车，晚上看多瑙河和国会大厦夜景。",
+              "lodging": "布达佩斯佩斯一侧",
+              "mode": "rail",
+              "points": [
+                {
+                  "name": "布拉迪斯拉发",
+                  "lat": 48.15,
+                  "lng": 17.11
+                },
+                {
+                  "name": "布达佩斯",
+                  "lat": 47.5,
+                  "lng": 19.04
+                }
+              ]
+            },
+            {
+              "id": "day-32",
+              "group": 3,
+              "title": "布达佩斯",
+              "activity": "上午去渔人堡和布达城堡区，下午选温泉或咖啡馆。",
+              "lodging": "布达佩斯",
+              "mode": "visit",
+              "points": [
+                {
+                  "name": "布达佩斯",
+                  "lat": 47.5,
+                  "lng": 19.04
+                }
+              ]
+            },
+            {
+              "id": "day-33",
+              "group": 3,
+              "title": "布达佩斯",
+              "activity": "留时间休息、洗衣补给，逛中央市场和犹太区。",
+              "lodging": "布达佩斯",
+              "mode": "rest",
+              "points": [
+                {
+                  "name": "布达佩斯",
+                  "lat": 47.5,
+                  "lng": 19.04
+                }
+              ]
+            },
+            {
+              "id": "day-34",
+              "group": 3,
+              "title": "布达佩斯 → 克拉科夫",
+              "activity": "比较火车和长途巴士，整天留给转场。",
+              "lodging": "克拉科夫",
+              "mode": "rail",
+              "points": [
+                {
+                  "name": "布达佩斯",
+                  "lat": 47.5,
+                  "lng": 19.04
+                },
+                {
+                  "name": "克拉科夫",
+                  "lat": 50.06,
+                  "lng": 19.94
+                }
+              ]
+            },
+            {
+              "id": "day-35",
+              "group": 3,
+              "title": "克拉科夫",
+              "activity": "中央广场、瓦维尔城堡、卡齐米日街区。",
+              "lodging": "克拉科夫",
+              "mode": "visit",
+              "points": [
+                {
+                  "name": "克拉科夫",
+                  "lat": 50.06,
+                  "lng": 19.94
+                }
+              ]
+            },
+            {
+              "id": "day-36",
+              "group": 3,
+              "title": "克拉科夫 → 华沙",
+              "activity": "上午坐火车，下午逛老城。",
+              "lodging": "华沙中央站附近",
+              "mode": "rail",
+              "points": [
+                {
+                  "name": "克拉科夫",
+                  "lat": 50.06,
+                  "lng": 19.94
+                },
+                {
+                  "name": "华沙",
+                  "lat": 52.23,
+                  "lng": 21.01
+                }
+              ]
+            },
+            {
+              "id": "day-37",
+              "group": 3,
+              "title": "华沙 → 布拉格",
+              "activity": "比较铁路与含行李、机场交通的航班总价。",
+              "lodging": "布拉格",
+              "mode": "rail",
+              "points": [
+                {
+                  "name": "华沙",
+                  "lat": 52.23,
+                  "lng": 21.01
+                },
+                {
+                  "name": "布拉格",
+                  "lat": 50.08,
+                  "lng": 14.44
+                }
+              ]
+            },
+            {
+              "id": "day-38",
+              "group": 3,
+              "title": "布拉格",
+              "activity": "早上走查理大桥，接城堡区，傍晚回老城广场。",
+              "lodging": "布拉格",
+              "mode": "visit",
+              "points": [
+                {
+                  "name": "布拉格",
+                  "lat": 50.08,
+                  "lng": 14.44
+                }
+              ]
+            },
+            {
+              "id": "day-39",
+              "group": 3,
+              "title": "布拉格机动日",
+              "activity": "小城、河边、咖啡馆，或用来接住前几天的延误。",
+              "lodging": "布拉格",
+              "mode": "rest",
+              "points": [
+                {
+                  "name": "布拉格",
+                  "lat": 50.08,
+                  "lng": 14.44
+                }
+              ]
+            },
+            {
+              "id": "day-40",
+              "group": 4,
+              "title": "布拉格 → 阿姆斯特丹",
+              "activity": "比较廉航和铁路。抵达后只安排运河散步。",
+              "lodging": "中央站或 Sloterdijk 附近",
+              "mode": "flight",
+              "points": [
+                {
+                  "name": "布拉格",
+                  "lat": 50.08,
+                  "lng": 14.44
+                },
+                {
+                  "name": "阿姆斯特丹",
+                  "lat": 52.37,
+                  "lng": 4.9
+                }
+              ]
+            },
+            {
+              "id": "day-41",
+              "group": 4,
+              "title": "阿姆斯特丹",
+              "activity": "逛运河、约旦区和街市。",
+              "lodging": "阿姆斯特丹",
+              "mode": "visit",
+              "points": [
+                {
+                  "name": "阿姆斯特丹",
+                  "lat": 52.37,
+                  "lng": 4.9
+                }
+              ]
+            },
+            {
+              "id": "day-42",
+              "group": 4,
+              "title": "阿姆斯特丹博物馆",
+              "activity": "荷兰国立博物馆和梵高博物馆选一个，提前看预约。",
+              "lodging": "阿姆斯特丹",
+              "mode": "visit",
+              "points": [
+                {
+                  "name": "阿姆斯特丹",
+                  "lat": 52.37,
+                  "lng": 4.9
+                }
+              ]
+            },
+            {
+              "id": "day-43",
+              "group": 4,
+              "title": "海牙 → 鹿特丹",
+              "activity": "经海牙去鹿特丹看中央市场和立体方块屋，晚上回住宿地。",
+              "lodging": "阿姆斯特丹",
+              "mode": "rail",
+              "points": [
+                {
+                  "name": "阿姆斯特丹",
+                  "lat": 52.37,
+                  "lng": 4.9
+                },
+                {
+                  "name": "海牙",
+                  "lat": 52.08,
+                  "lng": 4.31
+                },
+                {
+                  "name": "鹿特丹",
+                  "lat": 51.92,
+                  "lng": 4.48
+                },
+                {
+                  "name": "阿姆斯特丹",
+                  "lat": 52.37,
+                  "lng": 4.9
+                }
+              ]
+            },
+            {
+              "id": "day-44",
+              "group": 4,
+              "title": "阿姆斯特丹 → 布鲁塞尔",
+              "activity": "铁路转场，下午去大广场。",
+              "lodging": "布鲁塞尔",
+              "mode": "rail",
+              "points": [
+                {
+                  "name": "阿姆斯特丹",
+                  "lat": 52.37,
+                  "lng": 4.9
+                },
+                {
+                  "name": "布鲁塞尔",
+                  "lat": 50.85,
+                  "lng": 4.35
+                }
+              ]
+            },
+            {
+              "id": "day-45",
+              "group": 4,
+              "title": "布鲁塞尔或布鲁日",
+              "activity": "在布鲁塞尔慢逛，或加一个布鲁日当天往返。",
+              "lodging": "布鲁塞尔",
+              "mode": "visit",
+              "points": [
+                {
+                  "name": "布鲁塞尔",
+                  "lat": 50.85,
+                  "lng": 4.35
+                }
+              ]
+            },
+            {
+              "id": "day-46",
+              "group": 4,
+              "title": "布鲁塞尔 → 卢森堡",
+              "activity": "坐火车，下午逛老城和峡谷步道。",
+              "lodging": "卢森堡火车站附近",
+              "mode": "rail",
+              "points": [
+                {
+                  "name": "布鲁塞尔",
+                  "lat": 50.85,
+                  "lng": 4.35
+                },
+                {
+                  "name": "卢森堡",
+                  "lat": 49.61,
+                  "lng": 6.13
+                }
+              ]
+            },
+            {
+              "id": "day-47",
+              "group": 4,
+              "title": "卢森堡 → 巴黎",
+              "activity": "坐火车，傍晚走塞纳河。",
+              "lodging": "巴黎地铁沿线",
+              "mode": "rail",
+              "points": [
+                {
+                  "name": "卢森堡",
+                  "lat": 49.61,
+                  "lng": 6.13
+                },
+                {
+                  "name": "巴黎",
+                  "lat": 48.86,
+                  "lng": 2.35
+                }
+              ]
+            },
+            {
+              "id": "day-48",
+              "group": 4,
+              "title": "巴黎",
+              "activity": "卢浮宫、杜乐丽花园，按开放日及预约时间调整。",
+              "lodging": "巴黎",
+              "mode": "visit",
+              "points": [
+                {
+                  "name": "巴黎",
+                  "lat": 48.86,
+                  "lng": 2.35
+                }
+              ]
+            },
+            {
+              "id": "day-49",
+              "group": 4,
+              "title": "巴黎",
+              "activity": "铁塔、塞纳河和蒙马特，按体力选片区。",
+              "lodging": "巴黎",
+              "mode": "visit",
+              "points": [
+                {
+                  "name": "巴黎",
+                  "lat": 48.86,
+                  "lng": 2.35
+                }
+              ]
+            },
+            {
+              "id": "day-50",
+              "group": 4,
+              "title": "巴黎机动日",
+              "activity": "奥赛、凡尔赛、逛街三选一。",
+              "lodging": "巴黎",
+              "mode": "rest",
+              "points": [
+                {
+                  "name": "巴黎",
+                  "lat": 48.86,
+                  "lng": 2.35
+                }
+              ]
+            },
+            {
+              "id": "day-51",
+              "group": 5,
+              "title": "巴黎 → 马德里",
+              "activity": "按原帖顺序先去马德里。比较含行李的航班价，晚上逛太阳门和主广场。",
+              "lodging": "马德里",
+              "mode": "flight",
+              "points": [
+                {
+                  "name": "巴黎",
+                  "lat": 48.86,
+                  "lng": 2.35
+                },
+                {
+                  "name": "马德里",
+                  "lat": 40.42,
+                  "lng": -3.7
+                }
+              ]
+            },
+            {
+              "id": "day-52",
+              "group": 5,
+              "title": "马德里",
+              "activity": "上午去王宫或丽池公园，午后去普拉多博物馆。",
+              "lodging": "马德里",
+              "mode": "visit",
+              "points": [
+                {
+                  "name": "马德里",
+                  "lat": 40.42,
+                  "lng": -3.7
+                }
+              ]
+            },
+            {
+              "id": "day-53",
+              "group": 5,
+              "title": "马德里 → 巴塞罗那",
+              "activity": "搭高铁，下午逛哥特区。",
+              "lodging": "Sants 车站或扩展区",
+              "mode": "rail",
+              "points": [
+                {
+                  "name": "马德里",
+                  "lat": 40.42,
+                  "lng": -3.7
+                },
+                {
+                  "name": "巴塞罗那",
+                  "lat": 41.39,
+                  "lng": 2.17
+                }
+              ]
+            },
+            {
+              "id": "day-54",
+              "group": 5,
+              "title": "巴塞罗那",
+              "activity": "预约圣家堂，下午在高迪住宅和海边中选一个。",
+              "lodging": "巴塞罗那",
+              "mode": "visit",
+              "points": [
+                {
+                  "name": "巴塞罗那",
+                  "lat": 41.39,
+                  "lng": 2.17
+                }
+              ]
+            },
+            {
+              "id": "day-55",
+              "group": 5,
+              "title": "巴塞罗那 → 广州",
+              "activity": "按下午或夜间航班预留。若马德里回程更合适，可交换西班牙两站。",
+              "lodging": "航班上",
+              "mode": "flight",
+              "points": [
+                {
+                  "name": "巴塞罗那",
+                  "lat": 41.39,
+                  "lng": 2.17
+                },
+                {
+                  "name": "广州",
+                  "lat": 23.13,
+                  "lng": 113.26
+                }
+              ]
+            },
+            {
+              "id": "day-56",
+              "group": 5,
+              "title": "抵达广州",
+              "activity": "具体到达时间以实际联程为准。",
+              "lodging": "广州",
+              "mode": "rest",
+              "points": [
+                {
+                  "name": "广州",
+                  "lat": 23.13,
+                  "lng": 113.26
+                }
+              ]
+            }
+          ],
+          "id": "original-plan"
+        },
+        {
+          "templateKey": "xinjiang",
+          "title": "新疆出发 · 亚欧非环线（不去西欧）",
+          "start": "",
+          "budget": [
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "stages": [
+            "新疆与中亚",
+            "高加索",
+            "土耳其",
+            "巴尔干",
+            "埃及",
+            "海湾与返疆"
+          ],
+          "days": [
+            {
+              "id": "xinjiang-day-1",
+              "group": 0,
+              "title": "乌鲁木齐",
+              "mode": "visit",
+              "lodging": "乌鲁木齐",
+              "activity": "市区游览或休息，景点和停留时长按兴趣调整。",
+              "points": [
+                {
+                  "name": "乌鲁木齐",
+                  "lat": 43.83,
+                  "lng": 87.62
+                }
+              ]
+            },
+            {
+              "id": "xinjiang-day-2",
+              "group": 0,
+              "title": "乌鲁木齐 → 伊宁",
+              "mode": "rest",
+              "lodging": "伊宁",
+              "activity": "转场预留日；交通方式、口岸或联程、签证和所需时间待核实，可拆成多天。",
+              "points": [
+                {
+                  "name": "乌鲁木齐",
+                  "lat": 43.83,
+                  "lng": 87.62
+                },
+                {
+                  "name": "伊宁",
+                  "lat": 43.91,
+                  "lng": 81.28
+                }
+              ]
+            },
+            {
+              "id": "xinjiang-day-3",
+              "group": 0,
+              "title": "伊宁 → 阿拉木图",
+              "mode": "rest",
+              "lodging": "阿拉木图",
+              "activity": "转场预留日；交通方式、口岸或联程、签证和所需时间待核实，可拆成多天。",
+              "points": [
+                {
+                  "name": "伊宁",
+                  "lat": 43.91,
+                  "lng": 81.28
+                },
+                {
+                  "name": "阿拉木图",
+                  "lat": 43.24,
+                  "lng": 76.95
+                }
+              ]
+            },
+            {
+              "id": "xinjiang-day-4",
+              "group": 0,
+              "title": "阿拉木图",
+              "mode": "visit",
+              "lodging": "阿拉木图",
+              "activity": "市区游览或休息，景点和停留时长按兴趣调整。",
+              "points": [
+                {
+                  "name": "阿拉木图",
+                  "lat": 43.24,
+                  "lng": 76.95
+                }
+              ]
+            },
+            {
+              "id": "xinjiang-day-5",
+              "group": 0,
+              "title": "阿拉木图 → 塔什干",
+              "mode": "rest",
+              "lodging": "塔什干",
+              "activity": "转场预留日；交通方式、口岸或联程、签证和所需时间待核实，可拆成多天。",
+              "points": [
+                {
+                  "name": "阿拉木图",
+                  "lat": 43.24,
+                  "lng": 76.95
+                },
+                {
+                  "name": "塔什干",
+                  "lat": 41.3,
+                  "lng": 69.24
+                }
+              ]
+            },
+            {
+              "id": "xinjiang-day-6",
+              "group": 0,
+              "title": "塔什干 → 撒马尔罕",
+              "mode": "rest",
+              "lodging": "撒马尔罕",
+              "activity": "转场预留日；交通方式、口岸或联程、签证和所需时间待核实，可拆成多天。",
+              "points": [
+                {
+                  "name": "塔什干",
+                  "lat": 41.3,
+                  "lng": 69.24
+                },
+                {
+                  "name": "撒马尔罕",
+                  "lat": 39.65,
+                  "lng": 66.96
+                }
+              ]
+            },
+            {
+              "id": "xinjiang-day-7",
+              "group": 0,
+              "title": "撒马尔罕",
+              "mode": "visit",
+              "lodging": "撒马尔罕",
+              "activity": "市区游览或休息，景点和停留时长按兴趣调整。",
+              "points": [
+                {
+                  "name": "撒马尔罕",
+                  "lat": 39.65,
+                  "lng": 66.96
+                }
+              ]
+            },
+            {
+              "id": "xinjiang-day-8",
+              "group": 0,
+              "title": "撒马尔罕 → 布哈拉",
+              "mode": "rest",
+              "lodging": "布哈拉",
+              "activity": "转场预留日；交通方式、口岸或联程、签证和所需时间待核实，可拆成多天。",
+              "points": [
+                {
+                  "name": "撒马尔罕",
+                  "lat": 39.65,
+                  "lng": 66.96
+                },
+                {
+                  "name": "布哈拉",
+                  "lat": 39.77,
+                  "lng": 64.42
+                }
+              ]
+            },
+            {
+              "id": "xinjiang-day-9",
+              "group": 1,
+              "title": "布哈拉 → 第比利斯",
+              "mode": "rest",
+              "lodging": "第比利斯",
+              "activity": "转场预留日；交通方式、口岸或联程、签证和所需时间待核实，可拆成多天。",
+              "points": [
+                {
+                  "name": "布哈拉",
+                  "lat": 39.77,
+                  "lng": 64.42
+                },
+                {
+                  "name": "第比利斯",
+                  "lat": 41.72,
+                  "lng": 44.79
+                }
+              ]
+            },
+            {
+              "id": "xinjiang-day-10",
+              "group": 1,
+              "title": "第比利斯",
+              "mode": "visit",
+              "lodging": "第比利斯",
+              "activity": "市区游览或休息，景点和停留时长按兴趣调整。",
+              "points": [
+                {
+                  "name": "第比利斯",
+                  "lat": 41.72,
+                  "lng": 44.79
+                }
+              ]
+            },
+            {
+              "id": "xinjiang-day-11",
+              "group": 1,
+              "title": "第比利斯 → 卡兹别克",
+              "mode": "rest",
+              "lodging": "卡兹别克",
+              "activity": "转场预留日；交通方式、口岸或联程、签证和所需时间待核实，可拆成多天。",
+              "points": [
+                {
+                  "name": "第比利斯",
+                  "lat": 41.72,
+                  "lng": 44.79
+                },
+                {
+                  "name": "卡兹别克",
+                  "lat": 42.66,
+                  "lng": 44.64
+                }
+              ]
+            },
+            {
+              "id": "xinjiang-day-12",
+              "group": 1,
+              "title": "卡兹别克 → 第比利斯",
+              "mode": "rest",
+              "lodging": "第比利斯",
+              "activity": "转场预留日；交通方式、口岸或联程、签证和所需时间待核实，可拆成多天。",
+              "points": [
+                {
+                  "name": "卡兹别克",
+                  "lat": 42.66,
+                  "lng": 44.64
+                },
+                {
+                  "name": "第比利斯",
+                  "lat": 41.72,
+                  "lng": 44.79
+                }
+              ]
+            },
+            {
+              "id": "xinjiang-day-13",
+              "group": 1,
+              "title": "第比利斯 → 巴统",
+              "mode": "rest",
+              "lodging": "巴统",
+              "activity": "转场预留日；交通方式、口岸或联程、签证和所需时间待核实，可拆成多天。",
+              "points": [
+                {
+                  "name": "第比利斯",
+                  "lat": 41.72,
+                  "lng": 44.79
+                },
+                {
+                  "name": "巴统",
+                  "lat": 41.65,
+                  "lng": 41.64
+                }
+              ]
+            },
+            {
+              "id": "xinjiang-day-14",
+              "group": 2,
+              "title": "巴统 → 伊斯坦布尔",
+              "mode": "rest",
+              "lodging": "伊斯坦布尔",
+              "activity": "转场预留日；交通方式、口岸或联程、签证和所需时间待核实，可拆成多天。",
+              "points": [
+                {
+                  "name": "巴统",
+                  "lat": 41.65,
+                  "lng": 41.64
+                },
+                {
+                  "name": "伊斯坦布尔",
+                  "lat": 41.01,
+                  "lng": 28.98
+                }
+              ]
+            },
+            {
+              "id": "xinjiang-day-15",
+              "group": 2,
+              "title": "伊斯坦布尔",
+              "mode": "visit",
+              "lodging": "伊斯坦布尔",
+              "activity": "市区游览或休息，景点和停留时长按兴趣调整。",
+              "points": [
+                {
+                  "name": "伊斯坦布尔",
+                  "lat": 41.01,
+                  "lng": 28.98
+                }
+              ]
+            },
+            {
+              "id": "xinjiang-day-16",
+              "group": 2,
+              "title": "伊斯坦布尔",
+              "mode": "visit",
+              "lodging": "伊斯坦布尔",
+              "activity": "市区游览或休息，景点和停留时长按兴趣调整。",
+              "points": [
+                {
+                  "name": "伊斯坦布尔",
+                  "lat": 41.01,
+                  "lng": 28.98
+                }
+              ]
+            },
+            {
+              "id": "xinjiang-day-17",
+              "group": 3,
+              "title": "伊斯坦布尔 → 索非亚",
+              "mode": "rest",
+              "lodging": "索非亚",
+              "activity": "转场预留日；交通方式、口岸或联程、签证和所需时间待核实，可拆成多天。",
+              "points": [
+                {
+                  "name": "伊斯坦布尔",
+                  "lat": 41.01,
+                  "lng": 28.98
+                },
+                {
+                  "name": "索非亚",
+                  "lat": 42.7,
+                  "lng": 23.32
+                }
+              ]
+            },
+            {
+              "id": "xinjiang-day-18",
+              "group": 3,
+              "title": "索非亚",
+              "mode": "visit",
+              "lodging": "索非亚",
+              "activity": "市区游览或休息，景点和停留时长按兴趣调整。",
+              "points": [
+                {
+                  "name": "索非亚",
+                  "lat": 42.7,
+                  "lng": 23.32
+                }
+              ]
+            },
+            {
+              "id": "xinjiang-day-19",
+              "group": 3,
+              "title": "索非亚 → 贝尔格莱德",
+              "mode": "rest",
+              "lodging": "贝尔格莱德",
+              "activity": "转场预留日；交通方式、口岸或联程、签证和所需时间待核实，可拆成多天。",
+              "points": [
+                {
+                  "name": "索非亚",
+                  "lat": 42.7,
+                  "lng": 23.32
+                },
+                {
+                  "name": "贝尔格莱德",
+                  "lat": 44.82,
+                  "lng": 20.46
+                }
+              ]
+            },
+            {
+              "id": "xinjiang-day-20",
+              "group": 3,
+              "title": "贝尔格莱德",
+              "mode": "visit",
+              "lodging": "贝尔格莱德",
+              "activity": "市区游览或休息，景点和停留时长按兴趣调整。",
+              "points": [
+                {
+                  "name": "贝尔格莱德",
+                  "lat": 44.82,
+                  "lng": 20.46
+                }
+              ]
+            },
+            {
+              "id": "xinjiang-day-21",
+              "group": 3,
+              "title": "贝尔格莱德 → 萨拉热窝",
+              "mode": "rest",
+              "lodging": "萨拉热窝",
+              "activity": "转场预留日；交通方式、口岸或联程、签证和所需时间待核实，可拆成多天。",
+              "points": [
+                {
+                  "name": "贝尔格莱德",
+                  "lat": 44.82,
+                  "lng": 20.46
+                },
+                {
+                  "name": "萨拉热窝",
+                  "lat": 43.86,
+                  "lng": 18.41
+                }
+              ]
+            },
+            {
+              "id": "xinjiang-day-22",
+              "group": 3,
+              "title": "萨拉热窝",
+              "mode": "visit",
+              "lodging": "萨拉热窝",
+              "activity": "市区游览或休息，景点和停留时长按兴趣调整。",
+              "points": [
+                {
+                  "name": "萨拉热窝",
+                  "lat": 43.86,
+                  "lng": 18.41
+                }
+              ]
+            },
+            {
+              "id": "xinjiang-day-23",
+              "group": 3,
+              "title": "萨拉热窝 → 雅典",
+              "mode": "rest",
+              "lodging": "雅典",
+              "activity": "转场预留日；交通方式、口岸或联程、签证和所需时间待核实，可拆成多天。",
+              "points": [
+                {
+                  "name": "萨拉热窝",
+                  "lat": 43.86,
+                  "lng": 18.41
+                },
+                {
+                  "name": "雅典",
+                  "lat": 37.98,
+                  "lng": 23.73
+                }
+              ]
+            },
+            {
+              "id": "xinjiang-day-24",
+              "group": 3,
+              "title": "雅典",
+              "mode": "visit",
+              "lodging": "雅典",
+              "activity": "市区游览或休息，景点和停留时长按兴趣调整。",
+              "points": [
+                {
+                  "name": "雅典",
+                  "lat": 37.98,
+                  "lng": 23.73
+                }
+              ]
+            },
+            {
+              "id": "xinjiang-day-25",
+              "group": 4,
+              "title": "雅典 → 开罗",
+              "mode": "rest",
+              "lodging": "开罗",
+              "activity": "转场预留日；交通方式、口岸或联程、签证和所需时间待核实，可拆成多天。",
+              "points": [
+                {
+                  "name": "雅典",
+                  "lat": 37.98,
+                  "lng": 23.73
+                },
+                {
+                  "name": "开罗",
+                  "lat": 30.04,
+                  "lng": 31.24
+                }
+              ]
+            },
+            {
+              "id": "xinjiang-day-26",
+              "group": 4,
+              "title": "开罗 → 吉萨",
+              "mode": "rest",
+              "lodging": "吉萨",
+              "activity": "转场预留日；交通方式、口岸或联程、签证和所需时间待核实，可拆成多天。",
+              "points": [
+                {
+                  "name": "开罗",
+                  "lat": 30.04,
+                  "lng": 31.24
+                },
+                {
+                  "name": "吉萨",
+                  "lat": 29.98,
+                  "lng": 31.13
+                }
+              ]
+            },
+            {
+              "id": "xinjiang-day-27",
+              "group": 4,
+              "title": "吉萨 → 开罗",
+              "mode": "rest",
+              "lodging": "开罗",
+              "activity": "转场预留日；交通方式、口岸或联程、签证和所需时间待核实，可拆成多天。",
+              "points": [
+                {
+                  "name": "吉萨",
+                  "lat": 29.98,
+                  "lng": 31.13
+                },
+                {
+                  "name": "开罗",
+                  "lat": 30.04,
+                  "lng": 31.24
+                }
+              ]
+            },
+            {
+              "id": "xinjiang-day-28",
+              "group": 4,
+              "title": "开罗 → 卢克索",
+              "mode": "rest",
+              "lodging": "卢克索",
+              "activity": "转场预留日；交通方式、口岸或联程、签证和所需时间待核实，可拆成多天。",
+              "points": [
+                {
+                  "name": "开罗",
+                  "lat": 30.04,
+                  "lng": 31.24
+                },
+                {
+                  "name": "卢克索",
+                  "lat": 25.69,
+                  "lng": 32.64
+                }
+              ]
+            },
+            {
+              "id": "xinjiang-day-29",
+              "group": 4,
+              "title": "卢克索",
+              "mode": "visit",
+              "lodging": "卢克索",
+              "activity": "市区游览或休息，景点和停留时长按兴趣调整。",
+              "points": [
+                {
+                  "name": "卢克索",
+                  "lat": 25.69,
+                  "lng": 32.64
+                }
+              ]
+            },
+            {
+              "id": "xinjiang-day-30",
+              "group": 4,
+              "title": "卢克索 → 开罗",
+              "mode": "rest",
+              "lodging": "开罗",
+              "activity": "转场预留日；交通方式、口岸或联程、签证和所需时间待核实，可拆成多天。",
+              "points": [
+                {
+                  "name": "卢克索",
+                  "lat": 25.69,
+                  "lng": 32.64
+                },
+                {
+                  "name": "开罗",
+                  "lat": 30.04,
+                  "lng": 31.24
+                }
+              ]
+            },
+            {
+              "id": "xinjiang-day-31",
+              "group": 5,
+              "title": "开罗 → 马斯喀特",
+              "mode": "rest",
+              "lodging": "马斯喀特",
+              "activity": "转场预留日；交通方式、口岸或联程、签证和所需时间待核实，可拆成多天。",
+              "points": [
+                {
+                  "name": "开罗",
+                  "lat": 30.04,
+                  "lng": 31.24
+                },
+                {
+                  "name": "马斯喀特",
+                  "lat": 23.59,
+                  "lng": 58.41
+                }
+              ]
+            },
+            {
+              "id": "xinjiang-day-32",
+              "group": 5,
+              "title": "马斯喀特",
+              "mode": "visit",
+              "lodging": "马斯喀特",
+              "activity": "市区游览或休息，景点和停留时长按兴趣调整。",
+              "points": [
+                {
+                  "name": "马斯喀特",
+                  "lat": 23.59,
+                  "lng": 58.41
+                }
+              ]
+            },
+            {
+              "id": "xinjiang-day-33",
+              "group": 5,
+              "title": "马斯喀特 → 迪拜",
+              "mode": "rest",
+              "lodging": "迪拜",
+              "activity": "转场预留日；交通方式、口岸或联程、签证和所需时间待核实，可拆成多天。",
+              "points": [
+                {
+                  "name": "马斯喀特",
+                  "lat": 23.59,
+                  "lng": 58.41
+                },
+                {
+                  "name": "迪拜",
+                  "lat": 25.2,
+                  "lng": 55.27
+                }
+              ]
+            },
+            {
+              "id": "xinjiang-day-34",
+              "group": 5,
+              "title": "迪拜",
+              "mode": "visit",
+              "lodging": "迪拜",
+              "activity": "市区游览或休息，景点和停留时长按兴趣调整。",
+              "points": [
+                {
+                  "name": "迪拜",
+                  "lat": 25.2,
+                  "lng": 55.27
+                }
+              ]
+            },
+            {
+              "id": "xinjiang-day-35",
+              "group": 5,
+              "title": "迪拜 → 乌鲁木齐",
+              "mode": "rest",
+              "lodging": "乌鲁木齐",
+              "activity": "转场预留日；交通方式、口岸或联程、签证和所需时间待核实，可拆成多天。",
+              "points": [
+                {
+                  "name": "迪拜",
+                  "lat": 25.2,
+                  "lng": 55.27
+                },
+                {
+                  "name": "乌鲁木齐",
+                  "lat": 43.83,
+                  "lng": 87.62
+                }
+              ]
+            }
+          ],
+          "id": "xinjiang-plan"
         }
       ]
     }
