@@ -1130,6 +1130,15 @@ function separateAdminMarker(point) {
   }
   return point;
 }
+function footprintMapLabel(entry){
+  const parts=entry.place.split(' · ').filter(Boolean),country=footprintCountry(entry);
+  if(country&&country.id!=='CHN'&&parts.length>1){
+    const english=geoCountries.find(item=>item.id===country.id)?.properties.name||'';
+    const countryNames=new Set([country.name,english,country.id==='SGP'?'Singapore':''].map(name=>name.toLowerCase()));
+    return parts.find(part=>!countryNames.has(part.toLowerCase())&&!/^\d{1,3}$/.test(part))||parts[0];
+  }
+  return parts.at(-1)||entry.place;
+}
 function drawTripMarkers() {
   if (entries.length && !louiePlanMode) loadProvinceBoundaries();
   markers = [];
@@ -1145,7 +1154,7 @@ function drawTripMarkers() {
     const suffix = e.status==='wish' ? '想去' : markerMetric==='duration'
       ? (group.known ? group.days+' 天' : '未填停留') : markerMetric==='recency'
       ? e.date : (markerMetric==='frequency' || group.manualVisits || group.visits>1) ? group.visitLabel : '';
-    const label = e.place.split(' · ').filter(Boolean).pop()+(suffix ? ' · '+suffix : '');
+    const label = footprintMapLabel(e)+(suffix ? ' · '+suffix : '');
     ctx.font = '11px sans-serif';
     const width = ctx.measureText(label).width+16;
     const box = {x:point.x+radius+6,y:point.y-12,w:width,h:24};
