@@ -846,6 +846,20 @@
           "story": "",
           "photoIds": [],
           "updatedAt": "2026-11-19T07:15:49.167Z"
+        },
+        {
+          "id": "a08df76e-1e58-419a-b56c-8182c759cfef",
+          "place": "佩尼达岛（Nusa Penida） · 印度尼西亚",
+          "lat": -8.7333,
+          "lng": 115.5333,
+          "date": "2026-11-19",
+          "endDate": "",
+          "markerStyle": "auto",
+          "status": "visited",
+          "title": "这里的精灵坠崖真的很好看，这座岛我其实挺喜欢的",
+          "story": "",
+          "photoIds": [],
+          "updatedAt": "2026-11-19T07:26:19.256Z"
         }
       ],
       "routes": [],
