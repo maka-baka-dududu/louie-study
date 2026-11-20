@@ -404,9 +404,23 @@
           ],
           "goal": "读原典，练习识卦和排卦，记录不同流派的规则。",
           "milestones": []
+        },
+        {
+          "id": "excerpts",
+          "name": "摘录与感悟",
+          "icon": "「",
+          "kind": "life",
+          "subjects": [
+            "古诗文",
+            "好句子",
+            "感悟"
+          ],
+          "goal": "留下喜欢的文字和自己的思考。",
+          "milestones": []
         }
       ],
-      "activeTrack": "exam"
+      "activeTrack": "exam",
+      "excerpts": []
     },
     "practice": {
       "version": 1,
