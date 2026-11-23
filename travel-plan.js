@@ -316,7 +316,7 @@ function showFullTripMap() {
   if(!days.length)return;
   const frame=document.createElement('iframe'),nonce=uid(),modal=$('#modal');
   frame.title='全程二维路线地图';frame.sandbox='allow-scripts';frame.referrerPolicy='no-referrer';
-  frame.src='travel-assets/frame.html?view=plan&readonly=1&v=map-first#'+nonce;
+  frame.src='travel-assets/frame.html?view=plan&readonly=1&v=journal-fast#'+nonce;
   const send=message=>frame.contentWindow?.postMessage({channel:'louie-travel',nonce,...message},'*');
   const fit=()=>send({kind:'plan-route',days,selected:'',overviewStops:[...new Set(days.flatMap(day=>day.points.map(p=>p.name)))],focus:true,mapView:'flat'});
   let ready=false,closed=false;
@@ -372,7 +372,7 @@ function renderTravelPlan() {
   $('#view').innerHTML = `
     <article class="trip-plan" id="tripPlanner">
       <div class="trip-toolbar">
-        <select id="tripPlanSelect" aria-label="选择旅行计划"></select>
+        <div class="trip-plan-choice"><select id="tripPlanSelect" aria-label="选择旅行计划"></select>${window.LouiePublicSite?'':'<button type="button" id="tripNewQuick" title="新建旅行计划">＋ 新建</button>'}</div>
         <div class="trip-toolbar-actions">
           <details id="tripRouteMenu" class="trip-route-menu"><summary>路线筛选</summary>
             <div class="trip-route-popover">
@@ -387,7 +387,7 @@ function renderTravelPlan() {
       </div>
       <div class="trip-layout">
         <section class="trip-map-card" aria-label="旅行星球路线">
-          <div class="trip-map-wrap"><p id="travelFrameLoading" class="travel-frame-loading">正在加载路线地图…</p></div>
+          <div class="trip-map-wrap"><p id="travelFrameLoading" class="travel-frame-loading">正在加载地图，首次打开可能稍慢…</p></div>
           <div class="trip-map-caption"><div class="trip-map-actions">
               <button type="button" id="tripZoomOut" aria-label="缩小地图">−</button>
               <button type="button" id="tripZoomIn" aria-label="放大地图">＋</button>
@@ -405,6 +405,7 @@ function renderTravelPlan() {
   $('#tripPlanSelect').onchange = event => switchTravelPlan(event.target.value);
   if (!window.LouiePublicSite) {
     $('#tripNew').onclick = openNewTravelPlan;
+    $('#tripNewQuick').onclick = openNewTravelPlan;
     $('#tripSettings').onclick = openTripSettings;
     $('#tripAdd').onclick = () => openTripDay();
   }

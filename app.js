@@ -246,3 +246,21 @@ if(localDisk&&localDisk.data===null)save();
 render();
 
 window.LouieAppReady=true;
+
+// Shared dismissal behavior for menus, drawers and dialog backdrops.
+function dismissSiteOverlays(target){
+  document.querySelectorAll('details[open]').forEach(panel=>{if(!target||!panel.contains(target))panel.open=false});
+  const panel=document.querySelector('#tripDaysPanel'),toggle=document.querySelector('#tripDaysToggle');
+  if(panel&&!panel.hidden&&(!target||!panel.contains(target)&&!toggle?.contains(target)))window.toggleTripDays?.(false);
+}
+document.addEventListener('pointerdown',event=>{dismissSiteOverlays(event.target);if(window.LouieTravelReady&&typeof sendTravel==='function')sendTravel({kind:'dismiss-overlays'})});
+document.addEventListener('keydown',event=>{if(event.key==='Escape')dismissSiteOverlays(null)});
+for(const name of ['input','change'])document.addEventListener(name,event=>{const form=event.target.closest?.('dialog form');if(form)form.dataset.louieDirty='true'});
+let siteBackdropPress=false;
+document.addEventListener('pointerdown',event=>{const dialog=document.querySelector('#modal');if(!dialog?.open)return;const r=dialog.getBoundingClientRect();siteBackdropPress=event.target===dialog&&(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)});
+document.addEventListener('click',event=>{
+  const dialog=document.querySelector('#modal');if(!dialog?.open||!siteBackdropPress)return;siteBackdropPress=false;
+  const r=dialog.getBoundingClientRect();if(event.target!==dialog||event.clientX>=r.left&&event.clientX<=r.right&&event.clientY>=r.top&&event.clientY<=r.bottom)return;
+  if(dialog.querySelector('form[data-louie-dirty="true"]')&&!confirm('内容尚未保存，确定关闭？'))return;
+  closeModal();
+});
