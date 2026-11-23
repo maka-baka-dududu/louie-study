@@ -13,7 +13,7 @@
     window.LouieAppReady=false;
     return new Promise((resolve,reject)=>{
       let startupError='';
-      const script=document.createElement('script');script.src='app.js?v=marker-display';
+      const script=document.createElement('script');script.src='app.js?v=travel-nav-stats';
       const onError=event=>{if(event.filename&&new URL(event.filename,location.href).pathname.endsWith('/app.js'))startupError=event.message};
       window.addEventListener('error',onError);
       const timeout=setTimeout(()=>finish(Error('页面程序加载超时，请检查启动窗口。')),10000);
@@ -32,8 +32,8 @@
     ['studio-ui.js?v=travel-direct-2','LouieStudioReady'],
     ['profile-files-ui.js?v=excerpts-1','LouieProfileFilesReady'],
     ['travel-model.js?v=admin-footprints','LouieTravelModel'],
-    ['travel-plan.js?v=marker-display','LouieTravelPlanReady'],
-    ['travel-ui.js?v=marker-display','LouieTravelReady']
+    ['travel-plan.js?v=travel-nav-stats','LouieTravelPlanReady'],
+    ['travel-ui.js?v=travel-nav-stats','LouieTravelReady']
   ];
 
   function loadExtension(src,flag){

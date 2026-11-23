@@ -53,7 +53,7 @@ const navButtonBeforeTravel=navButton;
 navButton=function(k,glyph){
   const button=navButtonBeforeTravel(k,glyph);
   if(k!=='travelGlobe')return button;
-  return '<div class="nav-travel-heading">'+button.replace('data-page="travelGlobe"','type="button" onclick="toggleTravelNavigation()" aria-expanded="'+travelNavExpanded+'"').replace('</button>','<span class="nav-travel-toggle" aria-hidden="true">'+(travelNavExpanded?'▾':'▸')+'</span></button>')+'</div>';
+  return '<div class="nav-travel-heading">'+button+'<button type="button" class="nav-travel-toggle" aria-label="'+(travelNavExpanded?'收起旅行导航':'展开旅行导航')+'" aria-expanded="'+travelNavExpanded+'" onclick="toggleTravelNavigation()"><span aria-hidden="true">'+(travelNavExpanded?'▾':'▸')+'</span></button></div>';
 };
 const projectNavItemsBeforeTravel = projectNavItems;
 projectNavItems = function () {
@@ -62,7 +62,7 @@ projectNavItems = function () {
 };
 const travelLegacyPages = ['track', 'today', 'library', 'tracking', 'teacher'];
 function isTravelPage(p=page){return projectTools.travel.includes(p)}
-function sendTravel(message){if(message.kind==='reload'){travelIsReady=false;travelEditing=false;if(travelFrame){travelNonce=uid();travelFrame.src='travel-assets/frame.html?view='+(page==='travelJournal'?'journal':'travel')+'&v=marker-display'+(publicTravel?'&readonly=1':'')+'#'+travelNonce;}return}travelFrame?.contentWindow?.postMessage({channel:'louie-travel',nonce:travelNonce,...message},'*')}
+function sendTravel(message){if(message.kind==='reload'){travelIsReady=false;travelEditing=false;if(travelFrame){travelNonce=uid();travelFrame.src='travel-assets/frame.html?view='+(page==='travelJournal'?'journal':'travel')+'&v=travel-nav-stats'+(publicTravel?'&readonly=1':'')+'#'+travelNonce;}return}travelFrame?.contentWindow?.postMessage({channel:'louie-travel',nonce:travelNonce,...message},'*')}
 function guardTravelLeave(){if(travelBusy){toast('正在保存旅行记录，请稍候。');return false}if(travelEditing){if(!confirm('旅行编辑尚未保存，离开会丢弃本次填写。继续？'))return false;travelEditing=false;sendTravel({kind:'discard-editors'})}return true}
 const openTrackBeforeTravel = openTrack;
 openTrack = function (id) {
@@ -176,7 +176,7 @@ function mountTravelFrame(container, view) {
   frame.referrerPolicy = 'no-referrer';
   travelIsReady = false;
   travelNonce = uid();
-  frame.src = 'travel-assets/frame.html?view=' + view + '&v=marker-display'+(publicTravel?'&readonly=1':'')+'#' + travelNonce;
+  frame.src = 'travel-assets/frame.html?view=' + view + '&v=travel-nav-stats'+(publicTravel?'&readonly=1':'')+'#' + travelNonce;
   travelFrame = frame;
   container.append(frame);
 }
