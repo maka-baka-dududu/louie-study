@@ -26,7 +26,7 @@
   const extensions=[
     ['algorithm-problems.js','LouieAlgorithmProblemsReady'],
     ['algorithms-ui.js','LouieAlgorithmsReady'],
-    ['personal-ui.js?v=excerpts-1','LouiePersonalReady'],
+    ['personal-ui.js?v=sidebusiness-1','LouiePersonalReady'],
     ['practice-ui.js?v=chord-memory','LouiePracticeReady'],
     ['language-ui.js?v=sentence-categories','LouieLanguageReady'],
     ['studio-ui.js?v=travel-direct-2','LouieStudioReady'],
