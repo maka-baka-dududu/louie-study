@@ -264,7 +264,12 @@
         "name": "Louie",
         "intro": "一个迷茫的小伙子",
         "about": "",
-        "links": []
+        "links": [
+          {
+            "title": "MKBK的个人网站",
+            "url": "https://maka-baka-dududu.github.io/louie-study/"
+          }
+        ]
       },
       "tracks": [
         {
