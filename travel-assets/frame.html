@@ -1018,13 +1018,13 @@ const visitBadge=visitCount==='countless'?'∞':visitCount||String(visits);
 const visitLabel=visitCount==='countless'?'无数次':visitCount==='10+'?'10 次以上':visitBadge+' 次';
 return{e:items[0],items,visits,visitBadge,visitLabel,manualVisits:Boolean(visitCount),days,known:ranges.length,age:Math.max(0,(reference-Date.parse(items[0].date+'T00:00:00Z'))/86400000)}})}
 const provinceStarColors = {
-  '11':'#D94D59', '12':'#D28333', '13':'#359779', '14':'#9071CB', '15':'#91A43F',
-  '21':'#428ECD', '22':'#D66397', '23':'#2C7E74', '31':'#784CC3', '32':'#D3663B',
-  '33':'#219FA7', '34':'#D3A337', '35':'#54863D', '36':'#A44A8E', '37':'#16799C',
-  '41':'#CA795C', '42':'#5779C9', '43':'#EC867B', '44':'#3195C0', '45':'#CA7BBA',
-  '46':'#51B795', '50':'#AF526B', '51':'#F2A04E', '52':'#6B9B53', '53':'#BA7CCB',
-  '54':'#BD6655', '61':'#357B50', '62':'#7D85C5', '63':'#48969B', '64':'#AD8C5D',
-  '65':'#CF6481', '71':'#789849', '81':'#9B5EB4', '82':'#D6B765'
+  '11':'#B93838', '12':'#476C9B', '13':'#588F60', '14':'#9D7549', '15':'#ACB73B',
+  '21':'#5197D5', '22':'#D583AE', '23':'#446D54', '31':'#D64F94', '32':'#E96F24',
+  '33':'#64B6A4', '34':'#BD9C44', '35':'#368B45', '36':'#7940AC', '37':'#294F9B',
+  '41':'#A0784E', '42':'#637FCC', '43':'#DC8C72', '44':'#159FBF', '45':'#9A5271',
+  '46':'#72C5AF', '50':'#D23D4B', '51':'#E3AF20', '52':'#8CAB54', '53':'#7188DE',
+  '54':'#9B593E', '61':'#879521', '62':'#A7A8C9', '63':'#418396', '64':'#C6AA78',
+  '65':'#B75668', '71':'#AD7844', '81':'#087C78', '82':'#CB9872'
 };
 const overseasStarColor = '#8298B0';
 const provinceColorCache = new WeakMap();
