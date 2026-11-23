@@ -42,14 +42,27 @@ if (window.LouieTravelPlanReady) {
 }
 let travelFrame=null,travelNonce=null,travelEditing=false,travelIsReady=false,travelBusy=0,travelQueue=Promise.resolve();const travelPhotoCache=new Map();
 stableNavItems.splice(stableNavItems.indexOf('directions')+1,0,'travelGlobe');
+let travelNavExpanded=true;
+try { travelNavExpanded=localStorage.getItem('louie-travel-nav-expanded')!=='false'; } catch (_) {}
+function toggleTravelNavigation(){
+  travelNavExpanded=!travelNavExpanded;
+  try { localStorage.setItem('louie-travel-nav-expanded',String(travelNavExpanded)); } catch (_) {}
+  renderPersonalNav();
+}
+const navButtonBeforeTravel=navButton;
+navButton=function(k,glyph){
+  const button=navButtonBeforeTravel(k,glyph);
+  if(k!=='travelGlobe')return button;
+  return '<div class="nav-travel-heading">'+button+'<button type="button" class="nav-travel-toggle" aria-label="'+(travelNavExpanded?'收起旅行导航':'展开旅行导航')+'" aria-expanded="'+travelNavExpanded+'" onclick="toggleTravelNavigation()"><span aria-hidden="true">'+(travelNavExpanded?'▾':'▸')+'</span></button></div>';
+};
 const projectNavItemsBeforeTravel = projectNavItems;
 projectNavItems = function () {
-  if (navigationProject !== 'travel') return projectNavItemsBeforeTravel();
-  return stableNavItems.flatMap(item=>item==='travelGlobe' ? projectTools.travel : [item]);
+  if (navigationProject && navigationProject !== 'travel') return projectNavItemsBeforeTravel();
+  return stableNavItems.flatMap(item=>item==='travelGlobe' ? (travelNavExpanded?projectTools.travel:['travelGlobe']) : [item]);
 };
 const travelLegacyPages = ['track', 'today', 'library', 'tracking', 'teacher'];
 function isTravelPage(p=page){return projectTools.travel.includes(p)}
-function sendTravel(message){if(message.kind==='reload'){travelIsReady=false;travelEditing=false;if(travelFrame){travelNonce=uid();travelFrame.src='travel-assets/frame.html?view='+(page==='travelJournal'?'journal':'travel')+'&v=clean-stat-numbers'+(publicTravel?'&readonly=1':'')+'#'+travelNonce;}return}travelFrame?.contentWindow?.postMessage({channel:'louie-travel',nonce:travelNonce,...message},'*')}
+function sendTravel(message){if(message.kind==='reload'){travelIsReady=false;travelEditing=false;if(travelFrame){travelNonce=uid();travelFrame.src='travel-assets/frame.html?view='+(page==='travelJournal'?'journal':'travel')+'&v=travel-nav-fold'+(publicTravel?'&readonly=1':'')+'#'+travelNonce;}return}travelFrame?.contentWindow?.postMessage({channel:'louie-travel',nonce:travelNonce,...message},'*')}
 function guardTravelLeave(){if(travelBusy){toast('正在保存旅行记录，请稍候。');return false}if(travelEditing){if(!confirm('旅行编辑尚未保存，离开会丢弃本次填写。继续？'))return false;travelEditing=false;sendTravel({kind:'discard-editors'})}return true}
 const openTrackBeforeTravel = openTrack;
 openTrack = function (id) {
@@ -163,7 +176,7 @@ function mountTravelFrame(container, view) {
   frame.referrerPolicy = 'no-referrer';
   travelIsReady = false;
   travelNonce = uid();
-  frame.src = 'travel-assets/frame.html?view=' + view + '&v=clean-stat-numbers'+(publicTravel?'&readonly=1':'')+'#' + travelNonce;
+  frame.src = 'travel-assets/frame.html?view=' + view + '&v=travel-nav-fold'+(publicTravel?'&readonly=1':'')+'#' + travelNonce;
   travelFrame = frame;
   container.append(frame);
 }
