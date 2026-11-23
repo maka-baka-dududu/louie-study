@@ -111,6 +111,17 @@ body.page-journal #travelActions {display:none!important}
 #journalPage .journal-card .journal-card-foot {border-color:color-mix(in srgb,var(--region-color) 25%,#fffefa);color:#526459}
 #journalPage .journal-region-tag {color:#4a5f52}
 #journalPage .journal-card p {color:#526459}
+/* Compact single-column journal; full contents stay in the detail dialog. */
+#journalPage #entries.journal-gallery {display:flex;flex-direction:column;gap:10px}
+#journalPage .journal-card {width:100%;min-height:0;flex-direction:row;align-items:center;gap:15px;padding:16px 20px;text-align:left;box-shadow:none;border-radius:12px}
+#journalPage .journal-card:hover {transform:none;box-shadow:0 4px 14px #20362b0a}
+#journalPage .journal-card .entry-body {padding:0;gap:6px}
+#journalPage .journal-card h3 {margin:0;font-size:15px}
+.journal-row-meta {display:flex;align-items:center;gap:14px;font-size:11px;color:#5d6d62}
+#journalPage .journal-row-meta time {margin:0;font-size:11px;font-variant-numeric:tabular-nums}
+.journal-row-mark {display:grid;place-items:center;width:30px;height:30px;flex:none;border-radius:50%;color:var(--region-color);background:#fff9;border:2px solid var(--ring-color);font-size:19px}
+.journal-row-arrow {font-size:24px;color:#5c6c60}
+@media(max-width:520px){#journalPage .journal-card {padding:14px 12px;gap:10px}#journalPage .journal-card h3{font-size:14px}}
 </style><style>.site-header,.site-footer,#homePage,#notesPage,#aboutPage,#journalPage>.intro{display:none!important}body.page-travel #travelPage{inset:0!important}body.page-travel #travelPage .globe-panel{height:100%!important}body.page-journal{overflow:auto}#journalPage{padding:22px!important}body{background:#f6f5ef}#travelPage .map-loading{z-index:5}</style></head><body>
 <header class="site-header"><button class="brand home-link text-btn" aria-label="回到主页"><span class="brand-icon">✳</span><span><span id="siteName">旅行星球</span></span></button><nav aria-label="主导航"><button class="nav-btn active" data-nav="home">主页</button><button class="nav-btn" data-nav="travel">地球</button><button class="nav-btn" data-nav="journal">旅行日记</button></nav></header><section class="personal-page home-page" id="homePage">
  <div class="home-hero"><div class="hero-copy"><h1>旅行星球</h1><p class="travel-home-caption">收藏足迹，记录旅程。</p><div class="hero-actions"><button class="text-btn" id="editProfileHome" hidden>编辑我的名片</button></div></div><div class="hero-art" aria-hidden="true"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="mini-earth"><div class="mini-grid"></div><span class="earth-mark m-one"></span><span class="earth-mark m-two"></span><span class="earth-mark m-three"></span></div></div></div>
@@ -1053,8 +1064,18 @@ function footprintProvince(entry) {
   return province;
 }
 
+// Country identity is stable across sessions and independent of record order.
+function countryMarkerPalette(entry) {
+  const id=footprintCountry(entry)?.id;
+  if (!id || id==='CHN') return null;
+  const known={JPN:['#CB627F','#8199CD'],SGP:['#249B91','#EDB45C'],IDN:['#C78244','#967AC7']};
+  if (known[id]) return known[id];
+  let hash=0;for(const char of id)hash=(hash*31+char.charCodeAt(0))>>>0;
+  const hue=hash%360;
+  return ['hsl('+hue+' 48% 52%)','hsl('+((hue+125)%360)+' 60% 68%)'];
+}
 function footprintStarColor(entry) {
-  return provinceStarColors[footprintProvince(entry)] || overseasStarColor;
+  return provinceStarColors[footprintProvince(entry)] || countryMarkerPalette(entry)?.[0] || overseasStarColor;
 }
 
 function loadCityBoundaries() {
@@ -1105,18 +1126,16 @@ function travelJournalRegion(entry) {
     if (area) return {key:province,name:area.name,color:provinceStarColors[province],province,city:footprintCity(entry,province)};
   }
   const country = footprintCountry(entry);
-  if (country && country.id!=='CHN') return {key:country.id,name:country.name,color:overseasStarColor,country:country.id};
+  if (country && country.id!=='CHN') return {key:country.id,name:country.name,color:footprintStarColor(entry),country:country.id};
   return {key:'unassigned',name:'其他地点',color:overseasStarColor};
 }
 
 var journalRegion='all';
 function renderJournalEntry(entry) {
-  const region=travelJournalRegion(entry),photos=entry.photos||[];
-  return '<button type="button" class="entry journal-card '+(photos.length?'has-cover':'text-only')+'" data-id="'+esc(entry.id)+'" style="--region-color:'+region.color+'">'+
-    (photos.length?'<img class="journal-cover" src="'+esc(photos[0])+'" alt="'+esc(entry.place)+'的旅行照片" loading="lazy">':'')+
-    '<div class="entry-body"><div class="journal-meta"><time>'+esc(entry.date.replaceAll('-','.'))+'</time><span class="journal-region-tag">'+esc(region.name)+'</span></div>'+
-    '<h3>'+esc(entry.place)+'</h3>'+(entry.title?'<strong class="journal-entry-title">'+esc(entry.title)+'</strong>':'')+
-    (entry.story?'<p>'+esc(entry.story)+'</p>':'')+'<div class="journal-card-foot"><span>'+(entry.status==='wish'?'想去':'去过')+'</span><span>'+(photos.length?photos.length+' 张照片':'')+' <span aria-hidden="true">↗</span></span></div></div></button>';
+  const region=travelJournalRegion(entry),palette=countryMarkerPalette(entry);
+  return '<button type="button" class="entry journal-card" data-id="'+esc(entry.id)+'" style="--region-color:'+region.color+';--ring-color:'+(palette?.[1]||region.color)+'">'+
+    '<span class="journal-row-mark" aria-hidden="true">✦</span><div class="entry-body"><h3>'+esc(entry.place)+'</h3>'+
+    '<div class="journal-row-meta"><time>'+esc(entry.date.replaceAll('-','.'))+'</time><span>'+(entry.status==='wish'?'想去':'去过')+'</span></div></div><span class="journal-row-arrow" aria-hidden="true">›</span></button>';
 }
 
 function renderTravelJournal() {
@@ -1167,11 +1186,16 @@ $('#entries').addEventListener('click',event => {
   if (entry) { focusPlace(entry); showDetail(entry); }
 });
 
-function drawFootprintStar(point,color,radius) {
+function drawFootprintStar(point,color,radius,palette=null) {
   ctx.beginPath();
   ctx.arc(point.x,point.y,radius+5,0,Math.PI*2);
-  ctx.fillStyle = color+'28';
+  ctx.fillStyle = palette ? palette[1] : color+'28';
   ctx.fill();
+  if(palette){
+    const ring=ctx.createLinearGradient(point.x-radius,point.y-radius,point.x+radius,point.y+radius);
+    ring.addColorStop(0,palette[0]);ring.addColorStop(.55,palette[1]);ring.addColorStop(1,palette[0]);
+    ctx.strokeStyle=ring;ctx.lineWidth=3;ctx.stroke();
+  }
   ctx.beginPath();
   ctx.arc(point.x,point.y,radius,0,Math.PI*2);
   ctx.fillStyle = color;
@@ -1216,7 +1240,7 @@ function drawTripMarkers() {
     const {e} = group;
     const point = e.adminId ? separateAdminMarker(group.p) : group.p;
     markers.push({e,x:point.x,y:point.y,radius});
-    drawFootprintStar(point,footprintStarColor(e),radius);
+    drawFootprintStar(point,footprintStarColor(e),radius,countryMarkerPalette(e));
     const suffix = e.status==='wish' ? '想去' : markerMetric==='duration'
       ? (group.known ? group.days+' 天' : '未填停留') : markerMetric==='recency'
       ? e.date : (markerMetric==='frequency' || group.manualVisits || group.visits>1) ? group.visitLabel : '';
