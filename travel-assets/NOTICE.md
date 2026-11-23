@@ -80,3 +80,11 @@ Source files: https://github.com/nvkelso/natural-earth-vector/tree/v5.1.2/geojso
 Land polygons are rasterized for the globe coverage mask. Line coordinates are rounded to three decimals and split into short overlapping rendering segments. This is a regional overview, without streets or buildings.
 
 The compact map label index is derived from the GeoNames cities500 records above. It contains the largest cities and a geographic sample for less populated regions. The full dataset is loaded separately when searching.
+
+
+## Natural land-cover texture (2026-11-23)
+
+Natural Earth I, NE1_50M_SR_W, version 3.2.0. Satellite-derived land cover, shaded relief, and ocean bathymetry; public domain.
+Source: https://www.naturalearthdata.com/downloads/50m-raster-data/50m-natural-earth-1/
+Archive: https://naciscdn.org/naturalearth/50m/raster/NE1_50M_SR_W.zip
+The 10800×5400 raster is resampled to 4096×2048 JPEG for offline globe and full-route views. Natural land-cover colors are preserved, including desert sand, vegetation, and polar ice. This is a generalized reference map, not live imagery or navigation data.

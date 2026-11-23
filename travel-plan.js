@@ -316,7 +316,7 @@ function showFullTripMap() {
   if(!days.length)return;
   const frame=document.createElement('iframe'),nonce=uid(),modal=$('#modal');
   frame.title='全程二维路线地图';frame.sandbox='allow-scripts';frame.referrerPolicy='no-referrer';
-  frame.src='travel-assets/frame.html?view=plan&readonly=1&v=full-trip-shared#'+nonce;
+  frame.src='travel-assets/frame.html?view=plan&readonly=1&v=natural-itinerary#'+nonce;
   const send=message=>frame.contentWindow?.postMessage({channel:'louie-travel',nonce,...message},'*');
   const fit=()=>send({kind:'plan-route',days,selected:'',overviewStops:[...new Set(days.flatMap(day=>day.points.map(p=>p.name)))],focus:true,mapView:'flat'});
   let ready=false,closed=false;
@@ -391,16 +391,16 @@ function renderTravelPlan() {
       <div class="trip-layout">
         <section class="trip-map-card" aria-label="旅行星球路线">
           <div class="trip-map-wrap"><p id="travelFrameLoading" class="travel-frame-loading">正在加载路线地图…</p></div>
-          <div class="trip-map-caption"><span>拖动地球，或点城市和日程定位。路线为示意。</span>
+          <div class="trip-map-caption"><button type="button" id="tripDaysToggle" aria-expanded="false" aria-controls="tripDaysPanel">每日行程</button>
             <div class="trip-map-actions">
               <button type="button" id="tripZoomOut" aria-label="缩小地图">−</button>
               <button type="button" id="tripZoomIn" aria-label="放大地图">＋</button>
               <button type="button" id="tripOverview">全段视角</button>
             </div></div>
-          <div id="tripDetail" class="trip-detail" aria-live="polite"></div>
         </section>
-        <section class="trip-list-panel" aria-label="每日行程">
-          <div class="trip-list-heading"><h2>每日行程</h2><span id="tripCount" class="muted"></span></div>
+        <section id="tripDaysPanel" class="trip-list-panel" aria-label="每日行程" hidden>
+          <div class="trip-list-heading"><h2>每日行程</h2><span id="tripCount" class="muted"></span><button type="button" id="tripDaysClose" aria-label="收起每日行程">×</button></div>
+          <div id="tripDetail" class="trip-detail" aria-live="polite" hidden></div>
           <div id="tripList" class="trip-list"></div>
         </section>
       </div>
@@ -419,6 +419,9 @@ function renderTravelPlan() {
   }
   $('#tripOverview').onclick = () => { tripSelected = ''; refreshTripPlanner({focus: true}); };
   $('#tripAll').onclick = showFullTripMap;
+  $('#tripDaysToggle').onclick=()=>toggleTripDays($('#tripDaysPanel').hidden);
+  $('#tripDaysClose').onclick=()=>{toggleTripDays(false);$('#tripDaysToggle').focus()};
+  $('#tripPlanner').onkeydown=e=>{if(e.key==='Escape'&&!$('#tripDaysPanel').hidden){toggleTripDays(false);$('#tripDaysToggle').focus()}};
   $('#tripStages').onclick = e => {
     const button = e.target.closest('[data-group]');
     if (!button) return;
@@ -483,7 +486,8 @@ function refreshTripPlanner({focus = false} = {}) {
     <p>${esc(active.activity || '暂无安排。')}</p>
     <p class="muted">住宿 · ${esc(active.lodging || '待定')}</p>
     <p class="trip-stop-line">${active.points.length ? active.points.map(p => esc(p.name)).join(' → ') : '尚未设置地图地点'}</p>
-    ` : '<p class="muted">点击某一天，查看当天安排、住宿和地图路线。</p>';
+    ` : '';
+  detail.hidden=!active;
   if (active && !window.LouiePublicSite) $('#tripEditDay').onclick = () => openTripDay(active.id);
   sendTripMap(focus);
 }
@@ -492,6 +496,7 @@ function selectTripDay(id, fromList = false) {
   if (!filteredTripDays().some(day => day.id === id)) return;
   tripSelected = id;
   refreshTripPlanner({focus: true});
+  toggleTripDays(true);
   const button = $('#tripList').querySelector('[aria-pressed=true]');
   if (fromList) button?.focus({preventScroll: true});
   if (button && !fromList) {
@@ -628,3 +633,9 @@ function openTripDay(id) {
   };
 }
 window.LouieTravelPlanReady = true;
+
+function toggleTripDays(open){
+  const panel=$('#tripDaysPanel'),button=$('#tripDaysToggle');
+  if(!panel||!button)return;
+  panel.hidden=!open;button.setAttribute('aria-expanded',String(open));
+}

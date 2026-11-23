@@ -188,3 +188,17 @@ body.travel-page {
 .trip-plan-switcher label {font-size:13px;color:var(--muted)}
 .trip-plan-switcher select {flex:1;max-width:480px;min-width:0}
 @media(max-width:600px){.trip-plan-switcher label{width:100%}.trip-plan-switcher select{max-width:none}}
+
+/* The map owns the full row; the daily itinerary opens only when requested. */
+.trip-layout {position:relative;display:block}
+.trip-plan .trip-map-wrap {height:clamp(420px,65dvh,820px)}
+.trip-layout > .trip-list-panel {position:absolute;right:14px;top:14px;bottom:64px;width:min(380px,calc(100% - 28px));z-index:4;box-shadow:0 14px 48px #102c3529;display:flex;flex-direction:column;background:var(--paper);border-radius:14px}
+.trip-layout > .trip-list-panel[hidden] {display:none}
+.trip-list-panel .trip-list {flex:1;min-height:0;max-height:none}
+.trip-list-panel .trip-detail {border-top:1px solid var(--line);max-height:42%;overflow:auto;flex-shrink:0}
+.trip-list-panel .trip-detail[hidden] {display:none}
+#tripDaysClose {padding:2px 9px;font-size:20px;border:0;background:transparent}
+.trip-list-heading {flex-shrink:0}
+.trip-list-heading h2 {margin-right:auto}
+.trip-map-caption {min-height:54px}
+@media(max-width:560px){.trip-plan .trip-map-wrap{height:62dvh;min-height:380px}.trip-layout > .trip-list-panel{right:8px;top:8px;bottom:62px;width:calc(100% - 16px)}}
