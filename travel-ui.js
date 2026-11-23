@@ -62,7 +62,7 @@ projectNavItems = function () {
 };
 const travelLegacyPages = ['track', 'today', 'library', 'tracking', 'teacher'];
 function isTravelPage(p=page){return projectTools.travel.includes(p)}
-function sendTravel(message){if(message.kind==='reload'){travelIsReady=false;travelEditing=false;if(travelFrame){travelNonce=uid();travelFrame.src='travel-assets/frame.html?view='+(page==='travelJournal'?'journal':'travel')+'&v=travel-row-toggle'+(publicTravel?'&readonly=1':'')+'#'+travelNonce;}return}travelFrame?.contentWindow?.postMessage({channel:'louie-travel',nonce:travelNonce,...message},'*')}
+function sendTravel(message){if(message.kind==='reload'){travelIsReady=false;travelEditing=false;if(travelFrame){travelNonce=uid();travelFrame.src='travel-assets/frame.html?view='+(page==='travelJournal'?'journal':'travel')+'&v=marker-display'+(publicTravel?'&readonly=1':'')+'#'+travelNonce;}return}travelFrame?.contentWindow?.postMessage({channel:'louie-travel',nonce:travelNonce,...message},'*')}
 function guardTravelLeave(){if(travelBusy){toast('正在保存旅行记录，请稍候。');return false}if(travelEditing){if(!confirm('旅行编辑尚未保存，离开会丢弃本次填写。继续？'))return false;travelEditing=false;sendTravel({kind:'discard-editors'})}return true}
 const openTrackBeforeTravel = openTrack;
 openTrack = function (id) {
@@ -176,7 +176,7 @@ function mountTravelFrame(container, view) {
   frame.referrerPolicy = 'no-referrer';
   travelIsReady = false;
   travelNonce = uid();
-  frame.src = 'travel-assets/frame.html?view=' + view + '&v=travel-row-toggle'+(publicTravel?'&readonly=1':'')+'#' + travelNonce;
+  frame.src = 'travel-assets/frame.html?view=' + view + '&v=marker-display'+(publicTravel?'&readonly=1':'')+'#' + travelNonce;
   travelFrame = frame;
   container.append(frame);
 }
@@ -201,6 +201,14 @@ const saveBeforeTravel=save;
 save=function(){return travelBusy?travelQueue.catch(()=>{}).then(()=>saveBeforeTravel()):saveBeforeTravel()};
 function travelCommit(change, nextPlan){if(publicTravel)return Promise.reject(Error('公开旅行记录只能查看。'));travelBusy++;const job=travelQueue.catch(()=>{}).then(async()=>{await diskQueue;if(diskError)throw Error('本地记录尚未保存，请先处理保存问题。');const candidate=JSON.parse(JSON.stringify(db)),originalMaterialIds=new Set(candidate.materials.map(m=>m.id)),staged=[];try{const result=change ? await change(candidate,staged) : undefined;if(!Travel.canonical(candidate.travel))throw Error('旅行数据未通过检查，原记录未修改。');const added=candidate.materials.filter(m=>!originalMaterialIds.has(m.id)),latest=JSON.parse(JSON.stringify(db));latest.travel=candidate.travel;if(nextPlan)latest.travelPlan=nextPlan;latest.materials.push(...added.filter(m=>!latest.materials.some(x=>x.id===m.id)));await persistCandidate(latest);db.travel=candidate.travel;if(nextPlan)db.travelPlan=nextPlan;db.materials.push(...added.filter(m=>!db.materials.some(x=>x.id===m.id)));travelPhotoCache.clear();return result}catch(error){for(const fileId of staged)await fileOp('delete',fileId).catch(()=>{});throw error}});travelQueue=job;return job.finally(()=>travelBusy--)}
 async function travelBridge(op,data){
+ // Display preferences belong to this browser, including on the read-only public site.
+ if(data.name==='meta' && data.key==='markerDisplay'){
+   const key='louie-travel-marker-display';
+   const valid=v=>v && typeof v.visible==='boolean' && Number.isFinite(v.opacity) && v.opacity>=0 && v.opacity<=100 && Number.isFinite(v.size) && v.size>=50 && v.size<=160;
+   if(op==='read-store'){try{const value=JSON.parse(localStorage.getItem(key));return valid(value)?value:null}catch(_){return null}}
+   if(op==='write-store'){if(!valid(data.value))throw Error('标记显示设置不正确。');const value={visible:data.value.visible,opacity:data.value.opacity,size:data.value.size};localStorage.setItem(key,JSON.stringify(value));return value}
+ }
+
  if(publicTravel){
    if(op==='api'&&data.path==='/api/entries'&&(data.options?.method||'GET')==='GET')return readPublicFootprints();
    if(op==='read-store'){
