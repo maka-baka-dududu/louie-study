@@ -1212,7 +1212,10 @@ if (louiePlanMode) {
       ctx.globalAlpha = active && !selected ? .26 : .9;
       ctx.setLineDash(day.dash);
       ctx.lineCap = 'round';
-      for (const leg of day.legs) mapLine(leg, day.color, selected ? 3 : 1.7);
+      for (const leg of day.legs) {
+        if(mapMode==='flat')mapLine(leg,'#fffdf2',5);
+        mapLine(leg,day.color,mapMode==='flat'?2.8:selected?3:1.7);
+      }
       ctx.restore();
     }
     for (const day of [...ordered].reverse()) {
@@ -1265,6 +1268,7 @@ if (louiePlanMode) {
     }
   };
   receivePlannedRoutes = message => {
+    if(message.mapView==='flat'&&mapMode!=='flat')setMapMode('flat');
     plannedDays = message.days.map(day => ({
       ...day,
       legs: day.points.slice(1).map((stop,i)=>routePoints(day.points[i],stop,day.mode==='flight' ? .21 : .12))
@@ -1283,6 +1287,16 @@ if (louiePlanMode) {
         const offsets = points.map(point => ((point.lng-reference+540)%360)-180);
         const west = Math.min(...offsets), east = Math.max(...offsets);
         const lng = ((reference+(west+east)/2+540)%360)-180;
+        if(mapMode==='flat'){
+          const longitudes=[...new Set(points.map(p=>p.lng))].sort((a,b)=>a-b);
+          let seam=longitudes[0],gap=-1;
+          longitudes.forEach((value,i)=>{const next=longitudes[i+1]??longitudes[0]+360;if(next-value>gap){gap=next-value;seam=next}});
+          const values=longitudes.map(value=>seam+((value-seam)%360+360)%360);
+          const low=Math.min(...values),high=Math.max(...values),spanLat=Math.max(...latitudes)-Math.min(...latitudes);
+          const base=Math.min(W/360,H/180),pad=Math.min(70,W*.12,H*.15);
+          zoom=Math.max(.7,Math.min(60,(W-2*pad)/(Math.max(8,high-low)*base),(H-2*pad)/(Math.max(6,spanLat)*base)));
+          lon=((low+high)/2+540)%360-180;tilt=lat;surfaceCacheKey='';draw();return;
+        }
         const cosLatitude = Math.max(.25, Math.cos(lat*rad));
         const horizontal = (east-west)*cosLatitude;
         const vertical = Math.max(...latitudes) - Math.min(...latitudes);

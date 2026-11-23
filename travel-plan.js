@@ -302,115 +302,42 @@ function showTripScope(group) {
 const tripMapColors = ['#b34024','#087462','#3159ac','#873d8b','#986500','#007592'];
 
 function showFullTripMap() {
-  const plan = getTravelPlan();
-  const stages = tripStageSummary(plan);
-  const stops = plan.days.flatMap(day => day.points);
+  const plan = getTravelPlan(), stages = tripStageSummary(plan);
+  const days = plan.days.filter(day=>day.points.length).map(day=>({
+    id:day.id,mode:day.mode,points:day.points,...tripModes[day.mode],color:tripMapColors[day.group%tripMapColors.length]
+  }));
   show(`<section class="trip-full-map">
-    <h2>全程地图</h2><p class="muted">${esc(plan.title)} · ${plan.days.length} 天 · 路线示意</p>
-    ${stops.length ? `<canvas id="tripFullCanvas" role="img" aria-label="${esc(plan.title)}全程二维路线"></canvas>
-      <div class="trip-full-legend" aria-label="路线分段">
-        ${stages.map(stage => `<div><i style="--stage-color:${tripMapColors[stage.group % tripMapColors.length]}"></i><span>
-          <strong>${esc(stage.name)}</strong><small>${esc(stage.highlights.join(' · '))}</small>
-        </span></div>`).join('')}
-      </div>` : '<p class="muted">行程还没有地图地点。</p>'}
+    <h2>全程地图</h2><p class="muted">${esc(plan.title)} · ${plan.days.length} 天</p>
+    ${days.length ? `<div class="trip-full-frame"><span id="tripFullLoading" class="trip-full-loading" role="status">正在展开地图…</span></div>
+      <div class="actions trip-full-controls"><span class="muted">拖动平移 · 双指或滚轮缩放</span><button id="tripFullOut" aria-label="缩小全程地图">−</button><button id="tripFullIn" aria-label="放大全程地图">＋</button><button id="tripFullReset">查看全程</button></div>
+      <div class="trip-full-legend" aria-label="路线分段">${stages.map(stage=>`<div><i style="--stage-color:${tripMapColors[stage.group%tripMapColors.length]}"></i><span><strong>${esc(stage.name)}</strong><small>${esc(stage.highlights.join(' · '))}</small></span></div>`).join('')}</div>`
+      : '<p class="muted">行程还没有地图地点。</p>'}
   </section>`);
-  if (!stops.length) return;
-
-  const canvas = $('#tripFullCanvas'), context = canvas.getContext('2d');
-  const background = new Image();
-  // Put the map seam in the largest gap between stops, including trips across the date line.
-  const longitudes = [...new Set(stops.map(point => point.lng))].sort((a,b) => a-b);
-  let seam = -180, largestGap = -1;
-  longitudes.forEach((lng,index) => {
-    const next = longitudes[index+1] ?? longitudes[0]+360;
-    if (next-lng > largestGap) { largestGap = next-lng; seam = next; }
-  });
-  const unwrap = lng => seam + ((lng-seam)%360+360)%360;
-  const east = Math.max(...longitudes.map(unwrap)), west = seam;
-  const south = Math.min(...stops.map(stop=>stop.lat)), north = Math.max(...stops.map(stop=>stop.lat));
-  const highlights = new Set([stops[0].name,stops.at(-1).name,...stages.flatMap(stage=>stage.highlights)]);
-
-  function paint() {
-    const {width,height} = canvas.getBoundingClientRect();
-    if (!width || !height) return;
-    const density = Math.min(devicePixelRatio || 1,2);
-    canvas.width = Math.round(width*density);
-    canvas.height = Math.round(height*density);
-    context.setTransform(density,0,0,density,0,0);
-    const padding = width < 520 ? 30 : 70;
-    const scale = Math.min((width-2*padding)/Math.max(12,east-west),(height-64)/Math.max(10,north-south));
-    const x = lng => width/2+(lng-(east+west)/2)*scale;
-    const y = lat => height/2-(lat-(south+north)/2)*scale;
-    context.fillStyle = '#dbeaf1';
-    context.fillRect(0,0,width,height);
-    if (background.naturalWidth) {
-      for (let shift = -360; shift <= 720; shift += 360) {
-        const left = x(-180+shift);
-        context.drawImage(background,left,y(90),360*scale,180*scale);
-      }
-      context.fillStyle = '#f8faf4aa';
-      context.fillRect(0,0,width,height);
-    }
-    context.strokeStyle = '#748e9a35';
-    context.lineWidth = 1;
-    context.beginPath();
-    for (let lng = -360; lng <= 900; lng += 15) { context.moveTo(x(lng),0); context.lineTo(x(lng),height); }
-    for (let lat = -90; lat <= 90; lat += 15) { context.moveTo(0,y(lat)); context.lineTo(width,y(lat)); }
-    context.stroke();
-
-    context.lineJoin = context.lineCap = 'round';
-    for (const day of plan.days) {
-      if (day.points.length < 2) continue;
-      context.beginPath();
-      const points = day.points.map(point => ({x:x(unwrap(point.lng)),y:y(point.lat)}));
-      context.moveTo(points[0].x,points[0].y);
-      for (let index = 1; index < points.length; index++) {
-        const from = points[index-1], to = points[index];
-        if (day.mode === 'flight' && Math.abs(to.x-from.x)>45) {
-          const bend = Math.sign(to.x-from.x)*Math.min(42,Math.abs(to.x-from.x)*.12);
-          context.quadraticCurveTo((from.x+to.x)/2,(from.y+to.y)/2+bend,to.x,to.y);
-        } else context.lineTo(to.x,to.y);
-      }
-      context.lineWidth = 6;
-      context.strokeStyle = '#fffefa';
-      context.stroke();
-      context.lineWidth = 3;
-      context.strokeStyle = tripMapColors[day.group];
-      context.stroke();
-    }
-    const placed = [], seen = new Set();
-    context.font = '600 12px system-ui,sans-serif';
-    for (const point of stops) {
-      if (seen.has(point.name)) continue;
-      seen.add(point.name);
-      const px = x(unwrap(point.lng)), py = y(point.lat);
-      context.beginPath();
-      context.arc(px,py,highlights.has(point.name) ? 4 : 2.5,0,Math.PI*2);
-      context.fillStyle = '#193746';
-      context.fill();
-      context.lineWidth = 1.5;
-      context.strokeStyle = '#fff';
-      context.stroke();
-      if (!highlights.has(point.name)) continue;
-      const labelWidth = context.measureText(point.name).width;
-      const left = Math.max(6,Math.min(width-labelWidth-6,px+7));
-      const top = Math.max(16,py-8);
-      if (placed.some(box => left < box.left+box.width+5 && left+labelWidth+5 > box.left && Math.abs(top-box.top)<17)) continue;
-      placed.push({left,top,width:labelWidth});
-      context.lineWidth = 4;
-      context.strokeStyle = '#fffefa';
-      context.strokeText(point.name,left,top);
-      context.fillStyle = '#203743';
-      context.fillText(point.name,left,top);
-    }
-  }
-
-  const resize = new ResizeObserver(paint);
-  resize.observe(canvas);
-  $('#modal').addEventListener('close',() => resize.disconnect(),{once:true});
-  background.onload = paint;
-  background.src = 'travel-assets/data/0442cb7361cd8012/world-base.png';
-  paint();
+  if(!days.length)return;
+  const frame=document.createElement('iframe'),nonce=uid(),modal=$('#modal');
+  frame.title='全程二维路线地图';frame.sandbox='allow-scripts';frame.referrerPolicy='no-referrer';
+  frame.src='travel-assets/frame.html?view=plan&readonly=1&v=full-trip-shared#'+nonce;
+  const send=message=>frame.contentWindow?.postMessage({channel:'louie-travel',nonce,...message},'*');
+  const fit=()=>send({kind:'plan-route',days,selected:'',overviewStops:[...new Set(days.flatMap(day=>day.points.map(p=>p.name)))],focus:true,mapView:'flat'});
+  let ready=false,closed=false;
+  const receive=async event=>{
+    const m=event.data;
+    if(closed||event.source!==frame.contentWindow||event.origin!=='null'||m?.channel!=='louie-travel'||m.nonce!==nonce)return;
+    if(m.kind==='ready'){ready=true;$('#tripFullLoading')?.remove();fit();return}
+    if(m.kind==='plan-select'&&days.some(day=>day.id===m.id)){send({kind:'plan-route',days,selected:m.id,overviewStops:[],focus:true,mapView:'flat'});return}
+    if(m.kind!=='request'||typeof m.id!=='string'||m.id.length>100)return;
+    // This secondary map can read existing records but cannot write or remove them.
+    try{
+      if(!(m.op==='read-store'||m.op==='api'&&m.data?.path==='/api/entries'&&(!m.data.options?.method||m.data.options.method==='GET')))throw Error('全程地图仅供查看。');
+      const result=await travelBridge(m.op,m.data||{});
+      if(!closed)send({kind:'response',id:m.id,result});
+    }catch(error){if(!closed)send({kind:'response',id:m.id,error:String(error.message||error).slice(0,300)})}
+  };
+  window.addEventListener('message',receive);
+  modal.addEventListener('close',()=>{closed=true;window.removeEventListener('message',receive);frame.remove()},{once:true});
+  for(const [id,direction] of [['tripFullOut',-1],['tripFullIn',1]])$('#'+id).onclick=()=>{if(ready)send({kind:'plan-zoom',direction})};
+  $('#tripFullReset').onclick=()=>{if(ready)fit()};
+  $('.trip-full-frame').append(frame);
 }
 
 function updateTripOverview(plan, stages) {
