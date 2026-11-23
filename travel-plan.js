@@ -316,7 +316,7 @@ function showFullTripMap() {
   if(!days.length)return;
   const frame=document.createElement('iframe'),nonce=uid(),modal=$('#modal');
   frame.title='全程二维路线地图';frame.sandbox='allow-scripts';frame.referrerPolicy='no-referrer';
-  frame.src='travel-assets/frame.html?view=plan&readonly=1&v=journal-rows#'+nonce;
+  frame.src='travel-assets/frame.html?view=plan&readonly=1&v=rainbow-rings#'+nonce;
   const send=message=>frame.contentWindow?.postMessage({channel:'louie-travel',nonce,...message},'*');
   const fit=()=>send({kind:'plan-route',days,selected:'',overviewStops:[...new Set(days.flatMap(day=>day.points.map(p=>p.name)))],focus:true,mapView:'flat'});
   let ready=false,closed=false;

@@ -120,6 +120,7 @@ body.page-journal #travelActions {display:none!important}
 .journal-row-meta {display:flex;align-items:center;gap:14px;font-size:11px;color:#5d6d62}
 #journalPage .journal-row-meta time {margin:0;font-size:11px;font-variant-numeric:tabular-nums}
 .journal-row-mark {display:grid;place-items:center;width:30px;height:30px;flex:none;border-radius:50%;color:var(--region-color);background:#fff9;border:2px solid var(--ring-color);font-size:19px}
+.journal-card.overseas .journal-row-mark {border:2px solid transparent;background:linear-gradient(#fffefa,#fffefa) padding-box,conic-gradient(from 0deg,#F08CAA,#B99CF2,#7EB9EE,#74D4C3,#EBD47C,#F4AC80,#F08CAA) border-box}
 .journal-row-arrow {font-size:24px;color:#5c6c60}
 @media(max-width:520px){#journalPage .journal-card {padding:14px 12px;gap:10px}#journalPage .journal-card h3{font-size:14px}}
 </style><style>.site-header,.site-footer,#homePage,#notesPage,#aboutPage,#journalPage>.intro{display:none!important}body.page-travel #travelPage{inset:0!important}body.page-travel #travelPage .globe-panel{height:100%!important}body.page-journal{overflow:auto}#journalPage{padding:22px!important}body{background:#f6f5ef}#travelPage .map-loading{z-index:5}</style></head><body>
@@ -1133,7 +1134,7 @@ function travelJournalRegion(entry) {
 var journalRegion='all';
 function renderJournalEntry(entry) {
   const region=travelJournalRegion(entry),palette=countryMarkerPalette(entry);
-  return '<button type="button" class="entry journal-card" data-id="'+esc(entry.id)+'" style="--region-color:'+region.color+';--ring-color:'+(palette?.[1]||region.color)+'">'+
+  return '<button type="button" class="entry journal-card '+(palette?'overseas':'')+'" data-id="'+esc(entry.id)+'" style="--region-color:'+region.color+';--ring-color:'+(palette?.[1]||region.color)+'">'+
     '<span class="journal-row-mark" aria-hidden="true">✦</span><div class="entry-body"><h3>'+esc(entry.place)+'</h3>'+
     '<div class="journal-row-meta"><time>'+esc(entry.date.replaceAll('-','.'))+'</time><span>'+(entry.status==='wish'?'想去':'去过')+'</span></div></div><span class="journal-row-arrow" aria-hidden="true">›</span></button>';
 }
@@ -1189,11 +1190,11 @@ $('#entries').addEventListener('click',event => {
 function drawFootprintStar(point,color,radius,palette=null) {
   ctx.beginPath();
   ctx.arc(point.x,point.y,radius+5,0,Math.PI*2);
-  ctx.fillStyle = palette ? palette[1] : color+'28';
+  ctx.fillStyle = palette ? '#ffffff24' : color+'28';
   ctx.fill();
   if(palette){
-    const ring=ctx.createLinearGradient(point.x-radius,point.y-radius,point.x+radius,point.y+radius);
-    ring.addColorStop(0,palette[0]);ring.addColorStop(.55,palette[1]);ring.addColorStop(1,palette[0]);
+    const ring=ctx.createConicGradient(-Math.PI/2,point.x,point.y);
+    ['#F08CAA','#B99CF2','#7EB9EE','#74D4C3','#EBD47C','#F4AC80','#F08CAA'].forEach((shade,index)=>ring.addColorStop(index/6,shade));
     ctx.strokeStyle=ring;ctx.lineWidth=3;ctx.stroke();
   }
   ctx.beginPath();
