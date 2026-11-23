@@ -316,7 +316,7 @@ function showFullTripMap() {
   if(!days.length)return;
   const frame=document.createElement('iframe'),nonce=uid(),modal=$('#modal');
   frame.title='全程二维路线地图';frame.sandbox='allow-scripts';frame.referrerPolicy='no-referrer';
-  frame.src='travel-assets/frame.html?view=plan&readonly=1&v=itinerary-clean#'+nonce;
+  frame.src='travel-assets/frame.html?view=plan&readonly=1&v=map-first#'+nonce;
   const send=message=>frame.contentWindow?.postMessage({channel:'louie-travel',nonce,...message},'*');
   const fit=()=>send({kind:'plan-route',days,selected:'',overviewStops:[...new Set(days.flatMap(day=>day.points.map(p=>p.name)))],focus:true,mapView:'flat'});
   let ready=false,closed=false;
@@ -371,26 +371,24 @@ function sendTripMap(focus = false) {
 function renderTravelPlan() {
   $('#view').innerHTML = `
     <article class="trip-plan" id="tripPlanner">
-      <div class="trip-plan-switcher"><label for="tripPlanSelect">旅行计划</label>
+      <div class="trip-toolbar">
         <select id="tripPlanSelect" aria-label="选择旅行计划"></select>
+        <div class="trip-toolbar-actions">
+          <details id="tripRouteMenu" class="trip-route-menu"><summary>路线筛选</summary>
+            <div class="trip-route-popover">
+              <div id="tripModes" class="trip-modes" role="group" aria-label="按活动类型筛选"></div>
+              <div id="tripStages" class="trip-stages"></div>
+              <details class="trip-booking"><summary>路线资料</summary><div id="tripBooking"></div></details>
+            </div>
+          </details>
+          <button type="button" id="tripDaysToggle" aria-expanded="false" aria-controls="tripDaysPanel">每日行程</button>
+          <button type="button" id="tripAll">全程地图</button>
         </div>
-      <header class="trip-header">
-        <div><h1 id="tripTitle"></h1><p id="tripSubtitle" class="muted"></p></div>
-      </header>
-      <section class="trip-overview" aria-labelledby="tripOverviewTitle">
-        <div class="trip-overview-head"><h2 id="tripOverviewTitle">全程总览</h2>
-          <button type="button" id="tripAll">查看全程地图</button></div>
-        <div id="tripStages" class="trip-stages"></div>
-      </section>
-      <div class="trip-filters">
-        <p id="tripScope" class="muted"></p>
-        <div id="tripModes" class="trip-modes" role="group" aria-label="按活动类型筛选"></div>
       </div>
       <div class="trip-layout">
         <section class="trip-map-card" aria-label="旅行星球路线">
           <div class="trip-map-wrap"><p id="travelFrameLoading" class="travel-frame-loading">正在加载路线地图…</p></div>
-          <div class="trip-map-caption"><button type="button" id="tripDaysToggle" aria-expanded="false" aria-controls="tripDaysPanel">每日行程</button>
-            <div class="trip-map-actions">
+          <div class="trip-map-caption"><div class="trip-map-actions">
               <button type="button" id="tripZoomOut" aria-label="缩小地图">−</button>
               <button type="button" id="tripZoomIn" aria-label="放大地图">＋</button>
               <button type="button" id="tripOverview">全段视角</button>
@@ -403,7 +401,6 @@ function renderTravelPlan() {
           <div id="tripList" class="trip-list"></div>
         </section>
       </div>
-      <details class="trip-card trip-booking"><summary>路线说明与资料</summary><div id="tripBooking"></div></details>
     </article>`;
   $('#tripPlanSelect').onchange = event => switchTravelPlan(event.target.value);
   if (!window.LouiePublicSite) {
@@ -416,7 +413,7 @@ function renderTravelPlan() {
       if (travelIsReady) sendTravel({kind:'plan-zoom', direction});
     };
   }
-  $('#tripOverview').onclick = () => { tripSelected = ''; refreshTripPlanner({focus: true}); };
+  $('#tripOverview').onclick = () => { tripSelected = '';tripGroup='all';tripMode='all';refreshTripPlanner({focus: true}); };
   $('#tripAll').onclick = showFullTripMap;
   $('#tripDaysToggle').onclick=()=>toggleTripDays($('#tripDaysPanel').hidden);
   $('#tripDaysClose').onclick=()=>{toggleTripDays(false);$('#tripDaysToggle').focus()};
@@ -425,7 +422,7 @@ function renderTravelPlan() {
     const button = e.target.closest('[data-group]');
     if (!button) return;
     showTripScope(Number(button.dataset.group));
-    $('#tripStages').querySelector('[aria-pressed=true]')?.focus({preventScroll:true});
+    $('#tripRouteMenu').open=false;$('#tripRouteMenu').querySelector('summary').focus();
   };
   $('#tripModes').onclick = e => {
     const button = e.target.closest('[data-mode]');
@@ -464,11 +461,6 @@ function refreshTripPlanner({focus = false} = {}) {
     `<p>保留原亚欧非路线。预订前核对各段交通、住宿和入境要求。</p><p class="trip-links">
       <a href="https://xhslink.com/o/2WTjkhTMUdn" target="_blank" rel="noopener noreferrer">原路线参考</a>
       <a href="https://cs.mfa.gov.cn/aqtx/" target="_blank" rel="noopener noreferrer">领事提醒</a></p>`;
-  $('#tripTitle').textContent = plan.title;
-  const countryCount = tripCountryCount(plan);
-  $('#tripSubtitle').textContent = [plan.start ? '暂定 ' + dateRange : '日期待定', plan.days.length + ' 天', stages.length + ' 段',
-    ...(countryCount ? [countryCount + ' 个国家（境外）'] : []), budget ? '预算 ' + tripMoney(budget) : '预算待定'].join(' · ');
-  $('#tripScope').textContent = tripGroup === 'all' ? '全程路线' : plan.stages[tripGroup];
   updateTripOverview(plan,stages);
   $('#tripModes').innerHTML = [['all', {label: '全部'}], ...Object.entries(tripModes)].map(([key, mode]) =>
     `<button type="button" data-mode="${key}" aria-pressed="${tripMode === key}">${mode.color ?

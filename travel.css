@@ -205,3 +205,39 @@ body.travel-page {
 
 .trip-drawer-actions {display:flex;flex-wrap:wrap;gap:6px;padding:0 14px 12px;flex-shrink:0}
 .trip-drawer-actions button {font-size:12px;padding:7px 10px}
+
+/* Fit the planner to the viewport, with secondary information behind the toolbar. */
+body:has(#tripPlanner) {height:100dvh;overflow:hidden}
+body:has(#tripPlanner) main {max-width:none;height:100dvh;display:flex;flex-direction:column;overflow:hidden;padding:14px 24px 18px}
+body:has(#tripPlanner) main > header {flex:none;border:0;padding-bottom:10px}
+body:has(#tripPlanner) #view {display:flex;flex-direction:column;flex:1;min-height:0}
+#tripPlanner {display:flex;flex-direction:column;gap:12px;flex:1;min-height:0;width:100%;max-width:none;margin:0}
+.trip-toolbar {display:flex;align-items:center;justify-content:space-between;gap:12px;flex:none;position:relative;z-index:6}
+.trip-toolbar > select {margin:0;min-width:0;max-width:550px;flex:1;font-weight:600;font-size:16px;padding:10px 14px;background:var(--paper)}
+.trip-toolbar-actions {display:flex;align-items:center;gap:8px;flex:none}
+.trip-toolbar-actions > button,.trip-route-menu > summary {margin:0;padding:9px 13px;font-size:13px;border:1px solid var(--line);border-radius:9px;background:var(--paper);white-space:nowrap}
+.trip-route-menu {margin:0;position:relative}
+.trip-route-menu > summary {list-style:none;font-weight:500}
+.trip-route-menu > summary::-webkit-details-marker {display:none}
+.trip-route-menu[open] > summary {border-color:var(--green);color:var(--green)}
+.trip-route-popover {position:absolute;right:0;top:calc(100% + 10px);width:min(560px,calc(100vw - 40px));max-height:min(65dvh,580px);overflow:auto;padding:16px;background:var(--paper);border:1px solid var(--line);border-radius:14px;box-shadow:0 14px 45px #152f3326}
+.trip-route-popover .trip-stages {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:12px}
+.trip-route-popover .trip-stage-button {padding:12px;font-size:12px}
+.trip-route-popover .trip-stage-button > small,.trip-route-popover .trip-stage-stops {display:none}
+.trip-route-popover .trip-booking {margin-bottom:0;font-size:12px}
+#tripPlanner .trip-layout {flex:1;min-height:0;display:flex;flex-direction:column;align-items:stretch}
+#tripPlanner .trip-map-card {width:100%;flex:1;min-height:0;position:relative;display:flex;flex-direction:column}
+#tripPlanner .trip-map-wrap {flex:1;min-height:0;height:auto}
+#tripPlanner .trip-map-caption {position:absolute;right:12px;bottom:12px;min-height:0;padding:0;z-index:2;gap:0}
+#tripPlanner .trip-map-actions {display:flex;gap:6px}
+#tripPlanner .trip-map-actions button {background:color-mix(in srgb,var(--paper) 94%,transparent);box-shadow:0 3px 12px #17332c12}
+#tripPlanner .trip-list-panel {bottom:62px}
+@media(max-width:850px){
+ body:has(#tripPlanner){display:flex;flex-direction:column}
+ body:has(#tripPlanner) main{height:auto;flex:1;min-height:0;padding:8px 12px 12px}
+ .trip-toolbar{flex-wrap:wrap;gap:8px}
+ .trip-toolbar > select{flex-basis:100%;max-width:none;font-size:14px}
+ .trip-toolbar-actions{width:100%;justify-content:flex-end}
+ .trip-route-popover{position:fixed;left:12px;right:12px;top:auto;width:auto;margin-top:8px;max-height:58dvh}
+}
+@media(max-height:540px){body:has(#tripPlanner) main > header{display:none}.trip-toolbar > select{font-size:13px}.trip-toolbar-actions > button,.trip-route-menu > summary{padding:6px 9px}}
