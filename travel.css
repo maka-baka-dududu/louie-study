@@ -202,3 +202,6 @@ body.travel-page {
 .trip-list-heading h2 {margin-right:auto}
 .trip-map-caption {min-height:54px}
 @media(max-width:560px){.trip-plan .trip-map-wrap{height:62dvh;min-height:380px}.trip-layout > .trip-list-panel{right:8px;top:8px;bottom:62px;width:calc(100% - 16px)}}
+
+.trip-drawer-actions {display:flex;flex-wrap:wrap;gap:6px;padding:0 14px 12px;flex-shrink:0}
+.trip-drawer-actions button {font-size:12px;padding:7px 10px}

@@ -316,7 +316,7 @@ function showFullTripMap() {
   if(!days.length)return;
   const frame=document.createElement('iframe'),nonce=uid(),modal=$('#modal');
   frame.title='全程二维路线地图';frame.sandbox='allow-scripts';frame.referrerPolicy='no-referrer';
-  frame.src='travel-assets/frame.html?view=plan&readonly=1&v=natural-itinerary#'+nonce;
+  frame.src='travel-assets/frame.html?view=plan&readonly=1&v=itinerary-clean#'+nonce;
   const send=message=>frame.contentWindow?.postMessage({channel:'louie-travel',nonce,...message},'*');
   const fit=()=>send({kind:'plan-route',days,selected:'',overviewStops:[...new Set(days.flatMap(day=>day.points.map(p=>p.name)))],focus:true,mapView:'flat'});
   let ready=false,closed=false;
@@ -373,11 +373,9 @@ function renderTravelPlan() {
     <article class="trip-plan" id="tripPlanner">
       <div class="trip-plan-switcher"><label for="tripPlanSelect">旅行计划</label>
         <select id="tripPlanSelect" aria-label="选择旅行计划"></select>
-        ${window.LouiePublicSite ? '' : '<button type="button" id="tripNew">＋ 新建计划</button>'}</div>
+        </div>
       <header class="trip-header">
         <div><h1 id="tripTitle"></h1><p id="tripSubtitle" class="muted"></p></div>
-        ${window.LouiePublicSite ? '' : `<div class="trip-actions"><button type="button" id="tripSettings">计划与预算</button>
-          <button type="button" class="primary" id="tripAdd">＋ 新增一天</button></div>`}
       </header>
       <section class="trip-overview" aria-labelledby="tripOverviewTitle">
         <div class="trip-overview-head"><h2 id="tripOverviewTitle">全程总览</h2>
@@ -400,6 +398,7 @@ function renderTravelPlan() {
         </section>
         <section id="tripDaysPanel" class="trip-list-panel" aria-label="每日行程" hidden>
           <div class="trip-list-heading"><h2>每日行程</h2><span id="tripCount" class="muted"></span><button type="button" id="tripDaysClose" aria-label="收起每日行程">×</button></div>
+          ${window.LouiePublicSite ? '' : `<div class="trip-drawer-actions"><button type="button" id="tripSettings">计划与预算</button><button type="button" id="tripNew">新建计划</button><button type="button" class="primary" id="tripAdd">＋ 新增一天</button></div>`}
           <div id="tripDetail" class="trip-detail" aria-live="polite" hidden></div>
           <div id="tripList" class="trip-list"></div>
         </section>
