@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';import {emptyTeacher,validateTeacher,mutateTeacher,teacherRoute,encryptTeacherKey} from './teacher.mjs';
+const known=new Set(['exam','japanese']),s=emptyTeacher();assert(validateTeacher(s));
+mutateTeacher(s,{action:'new-chat'},'japanese',known);const c=s.state.chats[0];assert.equal(c.projectId,'japanese');assert.throws(()=>mutateTeacher(s,{action:'delete-chat',id:c.id},'exam',known));
+c.messages=[{id:'q',role:'user',content:'原问题',createdAt:'today',status:'completed'},{id:'a',role:'assistant',content:'完整回答',replyTo:'q',createdAt:'today'}];
+mutateTeacher(s,{action:'collect-question',chatId:c.id,sourceId:'q'},'japanese',known);assert.equal(s.state.questions.length,1);mutateTeacher(s,{action:'collect-question',chatId:c.id,sourceId:'q'},'japanese',known);assert.equal(s.state.questions.length,1);
+mutateTeacher(s,{action:'save-memory',content:'先讲基础',category:'学习偏好'},'japanese',known);assert.equal(s.state.memories.length,1);
+mutateTeacher(s,{action:'move-chat',id:c.id,targetProjectId:'exam'},'japanese',known);assert.equal(s.state.questions[0].projectId,'exam');assert.equal(s.state.memories[0].projectId,'japanese');
+mutateTeacher(s,{action:'review-question',id:s.state.questions[0].id,pass:true},'exam',known);assert.equal(s.state.questions[0].level,1);
+const encrypted=await encryptTeacherKey('test-key',{SESSION_SECRET:'test-secret'});assert(!JSON.stringify(encrypted).includes('test-key'));
+let blocked=await teacherRoute(new Request('https://example/api/teacher'),{}, {role:'read'},'/api/teacher',{fail:(message,status)=>new Response(message,{status})},{});assert.equal(blocked.status,403);
+console.log('Tutor: project isolation, question deduplication, review schedule, memory, move, encrypted key and visitor denial passed');

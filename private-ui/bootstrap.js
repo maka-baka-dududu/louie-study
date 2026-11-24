@@ -26,7 +26,7 @@
   const extensions=[
     ['algorithm-problems.js','LouieAlgorithmProblemsReady'],
     ['algorithms-ui.js','LouieAlgorithmsReady'],
-    ...(window.LouieAccessRole==='edit'?[['teacher-ui.js?v=cloud-1','LouieTeacherReady']]:[]),
+    ['teacher-ui.js?v=cloud-1','LouieTeacherReady'],
     ['personal-ui.js?v=savings-1','LouiePersonalReady'],
     ['practice-ui.js?v=chord-memory','LouiePracticeReady'],
     ['language-ui.js?v=sentence-recall-1','LouieLanguageReady'],
@@ -59,7 +59,7 @@
   async function loadApp(){
     await loadCore();
     // Download extensions concurrently while keeping their shared globals in execution order.
-    const results=await Promise.allSettled(extensions.map(([src,flag])=>loadExtension(src,flag)));
+    const results=await Promise.allSettled(extensions.filter(([src])=>!src.startsWith('teacher-ui.js')||window.LouieAccessRole==='edit').map(([src,flag])=>loadExtension(src,flag)));
     document.body.classList.remove('booting');
     const failure=results.find(result=>result.status==='rejected');
     if(failure)window.toast?.(failure.reason.message+'，部分功能可刷新后重试。');

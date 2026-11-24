@@ -1,0 +1,20 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "louie-study-access",
+  "account_id": "ec930b03127301aa3c8bbab7c8110346",
+  "main": "worker.mjs",
+  "compatibility_date": "2026-11-23",
+  "workers_dev": true,
+  "triggers": {"crons": ["15 1 * * *"]},
+  "observability": {"enabled": false},
+  "durable_objects": {"bindings": [{"name":"ACCESS_STATE","class_name":"AccessState"}]},
+  "migrations": [{"tag":"v1","new_sqlite_classes":["AccessState"]}],
+  "vars": {
+    "SITE_ORIGIN": "https://maka-baka-dududu.github.io",
+    "SITE_PREFIX": "/louie-study/",
+    "OWNER_EMAIL_SHA256": "5f345d99cc48842d9eaa68172921cce232766dd9ea9893a0d2bb6c8e768aae61",
+    "AUTH_VERSION": "1",
+    "GOOGLE_OAUTH_PRODUCTION": "1",
+    "ASSET_COMMIT": "2a4ba52cf845c54607776c29fd4b46425880b477"
+  }
+}
