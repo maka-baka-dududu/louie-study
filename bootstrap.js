@@ -29,7 +29,7 @@
     ['personal-ui.js?v=savings-1','LouiePersonalReady'],
     ['practice-ui.js?v=chord-memory','LouiePracticeReady'],
     ['language-ui.js?v=sentence-recall-1','LouieLanguageReady'],
-    ['studio-ui.js?v=travel-direct-2','LouieStudioReady'],
+    ['studio-ui.js?v=fitness-program-1','LouieStudioReady'],
     ['profile-files-ui.js?v=excerpts-1','LouieProfileFilesReady'],
     ['travel-model.js?v=admin-footprints','LouieTravelModel'],
     ['travel-plan.js?v=travel-nav-stats','LouieTravelPlanReady'],

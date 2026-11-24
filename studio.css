@@ -123,3 +123,5 @@
   .language-tabs { gap: 5px; }
   .language-tabs button { padding: 7px 10px; }
 }
+
+.fitness-exercise-row .exercise-cue{grid-column:1/-1}.exercise-cue textarea{min-height:60px;width:100%}.fitness-program h2{margin:0 0 8px}.fitness-program .studio-toolbar>div{flex:1}.fitness-days{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}.fitness-program details{margin-top:14px}.workout-cue{font-size:14px;line-height:1.7;margin:6px 0 16px}.fitness-program .practice-note{white-space:pre-line}
