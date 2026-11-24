@@ -79,7 +79,7 @@ async function api(request,env,identity,path){const migration=await migrationRou
 }
 async function systemCheck(env){
  const previous=await(await stateCall(env,'/system-check-get')).json();const value={checkedAt:new Date().toISOString(),driveConnected:false,teacherKeyConfigured:false,lastSuccess:previous?.lastSuccess||null};
- try{const response=await drive(env,'about?fields=storageQuota(usage,limit)');if(!response.ok)throw Error('DRIVE_UNAVAILABLE');await response.json();value.driveConnected=true;const key=await(await stateCall(env,'/teacher-key-get')).json();value.teacherKeyConfigured=!!(key||env.DEEPSEEK_API_KEY);value.lastSuccess=value.checkedAt}catch(error){value.errorCode=/^DRIVE_[A-Z_]+_[0-9]{3}$/.test(error.code||'')?error.code:'CLOUD_CONNECTION_FAILED'}
+ try{const response=await drive(env,'about?fields=storageQuota(usage,limit)');if(!response.ok)throw Error('DRIVE_UNAVAILABLE');await response.json();value.driveConnected=true;const key=await(await stateCall(env,'/teacher-key-get')).json();value.teacherKeyConfigured=!!(key?await openCredential(key,env,'teacher-key-v1'):env.DEEPSEEK_API_KEY);value.lastSuccess=value.checkedAt}catch(error){value.errorCode=/^DRIVE_[A-Z_]+_[0-9]{3}$/.test(error.code||'')?error.code:'CLOUD_CONNECTION_FAILED'}
  await stateCall(env,'/system-check-put',{value});return value;
 }
 export default {async scheduled(event,env,ctx){ctx.waitUntil(systemCheck(env))},async fetch(request,env){try{
