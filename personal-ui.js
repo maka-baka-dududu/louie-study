@@ -18,6 +18,7 @@ const divinationProject = {
 function normalizePersonal(){db.personal??={profile:{name:'Louie',intro:'',about:'',links:[]},tracks:trackTemplates.map(t=>({...t,subjects:[...t.subjects],goal:'',milestones:[]})),activeTrack:'exam'};db.personal.profile.links??=[];db.personal.activeTrack??='exam';
   db.personal.excerpts??=[];
   const tracks=db.personal.tracks;
+  if(tracks.length<30&&!tracks.some(t=>t.id==='savings'))tracks.push({id:'savings',name:'攒钱',icon:'＋',kind:'life',subjects:['攒钱目标','收支记录','预算管理','存钱复盘'],goal:'设定攒钱目标，记录收支和进展。',milestones:[]});
   if(tracks.length<30&&!tracks.some(t=>t.id==='sidebusiness'))tracks.push({id:'sidebusiness',name:'我的副业',icon:'↗',kind:'life',subjects:['挣钱思路','市场调研','技能变现','小成本试验','收支复盘'],goal:'研究可行的挣钱方式，记录成本、投入和实际结果。',milestones:[]});
   if(tracks.length<30&&!tracks.some(t=>t.id==='excerpts'))tracks.push({id:'excerpts',name:'摘录与感悟',icon:'「',kind:'life',subjects:['古诗文','好句子','感悟'],goal:'留下喜欢的文字和自己的思考。',milestones:[]});
   if(tracks.length<30&&!tracks.some(track=>track.id===divinationProject.id)){

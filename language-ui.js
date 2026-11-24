@@ -538,6 +538,21 @@ function englishWordView() {
 
 const sentenceCategories = ['商务','生活','考试','口语','其他'];
 let sentenceCategory = 'all';
+let sentenceDisplay = 'both';
+try { const saved = localStorage.getItem('louie-sentence-display'); if (['en','zh','both'].includes(saved)) sentenceDisplay = saved; } catch {}
+function setSentenceDisplay(value) {
+  if (!['en','zh','both'].includes(value)) return;
+  sentenceDisplay = value;
+  try { localStorage.setItem('louie-sentence-display',value); } catch {}
+  $('#sentenceList').innerHTML = sentenceList();
+}
+function sentenceContent(item) {
+  const english = `<h2>${esc(item.text)}</h2>`;
+  const chinese = item.translation ? `<p>${esc(item.translation)}</p>` : '<p class="muted">尚未填写中文释义</p>';
+  if (sentenceDisplay === 'zh') return chinese + `<details><summary>查看英文</summary>${english}</details>`;
+  if (sentenceDisplay === 'en') return english + (item.translation ? `<details><summary>查看中文</summary>${chinese}</details>` : '');
+  return english + (item.translation ? chinese : '');
+}
 let sentenceDateFilter = 'all', sentenceQuery = '', sentenceLimit = 30;
 
 function sentenceList() {
@@ -545,11 +560,11 @@ function sentenceList() {
   const records = languageRecords().sentences.filter(item =>
     (sentenceDateFilter === 'all' || item.date === sentenceDateFilter) &&
     (sentenceCategory === 'all' || (item.category || '其他') === sentenceCategory) &&
-    (!query || [item.text,item.translation,item.note].some(value => value.toLowerCase().includes(query)))
+    (!query || [item.text,item.translation,item.note].some(value => String(value || '').toLowerCase().includes(query)))
   ).sort((a,b) => b.date.localeCompare(a.date) || b.created - a.created);
   return records.slice(0,sentenceLimit).map(item => `<article class="card sentence-card">
-    <time datetime="${item.date}">${item.date} · ${esc(item.category || '其他')}</time><h2>${esc(item.text)}</h2>
-    ${item.translation ? `<p>${esc(item.translation)}</p>` : ''}
+    <time datetime="${item.date}">${item.date} · ${esc(item.category || '其他')}</time>
+    ${sentenceContent(item)}
     ${item.note ? `<p class="muted">${esc(item.note)}</p>` : ''}
     <button type="button" onclick="sentenceForm('${item.id}')">编辑</button>
   </article>`).join('') + (records.length > sentenceLimit ? '<button id="sentenceMore" onclick="moreSentences()">显示更多</button>' : '') +
@@ -560,6 +575,9 @@ function englishSentencesView() {
   const dates = new Set([today(),...languageRecords().sentences.map(item => item.date)]);
   return `<div class="pagehead"><h1>每日句子</h1><button class="primary" onclick="sentenceForm()">＋ 记一句</button></div>
     <div class="language-toolbar sentence-filters">
+      <select aria-label="句子显示语言" onchange="setSentenceDisplay(this.value)">
+        ${[['both','双语'],['zh','中文 · 回想英文'],['en','英文']].map(([value,label])=>`<option value="${value}" ${sentenceDisplay===value?'selected':''}>${label}</option>`).join('')}
+      </select>
       <select aria-label="按分类查看句子" onchange="sentenceCategory=this.value;sentenceLimit=30;document.querySelector('#sentenceList').innerHTML=sentenceList()">
         <option value="all">全部分类</option>
         ${sentenceCategories.map(category=>`<option value="${category}" ${sentenceCategory===category?'selected':''}>${category}</option>`).join('')}
