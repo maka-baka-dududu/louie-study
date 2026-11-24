@@ -71,6 +71,6 @@
     if(response.status===401){location.replace('/');return}
     const result=await response.json();if(!response.ok)throw Error(result.error||'私人资料未准备好');
     window.LouieAccessRole=result.role;window.LouieGateway=true;window.LouieLocal=result;window.LouiePublicSite=result.role==='read';window.LouiePublished={data:result.data,files:{}};
-    await loadApp();await loadExtension('drive-core.js','LouieDriveCore');await loadExtension('access-ui.js?v=silver-gold-3','LouieAccessReady');
+    await loadApp();await loadExtension('drive-core.js','LouieDriveCore');await loadExtension('access-ui.js?v=savings-reader-4','LouieAccessReady');
   }catch(error){document.querySelector('#nav').replaceChildren();showError(error.message);document.body.classList.remove('access-pending')}
 })();
