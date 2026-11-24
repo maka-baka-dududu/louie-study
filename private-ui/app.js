@@ -200,6 +200,7 @@ const baseLocalRender=render;
 render=function(){baseLocalRender();applyTheme();paintSaveStatus();if(page==='settings'&&localDisk)void refreshPublishStatus()};
 async function refreshPublishStatus(){
   const node=$('#autoPublishStatus');
+  if(window.LouieGateway){if(node){node.hidden=true;node.textContent=''}return}
   if(!node)return;
   try{
     const response=await diskRequest('/api/publish/status');
