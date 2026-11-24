@@ -26,6 +26,7 @@
   const extensions=[
     ['algorithm-problems.js','LouieAlgorithmProblemsReady'],
     ['algorithms-ui.js','LouieAlgorithmsReady'],
+    ...(window.LouieAccessRole==='edit'?[['teacher-ui.js?v=cloud-1','LouieTeacherReady']]:[]),
     ['personal-ui.js?v=savings-1','LouiePersonalReady'],
     ['practice-ui.js?v=chord-memory','LouiePracticeReady'],
     ['language-ui.js?v=sentence-recall-1','LouieLanguageReady'],
@@ -71,6 +72,6 @@
     if(response.status===401){location.replace('/');return}
     const result=await response.json();if(!response.ok)throw Error(result.error||'私人资料未准备好');
     window.LouieAccessRole=result.role;window.LouieGateway=true;window.LouieLocal=result;window.LouiePublicSite=result.role==='read';window.LouiePublished={data:result.data,files:{}};
-    await loadApp();await loadExtension('drive-core.js','LouieDriveCore');await loadExtension('access-ui.js?v=admin-storage-5','LouieAccessReady');
+    await loadApp();await loadExtension('drive-core.js','LouieDriveCore');await loadExtension('access-ui.js?v=personal-private-6','LouieAccessReady');
   }catch(error){document.querySelector('#nav').replaceChildren();showError(error.message);document.body.classList.remove('access-pending')}
 })();
