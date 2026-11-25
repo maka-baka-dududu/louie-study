@@ -132,6 +132,13 @@ aside #nav{overflow-y:auto;min-height:0;flex:1;align-content:start;scrollbar-wid
 .sidebar-folded #nav .nav-travel-heading>button[data-page]{padding-right:8px}
 .sidebar-folded #nav .nav-travel-toggle{right:-5px;width:18px;height:22px;font-size:11px}
 @media(max-width:850px){.nav-travel-heading{width:auto}#nav .nav-travel-heading>button[data-page]{padding-right:32px}}
+
+/* Keep the default shell out of the first paint until authenticated content is ready. */
+body.access-pending>aside,body.access-pending>main,body.access-pending>dialog,body.access-pending>#toast{visibility:hidden;pointer-events:none}
+#accessStartup{display:none}
+body.access-pending>#accessStartup{position:fixed;inset:0;z-index:2147483647;display:grid;place-content:center;gap:14px;text-align:center;background:#f1f5ef;color:#466b5a;font-family:system-ui,-apple-system,sans-serif}
+#accessStartup .startup-mark{font-size:36px;font-weight:650;letter-spacing:-2px}
+#accessStartup p{margin:0;font-size:14px;letter-spacing:1px;color:#69796f}
 </style><style id="louie-responsive-layout">/* Adapt layout to available space, without changing stored appearance or data. */
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%}main,#view,.card,.two>*,.grid>*,.direction-grid>*,.pagehead>*,.teacher-layout>*{min-width:0}.pagehead,.finance-section{gap:12px}.pagehead h1{overflow-wrap:anywhere}.direction-card>div,.home-gateway-copy,.row>div:first-child{min-width:0}.direction-card h2,.row b,.resource h3,.session-note{overflow-wrap:anywhere}img,video,canvas{max-width:100%}.responsive-table{max-width:100%;overflow:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}.responsive-table table{min-width:100%;margin:0}.teacher-message-body pre,pre code{max-width:100%;overflow-x:auto}.mobile-nav-backdrop{display:none}#naiwaCompanion[hidden]{display:none!important}
 @media(min-width:901px) and (max-width:1150px){body:not(.sidebar-folded)>aside{width:218px;padding-inline:16px}body:not(.sidebar-folded) main{margin-left:218px;padding-inline:24px}.qa-page .teacher-layout{grid-template-columns:190px minmax(0,1fr)}}
@@ -160,5 +167,5 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}main,#view,.card,.two>*
 #view svg{max-width:100%}
 @media(max-width:900px){.practice-layout,.comparison-board,.guitar-basics-layout{min-width:0}.guitar-fretboard,.guitar-tab{max-width:100%;overflow-x:auto}.practice-layout>*,.comparison-board>*,.guitar-basics-layout>*{min-width:0}}
 @media(max-width:360px){.guitar-memory-grid{grid-template-columns:1fr}}
-</style><body class="booting"><aside><div class="brand-row"><h2><button class="brand-home" type="button" data-page="home" aria-label="Louie 的小站，返回首页" title="返回首页"><span class="brand-full">Louie 的小站<span class="brand-dot">.</span></span><span class="brand-mark" aria-hidden="true">L<span class="brand-dot">.</span></span></button></h2><button id="sidebarToggle" disabled type="button" aria-label="折叠导航" aria-expanded="true" onclick="toggleSidebar()">‹</button></div><nav id="nav"></nav></aside><main><header><span id="crumb"></span></header><div id="view"></div></main><dialog id="modal"></dialog><div id="toast" role="status"></div>
-<script src="bootstrap.js?v=travel-nav-stats"></script></body></html>
+</style><body class="booting access-pending"><div id="accessStartup" role="status" aria-live="polite"><div class="startup-mark" aria-hidden="true">L.</div><p>正在加载你的小站…</p></div><aside><div class="brand-row"><h2><button class="brand-home" type="button" data-page="home" aria-label="Louie 的小站，返回首页" title="返回首页"><span class="brand-full">Louie 的小站<span class="brand-dot">.</span></span><span class="brand-mark" aria-hidden="true">L<span class="brand-dot">.</span></span></button></h2><button id="sidebarToggle" disabled type="button" aria-label="折叠导航" aria-expanded="true" onclick="toggleSidebar()">‹</button></div><nav id="nav"></nav></aside><main><header><span id="crumb"></span></header><div id="view"></div></main><dialog id="modal"></dialog><div id="toast" role="status"></div>
+<script src="bootstrap.js?v=auth-startup-2"></script></body></html>

@@ -66,12 +66,13 @@
   }
 
   document.body.classList.add('access-pending');
-  const barrier=document.createElement('style');barrier.textContent='body.access-pending #view,body.access-pending #nav{visibility:hidden}#louieAccessControls{margin-left:auto;gap:8px}';document.head.append(barrier);
+  const barrier=document.createElement('style');barrier.textContent='#louieAccessControls{margin-left:auto;gap:8px}';document.head.append(barrier);
   try{
     const response=await fetch('/api/bootstrap',{cache:'no-store'});
     if(response.status===401){location.replace('/');return}
     const result=await response.json();if(!response.ok)throw Error(result.error||'私人资料未准备好');
     window.LouieAccessRole=result.role;window.LouieGateway=true;window.LouieLocal=result;window.LouiePublicSite=result.role==='read';window.LouiePublished={data:result.data,files:{}};
     await loadApp();await loadExtension('galaxy-ui.js','LouieGalaxyReady');await loadExtension('exam-research-ui.js','LouieExamResearchReady');await loadExtension('drive-core.js','LouieDriveCore');await loadExtension('access-ui.js?v=responsive-1','LouieAccessReady');await loadExtension('naiwa-ui.js','LouieNaiwaReady');await loadExtension('responsive-ui.js','LouieResponsiveReady');
-  }catch(error){document.querySelector('#nav').replaceChildren();showError(error.message);document.body.classList.remove('access-pending')}
+    document.body.classList.remove('access-pending','booting');document.getElementById('accessStartup')?.remove();
+  }catch(error){document.querySelector('#nav').replaceChildren();showError(error.message);document.body.classList.remove('access-pending','booting');document.getElementById('accessStartup')?.remove()}
 })();

@@ -2,8 +2,8 @@
 labels.algorithms='算法题';
 db.algorithm??={drafts:{},runs:[]};db.algorithm.solved??=[...new Set(db.algorithm.runs.filter(r=>r.mode==='submit'&&r.status==='Accepted').map(r=>r.problemId))];
 let algorithmId=algorithmProblems[0].id,algorithmLanguage='python',algorithmTab='examples',algorithmLeftTab='problem',algorithmBusy=false,algorithmResult=null,algorithmCustom='{}',algorithmExpected='',algorithmDraftTimer=null,judgeFrame=null,judgeReady=null,judgeResolve=null,judgeJob=null;
-const navItems=['today','teacher','algorithms','library','tracking','knowledge','math','errors','mocks','resources','settings'];
-const navGlyph={today:'◷',teacher:'✧',algorithms:'⌘',library:'▤',tracking:'▥',knowledge:'▦',math:'∑',errors:'✓',mocks:'▧',resources:'◉',settings:'⚙'};
+const navItems=['today','teacher','algorithms','library','tracking','knowledge','math','errors','resources','settings'];
+const navGlyph={today:'◷',teacher:'✧',algorithms:'⌘',library:'▤',tracking:'▥',knowledge:'▦',math:'∑',errors:'✓',resources:'◉',settings:'⚙'};
 const previousAlgorithmRender=render;
 render=function(){const isAlgorithm=page==='algorithms';document.body.classList.toggle('algo-page',isAlgorithm);if(isAlgorithm){page='today';previousAlgorithmRender();page='algorithms';$('#crumb').textContent='算法题';$('#view').innerHTML=algorithmView()}else previousAlgorithmRender();$('#nav').innerHTML=navItems.map(k=>`<button data-page="${k}" title="${labels[k]}" aria-label="${labels[k]}" class="${page===k?'active':''}"><span class="nav-glyph" aria-hidden="true">${navGlyph[k]}</span><span class="nav-label">${labels[k]}</span></button>`).join('');applySidebar()};
 function applySidebar(){const folded=db.appearance?.sidebarCollapsed===true;document.body.classList.toggle('sidebar-folded',folded);const button=$('#sidebarToggle');if(button){button.disabled=false;button.setAttribute('aria-expanded',String(!folded));button.setAttribute('aria-label',folded?'展开导航':'折叠导航');button.title=folded?'展开导航':'折叠导航';button.innerHTML=folded?'›':'‹'}}
