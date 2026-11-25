@@ -1,3 +1,4 @@
+import {financeRates} from './finance-rates.mjs';
 import {examResearchRoute} from './exam-research.mjs';
 import {open as openCredential} from './credentials.mjs';
 import {privacyPage} from './privacy.mjs';
@@ -19,6 +20,8 @@ export class AccessState{
   if(path==='/rate'){return this.ctx.storage.transaction(async tx=>{const key='rate:'+body.key,now=Date.now();let slot=await tx.get(key);if(!slot||now-slot.start>900000)slot={start:now,count:0};if(slot.count>=8)return json({allowed:false});slot.count++;await tx.put(key,slot);return json({allowed:true})})}
   if(path==='/owner-put'){await this.ctx.storage.put('owner:'+body.id,body.value);return json({ok:true})}
   if(path==='/owner-take')return this.ctx.storage.transaction(async tx=>{const v=await tx.get('owner:'+body.id);await tx.delete('owner:'+body.id);return json(v||null)});
+  if(path==='/finance-rates-get')return json(await this.ctx.storage.get('finance-rates')||null);
+  if(path==='/finance-rates-put'){await this.ctx.storage.put('finance-rates',body.value);return json({ok:true})}
   if(path==='/system-check-get')return json(await this.ctx.storage.get('system-check')||null);
   if(path==='/system-check-put'){await this.ctx.storage.put('system-check',body.value);return json({ok:true})}
   if(path==='/drive-refresh-get')return json(await this.ctx.storage.get('drive-refresh')||null);
@@ -56,6 +59,7 @@ function validData(data){return data&&data.version===1&&data.settings&&data.mast
 async function fileResponse(request,env,id,doc){const info=doc.files[id];if(!info||!doc.data.materials?.some(m=>m.fileId===id)||!validID(info.driveId))return fail('附件不存在',404);const headers={};const range=request.headers.get('Range');if(range){if(!/^bytes=\d+-\d*$/.test(range))return fail('不支持的读取范围',416);headers.Range=range}const response=await drive(env,'files/'+info.driveId+'?alt=media',{headers});if(![200,206].includes(response.status))return fail('附件读取失败',502);const inline=/^(?:application\/pdf|image\/(?:jpeg|png|webp|gif)|text\/plain|audio\/|video\/)/.test(info.mime||'');const resultHeaders={'Content-Type':inline?(info.mime||'application/octet-stream'):'application/octet-stream','Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff','Content-Security-Policy':"sandbox; default-src 'none'",'Content-Disposition':(inline?'inline':'attachment')+"; filename*=UTF-8''"+encodeURIComponent(info.name||id),'Accept-Ranges':'bytes'};for(const key of ['Content-Length','Content-Range'])if(response.headers.has(key))resultHeaders[key]=response.headers.get(key);if(request.method==='HEAD'){response.body?.cancel();return new Response(null,{status:200,headers:{...resultHeaders,'Content-Length':String(info.size)}})}return new Response(response.body,{status:response.status,headers:resultHeaders})}
 async function api(request,env,identity,path){const migration=await migrationRoute(request,env,identity,path,{json,fail,drive,driveToken,stateCall,readJSON});if(migration)return migration;const current=await head(env);
  if(path==='/api/system/status'||path==='/api/system/check'){if(identity.role!=='edit')return fail('需要个人模式',403);if(path.endsWith('/check')){if(request.method!=='POST')return fail('无效请求',405);return json(await systemCheck(env))}return json(await(await stateCall(env,'/system-check-get')).json())}
+ if(path==='/api/finance/rates')return financeRates(request,env,identity,{json,fail,stateCall});
  if(path==='/api/storage'){
   if(identity.role!=='edit')return fail('仅管理员可查看存储容量',403);
   if(request.method!=='GET')return fail('无效的请求',405);
