@@ -8,6 +8,7 @@ const trackTemplates=[
  {id:'english',name:'英语',icon:'Aa',kind:'study',subjects:['雅思','口语','听力','阅读','写作','词汇']},
  {id:'calligraphy',name:'书法',icon:'永',kind:'study',subjects:['篆书','隶书','楷书','行书','草书']},
  {id:'fitness',name:'健身',icon:'↗',kind:'life',subjects:['力量训练','有氧','拉伸','活动恢复']},
+ {id:'cantonese',name:'粤语',icon:'粵',kind:'study',subjects:['粤拼与声调','日常会话','听力跟读','常用词汇','粤语歌曲']},
  {id:'japanese',name:'日语',icon:'あ',kind:'study',subjects:['假名','词汇','语法','听力','会话'],paused:true}
 ];
 const divinationProject = {
@@ -18,6 +19,7 @@ const divinationProject = {
 function normalizePersonal(){db.personal??={profile:{name:'Louie',intro:'',about:'',links:[]},tracks:trackTemplates.map(t=>({...t,subjects:[...t.subjects],goal:'',milestones:[]})),activeTrack:'exam'};db.personal.profile.links??=[];db.personal.activeTrack??='exam';
   db.personal.excerpts??=[];
   const tracks=db.personal.tracks;
+  if(tracks.length<30&&!tracks.some(t=>t.id==='cantonese')){const t=trackTemplates.find(t=>t.id==='cantonese');tracks.push({...t,subjects:[...t.subjects],goal:'从粤拼和声调开始，练习日常会话、听力与跟读。',milestones:[]});}
   if(window.LouieAccessRole!=='read'&&tracks.length<30&&!tracks.some(t=>t.id==='savings'))tracks.push({id:'savings',name:'个人账户',icon:'＋',kind:'life',subjects:['攒钱目标','收支记录','预算管理','存钱复盘'],goal:'设定攒钱目标，记录收支和进展。',milestones:[]});
   if(tracks.length<30&&!tracks.some(t=>t.id==='sidebusiness'))tracks.push({id:'sidebusiness',name:'我的副业',icon:'↗',kind:'life',subjects:['挣钱思路','市场调研','技能变现','小成本试验','收支复盘'],goal:'研究可行的挣钱方式，记录成本、投入和实际结果。',milestones:[]});
   if(tracks.length<30&&!tracks.some(t=>t.id==='excerpts'))tracks.push({id:'excerpts',name:'摘录与感悟',icon:'「',kind:'life',subjects:['古诗文','好句子','感悟'],goal:'留下喜欢的文字和自己的思考。',milestones:[]});
