@@ -1,8 +1,12 @@
-import assert from 'node:assert/strict';import {examTarget,officialURL,acceptedItems,examResearchRoute} from './exam-research.mjs';
+import assert from 'node:assert/strict';import {examTarget,officialURL,acceptedItems,examResearchRoute,relevantToTarget} from './exam-research.mjs';
 assert.equal(examTarget({school:'南京理工大学（可更换）',major:'计算机专硕'}).school,'南京理工大学');assert.equal(examTarget({school:'大学',major:'专业'}).year,null);
 for(const u of ['http://gs.njust.edu.cn/a','https://example.com/','https://gs.njust.edu.cn.evil.example/a','https://127.0.0.1/a','https://user:pass@gs.njust.edu.cn/a'])assert(!officialURL(u));assert(officialURL('https://gs.njust.edu.cn/a'));
 const target={school:'南京理工大学',college:'',major:'计算机专硕',year:null},quote='南京理工大学2027年硕士研究生招生简章：报考条件与专业目录以本年度官方公告为准。',sources=[{id:'source-0',title:'南京理工大学2027年招生简章',url:'https://gs.njust.edu.cn/test/page.htm',content:quote+'\n发布日期：2026年9月30日。'}];
 const extracted={items:[{sourceId:'source-0',category:'报考要求',year:2027,published:'2026-09-30',scope:'南京理工大学',evidence:quote},{sourceId:'source-0',category:'考试科目',year:2027,evidence:'不存在的文字，不能据此编造数学二英语二408'},{sourceId:'source-0',category:'复试线',year:2027,evidence:quote,retest:null}],pending:['专业科目待核实目录附件']};
+assert(!relevantToTarget({category:'考试科目',evidence:'140500智能科学与技术，英语一，数学一，873自动控制理论。'},{url:'https://sim.njust.edu.cn/a',title:'智能科学与技术学院2027年专业目录调整'},target));
+assert(!relevantToTarget({category:'公告',evidence:'我院对2027年专业目录调整。'},{url:'https://sim.njust.edu.cn/a',title:'智能科学与技术学院2027年专业目录调整'},target));
+assert(relevantToTarget({category:'公告',evidence:'全校招生计划'},{url:'https://gs.njust.edu.cn/a',title:'南京理工大学2027年硕士招生简章'},target));
+assert(!relevantToTarget({category:'考试科目',evidence:'081200计算机科学与技术，学术学位，英语一数学一。'},{url:'https://cs.njust.edu.cn/a',title:'计算机学院2027年专业目录'},target));
 const rows=acceptedItems(extracted,sources,target,'2026-11-25');assert.equal(rows.length,1);assert.equal(rows[0].published,'2026-09-30');assert.equal(rows[0].admittedMin,null);
 const savedFetch=globalThis.fetch,documents=new Map();let ref={revision:0,driveId:null},lease=null,attempt=null,providerCalls=0,badAnswer=false;
 const json=(v,status=200)=>new Response(JSON.stringify(v),{status});
