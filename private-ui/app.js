@@ -65,6 +65,9 @@ document.addEventListener('submit', async event => {
   if (form.id === 'examSettingsForm') {
     updated.school = String(fields.get('school') || '').trim();
     updated.major = String(fields.get('major') || '').trim();
+    updated.college = String(fields.get('college') || '').trim().slice(0,100);
+    updated.admissionYear = fields.get('admissionYear') ? Number(fields.get('admissionYear')) : '';
+    if(updated.admissionYear && (!Number.isInteger(updated.admissionYear)||updated.admissionYear<2020||updated.admissionYear>2100)){toast('请填写有效的招生年份。');return}
     updated.date = String(fields.get('date') || '');
     updated.budget = Number(fields.get('budget'));
     if (!updated.school || !updated.major || !Number.isInteger(updated.budget) || updated.budget < 20 || updated.budget > 720) {

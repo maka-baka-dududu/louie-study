@@ -72,3 +72,4 @@ export async function teacherRoute(request,env,identity,path,H,learningData){
  }catch(e){user.status='failed';user.error=e.teacherStatus?e.message:'回答暂时失败，问题已保留。';await save(env,H,ref,snapshot);error(user.error,e.teacherStatus||502)}
  }catch(e){H.onError?.(e);return H.fail(e.teacherStatus?e.message:'问答服务暂时不可用，原记录保留',e.teacherStatus||503)}finally{if(lease)await H.stateCall(env,'/teacher-unlock',{id:lease})}
 }
+export {getKey as getAIKey};
