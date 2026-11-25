@@ -12,9 +12,10 @@ export async function financeRates(request,env,identity,H){
  const cached=await(await H.stateCall(env,'/finance-rates-get')).json();
  if(cached?.checkedAt&&Date.now()-Date.parse(cached.checkedAt)<6*3600000)return H.json({...cached,stale:false});
  try{
-  const r=await fetch('https://api.frankfurter.dev/v2/providers/ecb/rates?base=CNY&quotes='+foreign.join(','),{redirect:'error',signal:AbortSignal.timeout(10000)});if(!r.ok)throw Error('Provider unavailable');const value=normalizeRates(await r.json());await H.stateCall(env,'/finance-rates-put',{value});return H.json({...value,stale:false});
- }catch{
+  const r=await fetch('https://api.frankfurter.dev/v2/providers/ecb/rates?base=CNY&quotes='+foreign.join(','),{redirect:'manual',signal:AbortSignal.timeout(10000)});if(!r.ok)throw Error('Provider HTTP '+r.status);const value=normalizeRates(await r.json());await H.stateCall(env,'/finance-rates-put',{value});return H.json({...value,stale:false});
+ }catch(error){
+  console.warn('finance_rate_failure',String(error.message||error.name||'unknown').slice(0,180));
   if(cached?.rates&&cached?.checkedAt)return H.json({...cached,stale:true});
-  return H.fail('暂时无法获取汇率，原币金额保留；稍后重试',503);
+  return H.json({error:'暂时无法获取汇率，原币金额保留；稍后重试',code:/^Provider HTTP \d+$/.test(error.message)?error.message.replaceAll(' ','_'):error.message==='Invalid rate'?'INVALID_RATE':error.message==='Incomplete rates'?'INCOMPLETE_RATES':error.message==='Invalid rates'?'INVALID_FORMAT':'NETWORK_UNAVAILABLE'},503);
  }
 }
