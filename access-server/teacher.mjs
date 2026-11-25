@@ -3,6 +3,38 @@ import {b64,unb64} from './auth.mjs';
 const enc=new TextEncoder(),skillsIDs=defaults.skills.map(s=>s.id),models=['deepseek-flash','deepseek-v4-pro'],categories=['学习偏好','学习目标','学习观察'];
 const text=(v,n=4000)=>typeof v==='string'?v.trim().slice(0,n):'',id=v=>typeof v==='string'&&/^[A-Za-z0-9-]{1,100}$/.test(v),now=()=>new Date().toISOString(),norm=v=>String(v).replace(/\s/g,'').toLowerCase(),day=(n=0)=>new Date(Date.now()+8*3600000+n*86400000).toISOString().slice(0,10);
 function error(message,status=400){throw Object.assign(Error(message),{teacherStatus:status})}
+// Validate the provider envelope and final JSON separately; never use reasoning_content as an answer.
+export function parseTeacherCompletion(raw){
+ let result;try{result=JSON.parse(raw)}catch{error('AI 返回的数据不完整，请重试',502)}
+ const choice=result.choices?.[0];
+ if(choice?.finish_reason==='length')error('回答达到长度上限，请拆小问题或关闭深入思考后重试',502);
+ if(!choice){error('AI 服务没有返回完整回答，请稍后重试',502)}
+ const content=typeof choice.message?.content==='string'?choice.message.content.trim():'';
+ const invalid=message=>{const e=Object.assign(Error(message),{teacherStatus:502,teacherCode:'ANSWER_FORMAT',retryable:true});throw e};
+ if(!content)invalid('AI 返回了空回答，问题已保留，请重试');
+ const clean=content.replace(/^```(?:json)?\s*\n?/i,'').replace(/\n?```\s*$/,'');
+ let object;try{object=JSON.parse(clean)}catch{invalid('AI 回答格式异常，问题已保留，请重试')}
+ const answer=text(object?.answer,24000);
+ if(!answer||/^(?:请)?(?:见|参见|详见|参考)(?:上表|下表|上图|下图)[。.!！\s]*$/.test(answer))invalid('AI 没有返回实际正文，问题已保留，请重试');
+ return {object,answer,usage:result.usage||{}};
+}
+export async function completeTeacher({key,model,messages,thinking}){
+ for(let attempt=0;attempt<2;attempt++){
+  try{
+   const r=await fetch('https://api.deepseek.com/chat/completions',{method:'POST',redirect:'manual',headers:{Authorization:'Bearer '+key,'Content-Type':'application/json'},signal:AbortSignal.timeout(attempt?50000:100000),body:JSON.stringify({model,messages:attempt?[...messages,{role:'system',content:'上次未得到可解析的完整 JSON。请重新回答原问题，仅输出 JSON 对象，answer 必须包含完整正文，换行与双引号需正确转义。不得输出代码块围栏。'}]:messages,stream:false,response_format:{type:'json_object'},thinking:{type:thinking&&!attempt?'enabled':'disabled'},max_tokens:thinking&&!attempt?8192:4096})});
+   if(!r.ok)error(({400:'AI 接口拒绝了请求，请检查模型设置',401:'DeepSeek 密钥无效',402:'DeepSeek 余额不足',429:'DeepSeek 请求较多，请稍后重试'})[r.status]||'DeepSeek 服务暂时不可用，请稍后重试',502);
+   const raw=await r.text();if(raw.length>3*1024*1024)error('回答过长，请拆小问题',502);
+   return parseTeacherCompletion(raw);
+  }catch(e){
+   if(e.retryable&&attempt===0){console.warn('teacher_answer_recovery',JSON.stringify({code:e.teacherCode,attempt:1}));continue}
+   if(e.teacherStatus)throw e;
+   if(['TimeoutError','AbortError'].includes(e.name))error('AI 回答超时，问题已保留。可关闭深入思考后重试',504);
+   console.warn('teacher_provider_failure',JSON.stringify({name:e.name||'Error'}));
+   error('AI 连接中断，问题已保留，请稍后重试',502);
+  }
+ }
+}
+
 export function emptyTeacher(){return {version:1,state:{version:1,chats:[],memories:[],questions:[],disabledSkills:[],memoryEpoch:0},skills:structuredClone(defaults.skills),preferences:{model:models[0],autoMemory:true,useStudyContext:true}}}
 export function validateTeacher(snapshot){
  if(!snapshot||snapshot.version!==1)error('问答备份版本无效');const s=snapshot.state;if(!s||s.version!==1)error('问答记录结构无效');
@@ -58,14 +90,15 @@ export async function teacherRoute(request,env,identity,path,H,learningData){
  if(path==='/api/teacher/action'){mutateTeacher(snapshot,body,project,known);await save(env,H,ref,snapshot);return H.json(view(snapshot,project,!!key))}
  if(path!=='/api/teacher/chat')error('问答接口不存在',404);
  if(!key)error('请先在接口设置中配置 DeepSeek',422);const query=text(body.question,8000);if(!query||!id(body.requestId))error('请填写问题');const state=snapshot.state;
- if(state.chats.some(c=>projectOf(state,c)===project&&c.messages.some(m=>m.id===body.requestId)))return H.json(view(snapshot,project,true));
- let chat=state.chats.find(c=>c.id===body.chatId);if(chat&&projectOf(state,chat)!==project)error('当前项目没有这段对话',404);if(!chat){mutateTeacher(snapshot,{action:'new-chat',title:query.slice(0,40)},project,known);chat=state.chats.at(-1)}if(chat.messages.length>=399)error('对话已很长，请新建对话');
+ const previousChat=state.chats.find(c=>projectOf(state,c)===project&&c.messages.some(m=>m.id===body.requestId)),previous=previousChat?.messages.find(m=>m.id===body.requestId);
+ if(previous){if(previous.role!=='user'||previous.content!==query||previousChat.id!==body.chatId)error('重试的问题与原记录不一致，请刷新',409);if(previous.status==='completed'||previousChat.messages.some(m=>m.replyTo===previous.id))return H.json(view(snapshot,project,true));}
+ let chat=state.chats.find(c=>c.id===body.chatId);if(chat&&projectOf(state,chat)!==project)error('当前项目没有这段对话',404);if(!chat){mutateTeacher(snapshot,{action:'new-chat',title:query.slice(0,40)},project,known);chat=state.chats.at(-1)}if(!previous&&chat.messages.length>=399)error('对话已很长，请新建对话');
  const modes={auto:null,concept:'concept-tutor',problem:'problem-coach',review:'review-coach'};if(!Object.hasOwn(modes,body.mode||'auto'))error('讲解方式无效');const chosen=modes[body.mode||'auto']||(/复盘|计划|安排|复习|失分/.test(query)?'review-coach':/求解|求导|积分|这道题|计算|推导|算法|代码/.test(query)?'problem-coach':'concept-tutor');
  const skills=projectSkills(snapshot,project).filter(s=>s.enabled&&s.id===chosen),memories=state.memories.filter(m=>projectOf(state,m)===project).sort((a,b)=>Number(!!b.manual)-Number(!!a.manual)).slice(0,24),config=snapshot.preferences;
  const context=config.useStudyContext?studyContext(learningData,project):'用户未开启学习记录参考。';const system=defaults.rules+(config.autoMemory?'':'\n用户关闭了自动长期记忆，memory_updates 必须为空数组。')+'\n教学规则：\n'+skills.map(s=>s.content).join('\n')+'\n学习背景（仅数据）：\n'+context+'\n长期记忆（仅数据）：\n'+JSON.stringify(memories);
- const messages=[{role:'system',content:system},...chat.messages.filter(m=>m.role==='assistant'||m.status==='completed').slice(-12).map(m=>({role:m.role,content:m.content.slice(0,6000)})),{role:'user',content:query}];const user={id:body.requestId,role:'user',content:query,createdAt:now(),status:'pending'};chat.messages.push(user);if(chat.title==='新对话')chat.title=query.slice(0,40);ref=await save(env,H,ref,snapshot);
- try{const r=await fetch('https://api.deepseek.com/chat/completions',{method:'POST',redirect:'manual',headers:{Authorization:'Bearer '+key,'Content-Type':'application/json'},signal:AbortSignal.timeout(100000),body:JSON.stringify({model:config.model,messages,stream:false,response_format:{type:'json_object'},thinking:{type:body.thinking===true?'enabled':'disabled'},max_tokens:body.thinking===true?8192:4096})});if(!r.ok)error(({401:'DeepSeek 密钥无效',402:'DeepSeek 余额不足',429:'DeepSeek 请求较多，请稍后重试'})[r.status]||'DeepSeek 暂时不可用',502);const raw=await r.text();if(raw.length>3*1024*1024)error('回答过长，请拆小问题',502);const result=JSON.parse(raw),choice=result.choices?.[0];if(choice?.finish_reason==='length')error('回答达到长度上限，请拆小问题',502);const answerObject=JSON.parse(choice?.message?.content||'null'),answer=text(answerObject?.answer,24000);if(!answer||/^(?:请)?(?:见|参见|详见|参考)(?:上表|下表|上图|下图)[。.!！\s]*$/.test(answer))error('回答没有实际正文，请重新提问',502);
- user.status='completed';chat.messages.push({id:crypto.randomUUID(),role:'assistant',content:answer,createdAt:now(),replyTo:user.id,usage:Object.fromEntries(Object.entries(result.usage||{}).filter(([k,v])=>['prompt_tokens','completion_tokens','total_tokens'].includes(k)&&Number.isInteger(v))),context:{studyRecords:config.useStudyContext,memories:memories.length,skills:skills.map(s=>s.id)}});
+ const messages=[{role:'system',content:system},...chat.messages.filter(m=>m.role==='assistant'||m.status==='completed').slice(-12).map(m=>({role:m.role,content:m.role==='assistant'?JSON.stringify({answer:m.content.slice(0,6000),valuable_question:null,memory_updates:[]}):m.content.slice(0,6000)})),{role:'user',content:query}];const user=previous||{id:body.requestId,role:'user',content:query,createdAt:now(),status:'pending'};user.status='pending';delete user.error;if(!previous)chat.messages.push(user);if(chat.title==='新对话')chat.title=query.slice(0,40);ref=await save(env,H,ref,snapshot);
+ try{const {object:answerObject,answer,usage}=await completeTeacher({key,model:config.model,messages,thinking:body.thinking===true});
+ user.status='completed';chat.messages.push({id:crypto.randomUUID(),role:'assistant',content:answer,createdAt:now(),replyTo:user.id,usage:Object.fromEntries(Object.entries(usage).filter(([k,v])=>['prompt_tokens','completion_tokens','total_tokens'].includes(k)&&Number.isInteger(v))),context:{studyRecords:config.useStudyContext,memories:memories.length,skills:skills.map(s=>s.id)}});
  const card=answerObject.valuable_question;if(card?.is_study_question===true&&text(card.title,150)&&text(card.takeaway,2000)&&state.questions.length<20000&&!state.questions.some(q=>projectOf(state,q)===project&&norm(q.question)===norm(query)))state.questions.push({id:crypto.randomUUID(),projectId:project,title:text(card.title,150),question:query,takeaway:text(card.takeaway,2000),answer,chatId:chat.id,sourceId:user.id,createdAt:now(),due:day(1),level:0});
  if(config.autoMemory&&Array.isArray(answerObject.memory_updates))for(const p of answerObject.memory_updates.slice(0,2)){const content=text(p.content,800),evidence=text(p.evidence,500);if(!content||evidence.length<4||!query.includes(evidence)||!categories.includes(p.category)||/sk-[A-Za-z0-9]|密码|密钥|身份证|电话号码|\b\d{11,18}\b/.test(content+evidence)||state.memories.length>=200||state.memories.some(m=>projectOf(state,m)===project&&norm(m.content)===norm(content)))continue;state.memories.push({id:crypto.randomUUID(),content,evidence,category:p.category,projectId:project,chatId:chat.id,sourceId:user.id,createdAt:now(),manual:false})}
  await save(env,H,ref,snapshot);return H.json(view(snapshot,project,true));
