@@ -1,6 +1,6 @@
 /* Private personal log; no records are embedded in the deployed source. */
 (function(){
-const projectId='selfdiscipline',editable=()=>window.LouieAccessRole==='edit',entries=()=>db.personal.disciplineEntries||[];
+const projectId='selfdiscipline',editable=()=>window.LouieAccessRole==='edit'&&window.LouiePrivatePage===true,entries=()=>db.personal.disciplineEntries||[];
 let queue=Promise.resolve();
 const validDate=date=>/^\d{4}-\d{2}-\d{2}$/.test(date)&&Number.isFinite(Date.parse(date+'T12:00:00Z'))&&new Date(date+'T12:00:00Z').toISOString().slice(0,10)===date;
 function validEntry(e){return e&&typeof e.id==='string'&&/^[a-zA-Z0-9-]{1,100}$/.test(e.id)&&validDate(e.date)&&Number.isInteger(e.count)&&e.count>=1&&e.count<=99&&typeof e.note==='string'&&e.note.length<=1000}

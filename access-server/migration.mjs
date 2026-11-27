@@ -21,19 +21,20 @@ export async function migrationRoute(request,env,identity,path,H){
   const r=await drive(env,'files/'+snapshot[1]+'?alt=media');if(!r.ok)throw Error('快照读取失败');const raw=await r.text();const hash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(raw)))].map(v=>v.toString(16).padStart(2,'0')).join('');if(hash!==meta.sha256Checksum)throw Error('快照校验不一致');const value=JSON.parse(raw);if(value.format!=='louie-private-sync'||value.version!==1)return fail('快照格式不正确');return json(value);
  }
  if(path==='/api/uploads'&&request.method==='POST'){
-  const body=await readJSON(request,4096);body.kind??='blob';if(!['blob','commit'].includes(body.kind)||(body.kind==='commit'&&body.size>16*1024*1024)||!uploadMetadata(body))return fail('附件信息无效');
+  const body=await readJSON(request,4096);body.kind??='blob';if(body.kind==='commit'&&!identity.privateRoute)return fail('请先解锁私密空间',423);
+  if(!['blob','commit'].includes(body.kind)||(body.kind==='commit'&&body.size>16*1024*1024)||!uploadMetadata(body))return fail('附件信息无效');
   const params=new URLSearchParams({q:"trashed=false and '"+env.DRIVE_ROOT_ID+"' in parents and appProperties has { key='localId' and value='"+body.id+"' } and appProperties has { key='sha256' and value='"+body.sha256+"' }",fields:'files(id,size,sha256Checksum)',pageSize:'1000'});
   const reused=(await get('files?'+params)).files.find(v=>Number(v.size)===body.size&&v.sha256Checksum===body.sha256);
   if(reused){const info=await verify(reused.id,body);await stateCall(env,'/file-put',{id:body.id,value:info});return json({complete:true,info})}
-  const old=await(await stateCall(env,'/upload-get',{id:body.id})).json();
+  const old=await(await stateCall(env,'/upload-get',{id:body.id})).json();if(old?.private&&!identity.privateRoute)return fail('请先解锁私密空间',423);
   if(old&&old.sha256===body.sha256&&old.size===body.size&&Date.now()-old.createdAt<6*86400000)return json({complete:false,offset:old.offset||0});
   const r=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&fields=id',{method:'POST',redirect:'manual',headers:{Authorization:'Bearer '+await driveToken(env),'Content-Type':'application/json','X-Upload-Content-Type':body.mime,'X-Upload-Content-Length':String(body.size)},body:JSON.stringify({name:body.name,mimeType:body.mime,parents:[env.DRIVE_ROOT_ID],appProperties:{louieType:body.kind,localId:body.id,sha256:body.sha256}})});
   if(!r.ok)throw Error('无法创建可恢复上传');const location=r.headers.get('Location');const url=new URL(location||'');if(url.origin!=='https://www.googleapis.com'||!url.pathname.startsWith('/upload/drive/'))throw Error('上传地址无效');
-  await stateCall(env,'/upload-put',{id:body.id,value:{...body,url:location,createdAt:Date.now(),offset:0}});return json({complete:false,offset:0});
+  await stateCall(env,'/upload-put',{id:body.id,value:{...body,private:!!identity.privateRoute,url:location,createdAt:Date.now(),offset:0}});return json({complete:false,offset:0});
  }
  const upload=/^\/api\/uploads\/([\w-]{1,160})$/.exec(path);
  if(upload&&['PUT','GET'].includes(request.method)){
-  const id=upload[1],v=await(await stateCall(env,'/upload-get',{id})).json();if(!v)return fail('未找到上传会话',404);
+  const id=upload[1],v=await(await stateCall(env,'/upload-get',{id})).json();if(!v)return fail('未找到上传会话',404);if(v.private&&!identity.privateRoute)return fail('请先解锁私密空间',423);
   const url=new URL(v.url);if(url.origin!=='https://www.googleapis.com'||!url.pathname.startsWith('/upload/drive/'))throw Error('上传地址无效');
   let body=new Uint8Array(),range='bytes */'+v.size;
   if(request.method==='PUT'){

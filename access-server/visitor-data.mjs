@@ -1,13 +1,10 @@
-const privateIds=new Set(['savings','selfdiscipline','privateSpace']);
-export function visitorDocument(doc){
- const data=structuredClone(doc.data),personal=data.personal||{};
- const privateTracks=(personal.tracks||[]).filter(t=>privateIds.has(t.id));
- const subjects=new Set(privateTracks.flatMap(t=>t.subjects||[]));
- const privateFiles=new Set((data.materials||[]).filter(item=>privateIds.has(item.trackId)||privateIds.has(item.projectId)||(!item.trackId&&subjects.has(item.subject))).map(m=>m.fileId).filter(Boolean));
- const privateDrive=new Set([...privateFiles].map(id=>doc.files?.[id]?.driveId).filter(Boolean));for(const [id,f] of Object.entries(doc.files||{}))if(privateDrive.has(f.driveId))privateFiles.add(id);
- const hidden=item=>item&&typeof item==='object'&&(privateFiles.has(item.fileId)||privateIds.has(item.trackId)||privateIds.has(item.projectId)||(!item.trackId&&subjects.has(item.subject)));
- function prune(value){if(Array.isArray(value))return value.filter(item=>!hidden(item)).map(prune);if(value&&typeof value==='object'){for(const key of Object.keys(value))value[key]=prune(value[key])}return value}
- prune(data);delete personal.finance;delete personal.disciplineEntries;delete personal.privateSpace;personal.tracks=(personal.tracks||[]).filter(t=>!privateIds.has(t.id));if(privateIds.has(personal.activeTrack))personal.activeTrack='exam';
- data.personal=personal;const allowed=new Set((data.materials||[]).map(m=>m.fileId).filter(Boolean));
- return {...doc,data,files:Object.fromEntries(Object.entries(doc.files||{}).filter(([id])=>allowed.has(id)))};
+const visitorIds=new Set(['savings','selfdiscipline','privateSpace']);
+const vaultIds=new Set(['selfdiscipline','privateSpace']);
+function boundary(doc,ids){const tracks=(doc.data.personal?.tracks||[]).filter(t=>ids.has(t.id)),subjects=new Set(tracks.flatMap(t=>t.subjects||[])),files=new Set((doc.data.materials||[]).filter(x=>ids.has(x.trackId)||ids.has(x.projectId)||(!x.trackId&&subjects.has(x.subject))).map(x=>x.fileId).filter(Boolean)),driveIds=new Set([...files].map(id=>doc.files?.[id]?.driveId).filter(Boolean));for(const [id,f]of Object.entries(doc.files||{}))if(driveIds.has(f.driveId))files.add(id);return x=>x&&typeof x==='object'&&(files.has(x.fileId)||ids.has(x.trackId)||ids.has(x.projectId)||(!x.trackId&&subjects.has(x.subject)))}
+function filtered(doc,ids,fields){const data=structuredClone(doc.data),hidden=boundary(doc,ids);function prune(v){if(Array.isArray(v))return v.filter(x=>!hidden(x)).map(prune);if(v&&typeof v==='object')for(const k of Object.keys(v))v[k]=prune(v[k]);return v}prune(data);const personal=data.personal||{};for(const field of fields)delete personal[field];personal.tracks=(personal.tracks||[]).filter(t=>!ids.has(t.id));if(ids.has(personal.activeTrack))personal.activeTrack='exam';data.personal=personal;const allowed=new Set((data.materials||[]).map(m=>m.fileId).filter(Boolean));return {...doc,data,files:Object.fromEntries(Object.entries(doc.files||{}).filter(([id])=>allowed.has(id)))} }
+export const visitorDocument=doc=>filtered(doc,visitorIds,['finance','disciplineEntries','privateSpace']);
+export const lockedOwnerDocument=doc=>filtered(doc,vaultIds,['disciplineEntries','privateSpace']);
+export function mergeLockedOwnerWrite(proposed,doc){const visible=lockedOwnerDocument(doc),hidden=boundary(doc,vaultIds);if(JSON.stringify(lockedOwnerDocument({data:proposed,files:doc.files}).data)!==JSON.stringify(proposed))throw Error('PRIVATE_FIELDS');
+ function merge(original,shown,next){if(Array.isArray(original)&&Array.isArray(shown)&&Array.isArray(next)){const visibleOld=original.filter(x=>!hidden(x));return [...next.map((x,i)=>{const o=x&&typeof x==='object'&&x.id?visibleOld.find(v=>v?.id===x.id):visibleOld[i],v=x&&typeof x==='object'&&x.id?shown.find(v=>v?.id===x.id):shown[i];return o!==undefined&&v!==undefined?merge(o,v,x):structuredClone(x)}),...original.filter(hidden).map(x=>structuredClone(x))]}if(original&&shown&&next&&typeof original==='object'&&typeof shown==='object'&&typeof next==='object'&&!Array.isArray(next)){const result=structuredClone(next);for(const k of Object.keys(original)){if(!(k in shown))result[k]=structuredClone(original[k]);else if(k in next)result[k]=merge(original[k],shown[k],next[k])}return result}return structuredClone(next)}
+ const result=merge(doc.data,visible.data,proposed);result.personal.tracks=[...(result.personal.tracks||[]).filter(t=>!vaultIds.has(t.id)),...(doc.data.personal?.tracks||[]).filter(t=>vaultIds.has(t.id)).map(x=>structuredClone(x))];return result;
 }
