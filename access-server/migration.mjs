@@ -1,6 +1,6 @@
 // Owner-only migration and chunked uploads. No public sharing permissions are created.
 export const MAX_FILE=250*1024*1024,CHUNK=4*1024*1024;
-export function uploadMetadata(v){return v&&typeof v.id==='string'&&/^[\w-]{1,160}$/.test(v.id)&&typeof v.name==='string'&&v.name.length>0&&v.name.length<=500&&typeof v.mime==='string'&&/^[\w.+-]+\/[\w.+-]+$/.test(v.mime)&&Number.isSafeInteger(v.size)&&v.size>0&&v.size<=MAX_FILE&&/^[a-f0-9]{64}$/.test(v.sha256||'')}
+export function uploadMetadata(v){return v&&typeof v.id==='string'&&/^[\w-]{1,160}$/.test(v.id)&&typeof v.name==='string'&&v.name.length>0&&v.name.length<=500&&typeof v.mime==='string'&&/^[\w.+-]+\/[\w.+-]+$/.test(v.mime)&&Number.isSafeInteger(v.size)&&v.size>0&&v.size<=MAX_FILE+(v.encrypted===true?16384:0)&&/^[a-f0-9]{64}$/.test(v.sha256||'')}
 export function chunkRange(value,size,length){const m=/^bytes (\d+)-(\d+)\/(\d+)$/.exec(value||'');if(!m)return false;const [start,end,total]=m.slice(1).map(Number);return total===size&&Number.isSafeInteger(start)&&Number.isSafeInteger(end)&&start>=0&&end>=start&&end<size&&end-start+1===length&&length<=CHUNK}
 export async function migrationRoute(request,env,identity,path,H){
  if(!path.startsWith('/api/migration/')&&!path.startsWith('/api/uploads'))return null;
@@ -8,7 +8,7 @@ export async function migrationRoute(request,env,identity,path,H){
  if(identity.role!=='edit')return fail('需要站主编辑权限',403);
  if(!env.DRIVE_ROOT_ID||!env.DRIVE_REFRESH_TOKEN)return fail('私人资料授权未接通',503);
  const get=async p=>{const r=await drive(env,p);if(!r.ok)throw Object.assign(Error('私人文件核验失败'),{code:'DRIVE_METADATA_'+r.status});return r.json()};
- const verify=async(id,expected)=>{const v=await get('files/'+encodeURIComponent(id)+'?fields=id,size,sha256Checksum,mimeType,parents,ownedByMe,permissions(role)');if(!v.ownedByMe||!v.parents?.includes(env.DRIVE_ROOT_ID)||v.permissions?.some(p=>p.role!=='owner')||Number(v.size)!==expected.size||v.sha256Checksum!==expected.sha256)throw Error('附件内容或私人权限校验不一致');return {driveId:v.id,size:Number(v.size),sha256:v.sha256Checksum,mime:v.mimeType,name:expected.name}};
+ const verify=async(id,expected)=>{const v=await get('files/'+encodeURIComponent(id)+'?fields=id,size,sha256Checksum,mimeType,parents,ownedByMe,permissions(role)');if(!v.ownedByMe||!v.parents?.includes(env.DRIVE_ROOT_ID)||v.permissions?.some(p=>p.role!=='owner')||Number(v.size)!==expected.size||v.sha256Checksum!==expected.sha256)throw Error('附件内容或私人权限校验不一致');return {driveId:v.id,size:Number(v.size),sha256:v.sha256Checksum,mime:v.mimeType,name:expected.name,...(expected.encrypted?{encrypted:true}:{})}};
  if(path==='/api/migration/inventory'&&request.method==='GET'){
   let files=[],pageToken;
   do{const params=new URLSearchParams({q:"trashed=false and '"+env.DRIVE_ROOT_ID+"' in parents",fields:'nextPageToken,files(id,size,sha256Checksum,mimeType,appProperties,ownedByMe,permissions(role))',pageSize:'1000'});if(pageToken)params.set('pageToken',pageToken);const page=await get('files?'+params);files.push(...page.files);pageToken=page.nextPageToken;if(files.length>50000)throw Error('文件数量超过核验上限')}while(pageToken);
@@ -21,7 +21,7 @@ export async function migrationRoute(request,env,identity,path,H){
   const r=await drive(env,'files/'+snapshot[1]+'?alt=media');if(!r.ok)throw Error('快照读取失败');const raw=await r.text();const hash=[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(raw)))].map(v=>v.toString(16).padStart(2,'0')).join('');if(hash!==meta.sha256Checksum)throw Error('快照校验不一致');const value=JSON.parse(raw);if(value.format!=='louie-private-sync'||value.version!==1)return fail('快照格式不正确');return json(value);
  }
  if(path==='/api/uploads'&&request.method==='POST'){
-  const body=await readJSON(request,4096);body.kind??='blob';if(body.kind==='commit'&&!identity.privateRoute)return fail('请先解锁私密空间',423);
+  const body=await readJSON(request,4096);if(body.encrypted&&(!identity.privateRoute||body.mime!=='application/octet-stream'||body.name!==body.id+'.lvault'))return fail('加密上传信息无效');body.kind??='blob';if(body.kind==='commit'&&!identity.privateRoute)return fail('请先解锁私密空间',423);
   if(!['blob','commit'].includes(body.kind)||(body.kind==='commit'&&body.size>16*1024*1024)||!uploadMetadata(body))return fail('附件信息无效');
   const params=new URLSearchParams({q:"trashed=false and '"+env.DRIVE_ROOT_ID+"' in parents and appProperties has { key='localId' and value='"+body.id+"' } and appProperties has { key='sha256' and value='"+body.sha256+"' }",fields:'files(id,size,sha256Checksum)',pageSize:'1000'});
   const reused=(await get('files?'+params)).files.find(v=>Number(v.size)===body.size&&v.sha256Checksum===body.sha256);

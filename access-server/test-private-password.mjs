@@ -1,0 +1,54 @@
+import assert from 'node:assert/strict';import worker,{AccessState} from './worker.mjs';import {issueSession} from './auth.mjs';import {lockedOwnerDocument,mergeLockedOwnerWrite} from './visitor-data.mjs';
+const values=new Map(),storage={get:async k=>values.get(k),put:async(k,v)=>values.set(k,v),delete:async k=>values.delete(k),transaction:async f=>f(storage)};
+const env={SESSION_SECRET:'private-gate-unit-test-secret-'.repeat(2),AUTH_VERSION:'1',READ_VERIFIER:'configured',EDIT_VERIFIER:'configured',DRIVE_ROOT_ID:'root',DRIVE_REFRESH_TOKEN:'test-refresh',GOOGLE_CLIENT_ID:'test-client',GOOGLE_CLIENT_SECRET:'test-client-secret'};
+const object=new AccessState({storage},env);env.ACCESS_STATE={idFromName:()=>0,get:()=>({fetch:(url,opt)=>object.fetch(new Request(url,opt))})};
+const original={format:'louie-private-sync',version:1,id:'first',generation:1,data:{version:1,settings:{school:'school'},mastery:{},tasks:[],errors:[],sessions:[],mocks:[],attempts:[],progress:[],materials:[{id:'secret-material',trackId:'privateSpace',fileId:'secret-file'},{id:'visible-material',trackId:'exam',fileId:'visible-file'}],personal:{activeTrack:'privateSpace',finance:{assets:[{id:'cash',amount:12}]},disciplineEntries:[{id:'log',note:'private-log'}],privateSpace:{diary:[{id:'diary',content:'private-diary'}],attachments:[],goals:[{id:'g',title:'private-goal'}]},tracks:[{id:'exam',subjects:[]},{id:'savings',subjects:['finance']},{id:'privateSpace',subjects:['私密文件']},{id:'selfdiscipline',subjects:['自律记录']}]}},files:{'secret-file':{driveId:'secret-drive',mime:'text/plain',size:6,name:'secret.txt'},'visible-file':{driveId:'visible-drive'}}};
+const visible=lockedOwnerDocument(original);assert(!visible.data.personal.privateSpace);assert(visible.data.personal.finance);const proposed=structuredClone(visible.data);proposed.settings.school='updated';const merged=mergeLockedOwnerWrite(proposed,original);assert.deepEqual(merged.personal.privateSpace,original.data.personal.privateSpace);assert.deepEqual(merged.personal.disciplineEntries,original.data.personal.disciplineEntries);assert(merged.materials.some(m=>m.fileId==='secret-file'));assert(merged.personal.tracks.some(t=>t.id==='privateSpace'));assert.equal(merged.settings.school,'updated');assert.throws(()=>mergeLockedOwnerWrite({...proposed,personal:{...proposed.personal,privateSpace:{diary:[]}}},original));
+const docs=new Map([['snapshot-1',structuredClone(original)]]);values.set('head',{revision:1,driveId:'snapshot-1'});let driveCalls=0;const oldFetch=globalThis.fetch;
+globalThis.fetch=async(input,opt={})=>{const url=String(input);if(url.includes('oauth2.googleapis.com'))return Response.json({access_token:'fake-token',expires_in:3600});if(url.includes('raw.githubusercontent.com'))return new Response('<html>app</html>');driveCalls++;
+ if(url.includes('/upload/drive/')){const chunks=String(opt.body).split('\r\n\r\n'),value=JSON.parse(chunks[2].split('\r\n--')[0]),id='snapshot-'+(docs.size+1);docs.set(id,value);return Response.json({id})}
+ const file=/\/files\/([^?]+)/.exec(url)?.[1];if(file==='cipher-drive')return new Response('opaque-encrypted-bytes');if(file==='secret-drive')return new Response('secret');if(docs.has(file))return Response.json(docs.get(file));throw Error('unexpected external request '+url)};
+const edit=await issueSession('edit',env),read=await issueSession('read',env),second=await issueSession('edit',env),base='https://gate.test',cookie='__Host-louie='+edit;
+const call=(path,{method='GET',body,extra='',token=edit}={})=>worker.fetch(new Request(base+path,{method,headers:{Cookie:'__Host-louie='+token+(extra?'; '+extra:''),...(body?{'Content-Type':'application/json'}:{})},body:body?JSON.stringify(body):undefined}),env);
+try{
+ const beforeCalls=driveCalls;assert.equal((await call('/api/private/bootstrap')).status,423);assert.equal(driveCalls,beforeCalls,'locked API fails before Drive content access');
+ let r=await call('/api/bootstrap');let data=await r.json();assert(!data.data.personal.privateSpace);assert(data.data.personal.finance);
+ r=await call('/private');assert((await r.text()).includes('设置私密空间密码'));
+ assert.equal((await call('/auth/private/setup',{method:'POST',body:{password:'123456789'}})).status,400);
+ r=await call('/auth/private/setup',{method:'POST',body:{password:'test-pass0'}});assert.equal(r.status,200);const grant=r.headers.get('Set-Cookie').split(';')[0];assert(!JSON.stringify(values.get('private-auth')).includes('test-pass0'));
+ assert.equal((await call('/auth/private/setup',{method:'POST',body:{password:'different-test-password'}})).status,409);
+ assert.equal((await call('/api/private/bootstrap',{extra:grant,token:second})).status,423,'grant cannot be replayed in another owner session');assert.equal((await call('/api/private/bootstrap',{extra:grant,token:read})).status,403);
+ r=await call('/api/private/bootstrap',{extra:grant});data=await r.json();assert(data.data.personal.privateSpace);assert(data.privateUntil>Date.now());
+ r=await call('/api/bootstrap',{extra:grant});data=await r.json();assert(!data.data.personal.privateSpace,'normal page stays filtered even while private page is unlocked');
+ assert.equal((await call('/api/files/secret-file',{extra:grant})).status,404);assert.equal((await call('/api/private/files/secret-file')).status,423);r=await call('/api/private/files/secret-file',{extra:grant});assert.equal(await r.text(),'secret');
+ const change=structuredClone(data.data);change.settings.school='new school';r=await call('/api/state',{method:'PUT',body:{revision:data.revision,data:change}});assert.equal(r.status,200);const latest=docs.get(values.get('head').driveId);assert.deepEqual(latest.data.personal.privateSpace,original.data.personal.privateSpace);assert.deepEqual(latest.data.personal.disciplineEntries,original.data.personal.disciplineEntries);
+ const bad={...change,personal:{...change.personal,disciplineEntries:[]}};assert.equal((await call('/api/state',{method:'PUT',body:{revision:values.get('head').revision,data:bad}})).status,423);
+ assert.equal((await call('/api/migration/inventory')).status,423);assert.equal((await call('/api/publish',{method:'POST',body:{}})).status,423);
+ r=await call('/auth/private/lock',{method:'POST',extra:grant});assert.equal(r.status,200);assert.equal((await call('/api/private/bootstrap',{extra:grant})).status,423,'locking revokes the server grant, not just the cookie');
+ r=await call('/auth/private',{method:'POST',body:{password:'wrong-private-password'}});assert.equal(r.status,401);r=await call('/auth/private',{method:'POST',body:{password:'test-pass0'}});assert.equal(r.status,200);
+ const newGrant=r.headers.get('Set-Cookie').split(';')[0];r=await call('/',{extra:newGrant});assert.equal(r.status,200);assert.equal((await call('/api/private/bootstrap',{extra:newGrant})).status,423,'returning to normal page locks private access');
+ // Full encrypted migration and recovery use synthetic records only.
+ const C=await import('./vault-core.mjs'),V=await C.create('vault-test0');
+ r=await call('/auth/private',{method:'POST',body:{password:'test-pass0'}});const vg=r.headers.get('Set-Cookie').split(';')[0];
+ const source=structuredClone(docs.get(values.get('head').driveId).data);source.materials.find(m=>m.fileId==='secret-file').fileId='cipher-file';
+ values.set('file:cipher-file',{driveId:'cipher-drive',encrypted:true,mime:'application/octet-stream',name:'cipher-file.lvault',size:123,sha256:'0'.repeat(64)});
+ assert.equal((await call('/api/private/vault-staged/cipher-file',{extra:vg})).status,200);assert.equal((await call('/api/vault-staged/cipher-file')).status,423);
+ const envelope={v:1,config:V.config,payload:await C.encryptJSON(V.key,V.config.id,source),fileIds:['cipher-file']};
+ const visibleEncrypted=lockedOwnerDocument({data:source,files:{}}).data;
+ r=await call('/api/private/state',{method:'PUT',extra:vg,body:{revision:values.get('head').revision,data:visibleEncrypted,vault:envelope}});assert.equal(r.status,200);
+ const stored=docs.get(values.get('head').driveId);assert(stored.vault);assert(!JSON.stringify(stored).includes('private-diary'));assert(!JSON.stringify(stored.files).includes('secret-drive'));assert.equal(values.get('head').vaultEnabled,true);
+ r=await call('/api/private/bootstrap',{extra:vg});const secured=await r.json();assert(secured.vault);assert(!secured.data.personal.privateSpace);
+ r=await call('/api/bootstrap');assert(!JSON.stringify(await r.json()).includes('proofHash'));
+ assert.equal((await call('/api/private/state',{method:'PUT',extra:vg,body:{revision:values.get('head').revision,data:source}})).status,423);
+ assert.equal((await call('/api/private/migration/commit/snapshot-1',{extra:vg})).status,410);
+ const update=structuredClone(secured.data);update.settings.school='normal update after encryption';r=await call('/api/state',{method:'PUT',body:{revision:values.get('head').revision,data:update}});assert.equal(r.status,200);assert.deepEqual(docs.get(values.get('head').driveId).vault,stored.vault,'normal owner writes preserve exact ciphertext');
+ assert.equal((await call('/api/vault/recovery',{token:read})).status,403);
+ r=await call('/api/vault/recover',{method:'POST',body:{revision:values.get('head').revision,proof:'x'.repeat(43)}});assert.equal(r.status,403);
+ const recovered=await C.recover(V.config,V.recovery,'new-test00');
+ r=await call('/api/vault/recover',{method:'POST',body:{revision:values.get('head').revision,config:recovered.config,proof:recovered.proof,password:'new-test00'}});assert.equal(r.status,200);
+ assert.equal((await call('/api/private/bootstrap',{extra:vg})).status,423,'recovery revokes old gate grants');
+ r=await call('/auth/private',{method:'POST',body:{password:'new-test00'}});assert.equal(r.status,200);
+ const afterRecovery=docs.get(values.get('head').driveId);assert.deepEqual(await C.decryptJSON(await C.unlock(afterRecovery.vault.config,'new-test00'),V.config.id,afterRecovery.vault.payload),source);
+ console.log('Encrypted vault: opaque snapshot migration, no normal-mode config leak, plaintext downgrade denied, encrypted state preserved on normal writes, recovery proof and atomic password reset passed');
+ console.log('Private password: hashed setup, independent page/API guard, session binding, server revocation, public-owner filtering, file protection, non-destructive ordinary saves and private mutation denial passed');
+}finally{globalThis.fetch=oldFetch}
