@@ -76,7 +76,7 @@ export async function teacherRoute(request,env,identity,path,H,learningData){
  if(!path.startsWith('/api/teacher'))return null;if(identity.role!=='edit')return H.fail('仅个人模式可访问智能问答',403);
  let lease;
  try{
- const body=request.method==='GET'?{}:await H.readJSON(request,32*1024*1024),project=body.projectId||new URL(request.url).searchParams.get('projectId')||'exam',known=new Set(['exam',...(learningData.personal?.tracks||[]).filter(t=>t.id!=='selfdiscipline').map(t=>t.id)]);if(!id(project)||!known.has(project))error('项目不存在',404);
+ const body=request.method==='GET'?{}:await H.readJSON(request,32*1024*1024),project=body.projectId||new URL(request.url).searchParams.get('projectId')||'exam',known=new Set(['exam',...(learningData.personal?.tracks||[]).filter(t=>!['selfdiscipline','privateSpace'].includes(t.id)).map(t=>t.id)]);if(!id(project)||!known.has(project))error('项目不存在',404);
  if(request.method!=='GET'){lease=crypto.randomUUID();const r=await(await H.stateCall(env,'/teacher-lock',{id:lease})).json();if(!r.acquired)error('老师正在处理上一个操作，请稍候',409)}
  let {ref,snapshot}=await load(env,H);const key=await getKey(env,H);
  if(request.method==='GET'){
