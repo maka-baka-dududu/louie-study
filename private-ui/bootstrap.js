@@ -37,7 +37,7 @@
     ['travel-ui.js?v=travel-nav-stats','LouieTravelReady']
   ];
 
-  function loadExtension(src,flag){
+  function loadExtension(src,flag){if(window[flag])return Promise.resolve();
     return new Promise((resolve,reject)=>{
       const script=document.createElement('script');
       script.async=false;
@@ -71,13 +71,14 @@
     const privatePage=location.pathname==='/private',recoveryPage=location.pathname==='/private-recovery';window.LouiePrivatePage=privatePage;
     let result;
     if(privatePage||recoveryPage){
-      await loadExtension('drive-core.js','LouieDriveCore');await loadExtension('vault-ui.js','LouieVaultReady');document.getElementById('accessStartup')?.remove();
+      for(const href of ['/vault-core.js','/vault-data.js']){const preload=document.createElement('link');preload.rel='modulepreload';preload.href=href;document.head.append(preload)}
+      await loadExtension('vault-ui.js','LouieVaultReady');document.getElementById('accessStartup')?.remove();
       if(privatePage)result=await window.LouieVault.enter();
       else{const response=await fetch('/api/bootstrap',{cache:'no-store'});result=await response.json();if(!response.ok)throw Error(result.error||'请先进入个人模式')}
       result=await window.LouieVault.prepare(result);if(!result)return;
     }else{const response=await fetch('/api/bootstrap',{cache:'no-store'});if(response.status===401){location.replace('/');return}result=await response.json();if(!response.ok)throw Error(result.error||'私人资料未准备好')}
     window.LouieAccessRole=result.role;window.LouieGateway=true;window.LouieLocal=result;window.LouiePublicSite=result.role==='read';window.LouiePublished={data:result.data,files:{}};
-    await loadApp();await loadExtension('galaxy-ui.js','LouieGalaxyReady');await loadExtension('exam-research-ui.js','LouieExamResearchReady');await loadExtension('drive-core.js','LouieDriveCore');await loadExtension('discipline-ui.js','LouieDisciplineReady');await loadExtension('private-space-ui.js','LouiePrivateSpaceReady');await loadExtension('access-ui.js?v=responsive-1','LouieAccessReady');await loadExtension('naiwa-ui.js','LouieNaiwaReady');await loadExtension('responsive-ui.js','LouieResponsiveReady');
+    await loadApp();const finalExtensions=[['galaxy-ui.js','LouieGalaxyReady'],['exam-research-ui.js','LouieExamResearchReady'],['drive-core.js','LouieDriveCore'],['discipline-ui.js','LouieDisciplineReady'],['private-space-ui.js','LouiePrivateSpaceReady'],['access-ui.js?v=responsive-1','LouieAccessReady'],['naiwa-ui.js','LouieNaiwaReady'],['responsive-ui.js','LouieResponsiveReady']];await Promise.all(finalExtensions.map(([src,flag])=>loadExtension(src,flag)));
     if(privatePage){window.LouieVault.install();window.openPrivateSpace();const remaining=Math.max(0,result.privateUntil-Date.now());setTimeout(()=>location.replace('/private'),remaining)}
     document.body.classList.remove('access-pending','booting');document.getElementById('accessStartup')?.remove();
   }catch(error){document.querySelector('#nav').replaceChildren();showError(error.message);document.body.classList.remove('access-pending','booting');document.getElementById('accessStartup')?.remove()}
