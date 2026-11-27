@@ -41,6 +41,7 @@ try{
  r=await call('/api/bootstrap');assert(!JSON.stringify(await r.json()).includes('proofHash'));
  assert.equal((await call('/api/private/state',{method:'PUT',extra:vg,body:{revision:values.get('head').revision,data:source}})).status,423);
  assert.equal((await call('/api/private/migration/commit/snapshot-1',{extra:vg})).status,410);
+ const reattach=structuredClone(secured.data);reattach.materials.push({id:'fake',trackId:'exam',fileId:'secret-file'});assert.equal((await call('/api/state',{method:'PUT',body:{revision:values.get('head').revision,data:reattach}})).status,423);
  const update=structuredClone(secured.data);update.settings.school='normal update after encryption';r=await call('/api/state',{method:'PUT',body:{revision:values.get('head').revision,data:update}});assert.equal(r.status,200);assert.deepEqual(docs.get(values.get('head').driveId).vault,stored.vault,'normal owner writes preserve exact ciphertext');
  assert.equal((await call('/api/vault/recovery',{token:read})).status,403);
  r=await call('/api/vault/recover',{method:'POST',body:{revision:values.get('head').revision,proof:'x'.repeat(43)}});assert.equal(r.status,403);
