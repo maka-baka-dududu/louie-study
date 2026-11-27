@@ -72,7 +72,7 @@
     if(response.status===401){location.replace('/');return}
     const result=await response.json();if(!response.ok)throw Error(result.error||'私人资料未准备好');
     window.LouieAccessRole=result.role;window.LouieGateway=true;window.LouieLocal=result;window.LouiePublicSite=result.role==='read';window.LouiePublished={data:result.data,files:{}};
-    await loadApp();await loadExtension('galaxy-ui.js','LouieGalaxyReady');await loadExtension('exam-research-ui.js','LouieExamResearchReady');await loadExtension('drive-core.js','LouieDriveCore');await loadExtension('access-ui.js?v=responsive-1','LouieAccessReady');await loadExtension('naiwa-ui.js','LouieNaiwaReady');await loadExtension('responsive-ui.js','LouieResponsiveReady');
+    await loadApp();await loadExtension('galaxy-ui.js','LouieGalaxyReady');await loadExtension('exam-research-ui.js','LouieExamResearchReady');await loadExtension('drive-core.js','LouieDriveCore');await loadExtension('discipline-ui.js','LouieDisciplineReady');await loadExtension('access-ui.js?v=responsive-1','LouieAccessReady');await loadExtension('naiwa-ui.js','LouieNaiwaReady');await loadExtension('responsive-ui.js','LouieResponsiveReady');
     document.body.classList.remove('access-pending','booting');document.getElementById('accessStartup')?.remove();
   }catch(error){document.querySelector('#nav').replaceChildren();showError(error.message);document.body.classList.remove('access-pending','booting');document.getElementById('accessStartup')?.remove()}
 })();
