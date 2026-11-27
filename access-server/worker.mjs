@@ -25,6 +25,7 @@ export class AccessState{
   if(path==='/private-grant-put'){await this.ctx.storage.put('private-grant:'+body.parent,body.value);return json({ok:true})}
   if(path==='/private-grant-delete'){await this.ctx.storage.delete('private-grant:'+body.parent);return json({ok:true})}
   if(path==='/private-auth-get')return json(await this.ctx.storage.get('private-auth')||null);
+  if(path==='/private-auth-replace')return this.ctx.storage.transaction(async tx=>{const old=await tx.get('private-auth');if(old?.version!==body.expected)return fail('密码已更新，请重新进入',409);await tx.put('private-auth',body.value);return json({ok:true})});
   if(path==='/private-auth-init')return this.ctx.storage.transaction(async tx=>{if(await tx.get('private-auth'))return fail('已设置私密密码',409);await tx.put('private-auth',body.value);return json({ok:true})});
   if(path==='/owner-put'){await this.ctx.storage.put('owner:'+body.id,body.value);return json({ok:true})}
   if(path==='/owner-take')return this.ctx.storage.transaction(async tx=>{const v=await tx.get('owner:'+body.id);await tx.delete('owner:'+body.id);return json(v||null)});
@@ -151,7 +152,7 @@ export default {async scheduled(event,env,ctx){ctx.waitUntil(systemCheck(env))},
  const privateResult=await privateAuthRoute(request,env,identity,path,{stateCall,json,fail,readJSON});if(privateResult)return privateResult;
  if(path==='/private-recovery'&&identity.role!=='edit')return fail('请先进入个人模式',403);
  const privateAPI=path.startsWith('/api/private/');
- if(path==='/private'||privateAPI){if(identity.role!=='edit')return fail('请先进入个人模式',403);const grant=await privateGrant(request,env,identity,{stateCall});if(!grant){if(path==='/private')return privateGatePage(!!await(await stateCall(env,'/private-auth-get')).json());return fail('请先输入私密空间密码',423)}identity.privateRoute=true;identity.privateUntil=grant.exp}
+ if(path==='/private'||privateAPI){if(identity.role!=='edit')return fail('请先进入个人模式',403);const grant=await privateGrant(request,env,identity,{stateCall});if(!grant&&privateAPI)return fail('请先输入私密空间密码',423);if(grant){identity.privateRoute=true;identity.privateUntil=grant.exp}}
  if(path==='/auth/owner/reconnect'&&request.method==='POST'){if(identity.role!=='edit')return fail('需要个人模式',403);return beginOwner(request,env,{stateCall,json,fail})}
  if(path==='/auth/downgrade'&&request.method==='POST'){await stateCall(env,'/private-grant-delete',{parent:identity.nonce});const token=await issueSession('read',env);const r=json({role:'read'},200,{'Set-Cookie':'__Host-louie='+token+'; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=43200'});r.headers.append('Set-Cookie',privateLockCookie());return r}
  if(!allowed(identity.role,request.method))return fail('当前只有查看权限，请先通过管理员验证',403);

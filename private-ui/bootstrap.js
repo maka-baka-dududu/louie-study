@@ -69,10 +69,13 @@
   const barrier=document.createElement('style');barrier.textContent='#louieAccessControls{margin-left:auto;gap:8px}';document.head.append(barrier);
   try{
     const privatePage=location.pathname==='/private',recoveryPage=location.pathname==='/private-recovery';window.LouiePrivatePage=privatePage;
-    const response=await fetch(privatePage?'/api/private/bootstrap':'/api/bootstrap',{cache:'no-store'});
-    if(response.status===401){location.replace('/');return}
-    let result=await response.json();if(!response.ok)throw Error(result.error||'私人资料未准备好');
-    if(privatePage||recoveryPage){await loadExtension('drive-core.js','LouieDriveCore');await loadExtension('vault-ui.js','LouieVaultReady');document.getElementById('accessStartup')?.remove();result=await window.LouieVault.prepare(result);if(!result)return}
+    let result;
+    if(privatePage||recoveryPage){
+      await loadExtension('drive-core.js','LouieDriveCore');await loadExtension('vault-ui.js','LouieVaultReady');document.getElementById('accessStartup')?.remove();
+      if(privatePage)result=await window.LouieVault.enter();
+      else{const response=await fetch('/api/bootstrap',{cache:'no-store'});result=await response.json();if(!response.ok)throw Error(result.error||'请先进入个人模式')}
+      result=await window.LouieVault.prepare(result);if(!result)return;
+    }else{const response=await fetch('/api/bootstrap',{cache:'no-store'});if(response.status===401){location.replace('/');return}result=await response.json();if(!response.ok)throw Error(result.error||'私人资料未准备好')}
     window.LouieAccessRole=result.role;window.LouieGateway=true;window.LouieLocal=result;window.LouiePublicSite=result.role==='read';window.LouiePublished={data:result.data,files:{}};
     await loadApp();await loadExtension('galaxy-ui.js','LouieGalaxyReady');await loadExtension('exam-research-ui.js','LouieExamResearchReady');await loadExtension('drive-core.js','LouieDriveCore');await loadExtension('discipline-ui.js','LouieDisciplineReady');await loadExtension('private-space-ui.js','LouiePrivateSpaceReady');await loadExtension('access-ui.js?v=responsive-1','LouieAccessReady');await loadExtension('naiwa-ui.js','LouieNaiwaReady');await loadExtension('responsive-ui.js','LouieResponsiveReady');
     if(privatePage){window.LouieVault.install();window.openPrivateSpace();const remaining=Math.max(0,result.privateUntil-Date.now());setTimeout(()=>location.replace('/private'),remaining)}

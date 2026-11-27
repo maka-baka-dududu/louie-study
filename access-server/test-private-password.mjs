@@ -13,7 +13,7 @@ const call=(path,{method='GET',body,extra='',token=edit}={})=>worker.fetch(new R
 try{
  const beforeCalls=driveCalls;assert.equal((await call('/api/private/bootstrap')).status,423);assert.equal(driveCalls,beforeCalls,'locked API fails before Drive content access');
  let r=await call('/api/bootstrap');let data=await r.json();assert(!data.data.personal.privateSpace);assert(data.data.personal.finance);
- r=await call('/private');assert((await r.text()).includes('设置私密空间密码'));
+ r=await call('/private');assert.equal(r.status,200);assert(!(await r.text()).includes('private-diary'),'locked page serves a shell, never private content');
  assert.equal((await call('/auth/private/setup',{method:'POST',body:{password:'123456789'}})).status,400);
  r=await call('/auth/private/setup',{method:'POST',body:{password:'test-pass0'}});assert.equal(r.status,200);const grant=r.headers.get('Set-Cookie').split(';')[0];assert(!JSON.stringify(values.get('private-auth')).includes('test-pass0'));
  assert.equal((await call('/auth/private/setup',{method:'POST',body:{password:'different-test-password'}})).status,409);
@@ -50,6 +50,12 @@ try{
  assert.equal((await call('/api/private/bootstrap',{extra:vg})).status,423,'recovery revokes old gate grants');
  r=await call('/auth/private',{method:'POST',body:{password:'new-test00'}});assert.equal(r.status,200);
  const afterRecovery=docs.get(values.get('head').driveId);assert.deepEqual(await C.decryptJSON(await C.unlock(afterRecovery.vault.config,'new-test00'),V.config.id,afterRecovery.vault.payload),source);
+ const unifyGrant=r.headers.get('Set-Cookie').split(';')[0],revisionBeforeUnify=values.get('head').revision;
+ assert.equal((await call('/auth/private/unify',{method:'POST',body:{password:'one-pass00'}})).status,423);
+ assert.equal((await call('/auth/private/unify',{method:'POST',extra:unifyGrant,body:{password:'one-pass00'}})).status,200);
+ assert.equal(values.get('head').revision,revisionBeforeUnify,'password unification does not rewrite or migrate user data');
+ assert.equal((await call('/api/private/bootstrap',{extra:unifyGrant})).status,423);
+ assert.equal((await call('/auth/private',{method:'POST',body:{password:'one-pass00'}})).status,200);
  console.log('Encrypted vault: opaque snapshot migration, no normal-mode config leak, plaintext downgrade denied, encrypted state preserved on normal writes, recovery proof and atomic password reset passed');
  console.log('Private password: hashed setup, independent page/API guard, session binding, server revocation, public-owner filtering, file protection, non-destructive ordinary saves and private mutation denial passed');
 }finally{globalThis.fetch=oldFetch}
