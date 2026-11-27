@@ -100,7 +100,7 @@ async function api(request,env,identity,path){const current=await head(env);if(c
   return storeSnapshot({...fullDoc,vault:next},current,env,auth);
  }
  const doc=identity.role==='read'?visitorDocument(fullDoc):identity.privateRoute?fullDoc:lockedOwnerDocument(fullDoc);
- if(path==='/api/bootstrap'&&request.method==='GET')return json({data:doc.data,revision:current.revision,role:identity.role,token:'gateway-session',...(identity.privateRoute?{privateUntil:identity.privateUntil,...(fullDoc.vault?{vault:fullDoc.vault}:{})}: {})});
+ if(path==='/api/bootstrap'&&request.method==='GET')return json({data:doc.data,revision:current.revision,role:identity.role,token:'gateway-session',...(identity.privateRoute?{privateUntil:identity.privateUntil,...(fullDoc.vault?{vault:fullDoc.vault}:{privateFileMap:fullDoc.files})}: {})});
  if(path==='/site-public.json'&&request.method==='GET')return json({version:1,data:doc.data,files:Object.fromEntries(Object.entries(doc.files).map(([key,value])=>[key,{url:'api/files/'+encodeURIComponent(key),mime:value.mime}]))});
  if(path==='/travel-public.json'&&request.method==='GET'){const materials=new Map((doc.data.materials||[]).map(m=>[m.id,m]));return json({version:1,entries:(doc.data.travel?.entries||[]).map(e=>({...e,photos:(e.photoIds||[]).map(id=>materials.get(id)).filter(m=>m?.photoHash&&m.fileId).map(m=>'travel-media/'+m.photoHash+'.'+(m.mime==='image/png'?'png':m.mime==='image/webp'?'webp':'jpg'))}))})}
  if(path.startsWith('/travel-media/')&&request.method==='GET'){const hash=path.split('/').pop().split('.')[0];const material=doc.data.materials.find(m=>m.photoHash===hash);return material?fileResponse(request,env,material.fileId,doc):fail('不存在',404)}
